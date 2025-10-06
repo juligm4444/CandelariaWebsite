@@ -1,0 +1,17 @@
+{
+  "navbar": {
+    "name": "Research Group",
+    "home": "Home",
+    "about": "About",
+    "lines": "Research Lines",
+    "publications": "Publications",
+    "projects": "Projects",
+    "team": "Team",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Advancing Knowledge Through Collaborative Research",
+    "subtitle": "Interdisciplinary investigation focused on innovation, impact, and global dissemination.",
+    "cta": "Explore Our Work"
+  }
+}

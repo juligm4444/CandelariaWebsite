@@ -1,0 +1,17 @@
+{
+  "navbar": {
+    "name": "Grupo de Investigación",
+    "home": "Inicio",
+    "about": "Acerca",
+    "lines": "Líneas",
+    "publications": "Publicaciones",
+    "projects": "Proyectos",
+    "team": "Equipo",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "title": "Avanzando el Conocimiento mediante Investigación Colaborativa",
+    "subtitle": "Investigación interdisciplinaria enfocada en innovación, impacto y difusión global.",
+    "cta": "Explora Nuestro Trabajo"
+  }
+}

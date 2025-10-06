@@ -1,0 +1,1 @@
+export const NotFound = () => <div className="p-10 text-center">404 – Not Found</div>;

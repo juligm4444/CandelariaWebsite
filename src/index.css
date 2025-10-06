@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+/* Theme tokens (adapt palette for formal tone) */
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-card: hsl(var(--card));
+}
+
+@layer base {
+  :root {
+    --background: 220 15% 12%;
+    --foreground: 210 15% 92%;
+    --border: 220 12% 30%;
+    --card: 222 15% 18%;
+    --primary: 205 100% 45%;
+    --primary-foreground: 0 0% 100%;
+  }
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222 20% 20%;
+    --border: 222 15% 80%;
+    --card: 222 28% 96%;
+    --primary: 205 100% 35%;
+    --primary-foreground: 0 0% 100%;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-feature-settings: 'rlig' 1, 'calt' 1; }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  @media (width >= 640px){ max-width:640px }
+  @media (width >= 768px){ max-width:768px }
+  @media (width >= 1024px){ max-width:1024px }
+  @media (width >= 1280px){ max-width:1280px }
+  @media (width >= 1440px){ max-width:1440px }
+}
+
+@utility general-button {
+  @apply px-6 py-2 rounded-full bg-primary text-primary-foreground font-medium transition
+         hover:opacity-90 active:scale-95;
+}
