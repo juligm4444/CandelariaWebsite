@@ -1,6 +1,6 @@
 {
   "navbar": {
-    "name": "Research Group",
+    "name": "Candelaria",
     "home": "Home",
     "about": "About",
     "lines": "Research Lines",
@@ -13,5 +13,9 @@
     "title": "Advancing Knowledge Through Collaborative Research",
     "subtitle": "Interdisciplinary investigation focused on innovation, impact, and global dissemination.",
     "cta": "Explore Our Work"
+  },
+  "mission": {
+    "title": "Mission",
+    "text": "Our mission is to elaborate a fully functional solar car that will be able to participate in the competition of Australia."
   }
 }
