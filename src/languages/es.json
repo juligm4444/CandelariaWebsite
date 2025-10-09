@@ -10,8 +10,135 @@
     "contact": "Contacto"
   },
   "hero": {
-    "title": "Avanzando el Conocimiento mediante Investigación Colaborativa",
+    "title": "Carro Solar Candelaria",
     "subtitle": "Investigación interdisciplinaria enfocada en innovación, impacto y difusión global.",
     "cta": "Explora Nuestro Trabajo"
+  },
+  "mission": {
+    "title": "Misión",
+    "text": "Nuestra misión es elaborar un carro solar completamente funcional que pueda participar en la competencia de Australia."
+  },
+  "teams": {
+    "committee": {
+      "roles": {
+        "role1": "Profesor Asesor.",
+        "charge1": "Director del Departamento de Ingeniería Eléctrica y Electrónica.",
+        "role2": "Profesor Asesor.",
+        "charge2": "Profesor Asociado del Departamento de Ingeniería Mecánica.",
+        "role3": "",
+        "role4": "",
+        "role5": "",
+        "role6": ""
+      },
+      "objectives": {
+        "objective1": "Supervisar el progreso del proyecto: ",
+        "description1": "Asegurar que cada área avance conforme al cronograma y los estándares de calidad definidos.",
+        "objective2": "Tomar decisiones estratégicas: ",
+        "description2": "Guiar la dirección general del proyecto mediante una gestión efectiva y colaborativa.",
+        "objective3": "Representar al equipo: ",
+        "description3": "Actuar como enlace principal entre el proyecto, la universidad y entidades externas."
+      }
+    },
+    "logistics": {
+      "roles": {
+        "role1": "",
+        "role2": "",
+        "role3": "",
+        "role4": ""
+      },
+      "objectives": {
+        "objective1": "Coordinar recursos y materiales: ",
+        "description1": "Garantizar la disponibilidad y correcta distribución de insumos para todos los equipos.",
+        "objective2": "Gestionar inventarios y finanzas: ",
+        "description2": "Mantener el control de compras, documentación y gastos internos del proyecto.",
+        "objective3": "Promover la mejora continua:",
+        "description3": "Optimizar los procesos logísticos para incrementar la eficiencia del grupo."
+      }
+    },
+    "hr": {
+      "roles": {
+        "role1": "Líder de Equipo y Coordinadora de Comunicación Interna.",
+        "role2": "Encargada de Bienestar y Soporte.",
+        "role3": "Analista de Talento y Desarrollo.",
+        "role4": "Gestor de Reconocimiento y Visibilidad.",
+        "role5": "Líder de Cultura y Motivación."
+      },
+      "objectives": {
+        "objective1": "Fomentar el bienestar y cohesión del equipo: ",
+        "description1": "Cuidar y fortalecer el talento humano del proyecto.",
+        "objective2": "Desarrollar sistemas de apoyo y seguimiento: ",
+        "description2": "Acompañar al grupo mediante herramientas que impulsen el crecimiento personal y profesional.",
+        "objective3": "Promover la comunicación y el reconocimiento: ",
+        "description3": "Asegurar la visibilidad interna y valorar los logros individuales y colectivos."
+      }
+    },
+    "design": {
+      "roles": {
+        "role1": "Líder de Equipo",
+        "role2": "Registro Visual",
+        "role3": "Marketing",
+        "role4": "Diseño y Desarrollo Web",
+        "role5": "",
+        "role6": ""
+      },
+      "objectives": {
+        "objective1": "Definición de la estética interna y externa del vehículo: ",
+        "description1": "Desarrollo de un concepto visual innovador y funcional que asegure la armonía entre el diseño, la ingeniería y la identidad del proyecto.",
+        "objective2": "Creación de uniformes: ",
+        "description2": "Diseño de vestimenta que refuerce la imagen institucional y fortalezca la cohesión del equipo.",
+        "objective3": "Creación de piezas gráficas para la identidad grupal: ",
+        "description3": "Producción de materiales visuales que permitan una comunicación clara, impactante y consistente para el proyecto Candelaria."
+      }
+    },
+    "cells": {
+      "roles": {
+        "role1": "",
+        "role2": "",
+        "role3": "",
+        "role4": ""
+      },
+      "objectives": {
+        "objective1": "Optimizar la gestión energética: ",
+        "description1": "Diseñar e implementar un sistema inteligente de control y administración de energía.",
+        "objective2": "Seleccionar y evaluar componentes solares: ",
+        "description2": "Escoger paneles y baterías que maximicen la eficiencia del vehículo.",
+        "objective3": "Simular escenarios de operación: ",
+        "description3": "Analizar el desempeño energético bajo distintas condiciones de funcionamiento."
+      }
+    },
+    "comtrack": {
+      "roles": {
+        "role1": "",
+        "role2": "",
+        "role3": "",
+        "role4": ""
+      },
+      "objectives": {
+        "objective1": "Diseñar e implementar sistemas de comunicación: ",
+        "description1": "Integrar hardware y software para la adquisición y procesamiento de datos.",
+        "objective2": "Optimizar el rendimiento motriz: ",
+        "description2": "Seleccionar y evaluar motores y baterías mediante pruebas de desempeño.",
+        "objective3": "Validar el funcionamiento integral del vehículo:",
+        "description3": "Asegurar que todos los sistemas operen de forma eficiente y coordinada."
+      }
+    },
+    "meccar": {
+      "roles": {
+        "role1": "Líder de Equipo",
+        "role2": "",
+        "role3": "",
+        "role4": "",
+        "role5": "",
+        "role6": ""
+      },
+      "objectives": {
+        "objective1": "Diseñar una estructura segura y eficiente: ",
+        "description1": "Desarrollar el chasis y la carrocería con criterios de resistencia y ligereza.",
+        "objective2": "Optimizar la aerodinámica del vehículo: ",
+        "description2": "Analizar y validar el flujo de aire para maximizar la eficiencia y el rendimiento.",
+        "objective3": "Perfeccionar la superficie y forma del carenado: ",
+        "description3": "Ajustar proporciones y materiales para lograr un equilibrio entre estética y funcionalidad."
+      }
+    }
   }
 }

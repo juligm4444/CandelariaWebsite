@@ -10,7 +10,7 @@ const links = [
   { k: 'publications', href: '#publications' },
   { k: 'projects', href: '#projects' },
   { k: 'team', href: '#team' },
-  { k: 'contact', href: '#contact' }
+  { k: 'contact', href: '#contact' },
 ];
 
 export const Navbar = () => {
@@ -25,11 +25,16 @@ export const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`fixed top-0 w-full z-40 transition-all ${scrolled ? 'bg-background/80 backdrop-blur border-b border-border' : ''}`}>
+    <nav
+      className={`fixed top-0 w-full z-40 transition-all ${
+        scrolled ? 'bg-background/80 backdrop-blur border-b border-border' : ''
+      }`}
+    >
       <div className="container flex items-center justify-between py-4">
-        <a href="#home" className="text-lg font-semibold tracking-wide">{t('navbar.name')}</a>
+        <img src="src/assets/images/MainLogo.png" alt="Logo" className="h-50 w-50 mr-3" />
+
         <div className="hidden md:flex gap-6 items-center">
-          {links.map(l => (
+          {links.map((l) => (
             <a key={l.k} href={l.href} className="text-sm hover:text-primary transition">
               {t(`navbar.${l.k}`)}
             </a>
@@ -38,16 +43,16 @@ export const Navbar = () => {
           <ThemeToggle />
         </div>
         <button
-          onClick={() => setOpen(o => !o)}
-            className="md:hidden p-2"
-            aria-label="Toggle menu"
+          onClick={() => setOpen((o) => !o)}
+          className="md:hidden p-2"
+          aria-label="Toggle menu"
         >
           {open ? <X /> : <Menu />}
         </button>
       </div>
       {open && (
         <div className="md:hidden flex flex-col gap-4 px-6 pb-6">
-          {links.map(l => (
+          {links.map((l) => (
             <a
               key={l.k}
               href={l.href}

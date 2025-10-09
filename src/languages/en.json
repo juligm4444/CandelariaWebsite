@@ -3,19 +3,142 @@
     "name": "Candelaria",
     "home": "Home",
     "about": "About",
-    "lines": "Research Lines",
+    "lines": "Lines",
     "publications": "Publications",
     "projects": "Projects",
     "team": "Team",
     "contact": "Contact"
   },
   "hero": {
-    "title": "Advancing Knowledge Through Collaborative Research",
-    "subtitle": "Interdisciplinary investigation focused on innovation, impact, and global dissemination.",
+    "title": "Candelaria Solar Car",
+    "subtitle": "Interdisciplinary research focused on innovation, impact, and global outreach.",
     "cta": "Explore Our Work"
   },
   "mission": {
     "title": "Mission",
-    "text": "Our mission is to elaborate a fully functional solar car that will be able to participate in the competition of Australia."
+    "text": "Our mission is to build a fully functional solar car capable of competing in the Australian challenge."
+  },
+  "teams": {
+    "committee": {
+      "roles": {
+        "role1": "Advising Professor.",
+        "charge1": "Director of the Department of Electrical and Electronic Engineering.",
+        "role2": "Advising Professor.",
+        "charge2": "Associate Professor at the Department of Mechanical Engineering.",
+        "role3": "",
+        "role4": "",
+        "role5": "",
+        "role6": ""
+      },
+      "objectives": {
+        "objective1": "Supervise project progress: ",
+        "description1": "Ensure that each area advances according to the schedule and defined quality standards.",
+        "objective2": "Make strategic decisions: ",
+        "description2": "Guide the overall direction of the project through effective and collaborative management.",
+        "objective3": "Represent the team: ",
+        "description3": "Act as the main liaison between the project, the university, and external entities."
+      }
+    },
+    "logistics": {
+      "roles": {
+        "role1": "",
+        "role2": "",
+        "role3": "",
+        "role4": ""
+      },
+      "objectives": {
+        "objective1": "Coordinate resources and materials: ",
+        "description1": "Ensure the availability and proper distribution of supplies for all teams.",
+        "objective2": "Manage inventories and finances: ",
+        "description2": "Maintain control of purchases, documentation, and internal project expenses.",
+        "objective3": "Promote continuous improvement:",
+        "description3": "Optimize logistics processes to increase group efficiency."
+      }
+    },
+    "hr": {
+      "roles": {
+        "role1": "Team Leader and Internal Communication Coordinator.",
+        "role2": "Wellbeing and Support Manager.",
+        "role3": "Talent and Development Analyst.",
+        "role4": "Recognition and Visibility Manager.",
+        "role5": "Culture and Motivation Leader."
+      },
+      "objectives": {
+        "objective1": "Foster team wellbeing and cohesion: ",
+        "description1": "Care for and strengthen the project’s human talent.",
+        "objective2": "Develop support and monitoring systems: ",
+        "description2": "Accompany the group through tools that encourage personal and professional growth.",
+        "objective3": "Promote communication and recognition: ",
+        "description3": "Ensure internal visibility and value individual and collective achievements."
+      }
+    },
+    "design": {
+      "roles": {
+        "role1": "Team Leader",
+        "role2": "Visual Documentation",
+        "role3": "Marketing",
+        "role4": "Web Design and Development",
+        "role5": "",
+        "role6": ""
+      },
+      "objectives": {
+        "objective1": "Define the vehicle’s internal and external aesthetics: ",
+        "description1": "Develop an innovative and functional visual concept that ensures harmony between design, engineering, and project identity.",
+        "objective2": "Create uniforms: ",
+        "description2": "Design attire that reinforces the institutional image and strengthens team cohesion.",
+        "objective3": "Create graphic pieces for group identity: ",
+        "description3": "Produce visual materials that enable clear, impactful, and consistent communication for Project Candelaria."
+      }
+    },
+    "cells": {
+      "roles": {
+        "role1": "",
+        "role2": "",
+        "role3": "",
+        "role4": ""
+      },
+      "objectives": {
+        "objective1": "Optimize energy management: ",
+        "description1": "Design and implement an intelligent system for energy control and administration.",
+        "objective2": "Select and evaluate solar components: ",
+        "description2": "Choose panels and batteries that maximize the vehicle’s efficiency.",
+        "objective3": "Simulate operating scenarios: ",
+        "description3": "Analyze energy performance under different operating conditions."
+      }
+    },
+    "comtrack": {
+      "roles": {
+        "role1": "",
+        "role2": "",
+        "role3": "",
+        "role4": ""
+      },
+      "objectives": {
+        "objective1": "Design and implement communication systems: ",
+        "description1": "Integrate hardware and software for data acquisition and processing.",
+        "objective2": "Optimize motor performance: ",
+        "description2": "Select and evaluate motors and batteries through performance testing.",
+        "objective3": "Validate the vehicle’s overall operation:",
+        "description3": "Ensure that all systems operate efficiently and in coordination."
+      }
+    },
+    "meccar": {
+      "roles": {
+        "role1": "Team Leader",
+        "role2": "",
+        "role3": "",
+        "role4": "",
+        "role5": "",
+        "role6": ""
+      },
+      "objectives": {
+        "objective1": "Design a safe and efficient structure: ",
+        "description1": "Develop the chassis and bodywork with criteria of strength and lightness.",
+        "objective2": "Optimize the vehicle’s aerodynamics: ",
+        "description2": "Analyze and validate airflow to maximize efficiency and performance.",
+        "objective3": "Refine the surface and shape of the fairing: ",
+        "description3": "Adjust proportions and materials to achieve a balance between aesthetics and functionality."
+      }
+    }
   }
 }
