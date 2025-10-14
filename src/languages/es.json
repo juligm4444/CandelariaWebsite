@@ -20,15 +20,43 @@
   },
   "teams": {
     "committee": {
-      "roles": {
-        "role1": "Profesor Asesor.",
-        "charge1": "Director del Departamento de Ingeniería Eléctrica y Electrónica.",
-        "role2": "Profesor Asesor.",
-        "charge2": "Profesor Asociado del Departamento de Ingeniería Mecánica.",
-        "role3": "",
-        "role4": "",
-        "role5": "",
-        "role6": ""
+      "members": {
+        "member1": {
+          "name": "Guillermo Jimenez",
+          "role": "Profesor Asesor.",
+          "charge": "Director del Departamento de Ingeniería Eléctrica y Electrónica.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Juan Pablo Casas",
+          "role": "Profesor Asesor.",
+          "charge": "Profesor Asociado del Departamento de Ingeniería Mecánica.",
+          "image": ""
+        },
+        "member3": {
+          "name": "Diego Rojas",
+          "role": "Miembro del Comité.",
+          "charge": "Responsable del Diseño del Chasis.",
+          "image": ""
+        },
+        "member4": {
+          "name": "Juan Bolivar",
+          "role": "Miembro del Comité.",
+          "charge": "Responsable del Sistema de Control.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Warley Sequeda",
+          "role": "Miembro del Comité.",
+          "charge": "Responsable del Desarrollo de Software.",
+          "image": ""
+        },
+        "member6": {
+          "name": "Esteban Cardona",
+          "role": "Miembro del Comité.",
+          "charge": "Responsable del Diseño Industrial.",
+          "image": ""
+        }
       },
       "objectives": {
         "objective1": "Supervisar el progreso del proyecto: ",
@@ -40,11 +68,31 @@
       }
     },
     "logistics": {
-      "roles": {
-        "role1": "",
-        "role2": "",
-        "role3": "",
-        "role4": ""
+      "members": {
+        "member1": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member2": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member3": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member4": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        }
       },
       "objectives": {
         "objective1": "Coordinar recursos y materiales: ",
@@ -56,7 +104,7 @@
       }
     },
     "hr": {
-      "roles": {
+      "members": {
         "role1": "Líder de Equipo y Coordinadora de Comunicación Interna.",
         "role2": "Encargada de Bienestar y Soporte.",
         "role3": "Analista de Talento y Desarrollo.",
@@ -73,13 +121,43 @@
       }
     },
     "design": {
-      "roles": {
-        "role1": "Líder de Equipo",
-        "role2": "Registro Visual",
-        "role3": "Marketing",
-        "role4": "Diseño y Desarrollo Web",
-        "role5": "",
-        "role6": ""
+      "members": {
+        "member1": {
+          "name": "Juan Pérez",
+          "role": "Líder de Equipo",
+          "charge": "Coordinador del Área de Diseño.",
+          "image": "path/to/image1.jpg"
+        },
+        "member2": {
+          "name": "María Gómez",
+          "role": "Registro Visual",
+          "charge": "Responsable de la Documentación Gráfica.",
+          "image": "path/to/image2.jpg"
+        },
+        "member3": {
+          "name": "Carlos López",
+          "role": "Marketing",
+          "charge": "Encargado de la Estrategia de Comunicación.",
+          "image": "path/to/image3.jpg"
+        },
+        "member4": {
+          "name": "Ana Torres",
+          "role": "Diseño y Desarrollo Web",
+          "charge": "Responsable de la Plataforma Digital.",
+          "image": "path/to/image4.jpg"
+        },
+        "member5": {
+          "name": "Luis Martínez",
+          "role": "Diseñador Gráfico",
+          "charge": "Encargado de la Identidad Visual.",
+          "image": "path/to/image5.jpg"
+        },
+        "member6": {
+          "name": "Laura Sánchez",
+          "role": "Investigadora de Mercado",
+          "charge": "Responsable del Análisis de Tendencias.",
+          "image": "path/to/image6.jpg"
+        }
       },
       "objectives": {
         "objective1": "Definición de la estética interna y externa del vehículo: ",
@@ -91,11 +169,31 @@
       }
     },
     "cells": {
-      "roles": {
-        "role1": "",
-        "role2": "",
-        "role3": "",
-        "role4": ""
+      "members": {
+        "member1": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member2": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member3": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member4": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        }
       },
       "objectives": {
         "objective1": "Optimizar la gestión energética: ",
@@ -107,11 +205,31 @@
       }
     },
     "comtrack": {
-      "roles": {
-        "role1": "",
-        "role2": "",
-        "role3": "",
-        "role4": ""
+      "members": {
+        "member1": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member2": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member3": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        },
+        "member4": {
+          "name": "",
+          "role": "",
+          "charge": "",
+          "image": ""
+        }
       },
       "objectives": {
         "objective1": "Diseñar e implementar sistemas de comunicación: ",
@@ -123,13 +241,43 @@
       }
     },
     "meccar": {
-      "roles": {
-        "role1": "Líder de Equipo",
-        "role2": "",
-        "role3": "",
-        "role4": "",
-        "role5": "",
-        "role6": ""
+      "members": {
+        "member1": {
+          "name": "Carlos Pérez",
+          "role": "Líder de Equipo",
+          "charge": "Coordinación General del Proyecto.",
+          "image": "path/to/image1.jpg"
+        },
+        "member2": {
+          "name": "Ana Gómez",
+          "role": "Ingeniera de Diseño",
+          "charge": "Responsable del Diseño Estético y Funcional.",
+          "image": "path/to/image2.jpg"
+        },
+        "member3": {
+          "name": "Luis Rodríguez",
+          "role": "Ingeniero de Sistemas",
+          "charge": "Integración de Sistemas Electrónicos.",
+          "image": "path/to/image3.jpg"
+        },
+        "member4": {
+          "name": "María López",
+          "role": "Especialista en Materiales",
+          "charge": "Selección de Materiales Compuestos.",
+          "image": "path/to/image4.jpg"
+        },
+        "member5": {
+          "name": "Javier Martínez",
+          "role": "Analista de Datos",
+          "charge": "Análisis de Datos de Rendimiento.",
+          "image": "path/to/image5.jpg"
+        },
+        "member6": {
+          "name": "Sofía Hernández",
+          "role": "Técnica de Prototipado",
+          "charge": "Construcción y Pruebas de Prototipos.",
+          "image": "path/to/image6.jpg"
+        }
       },
       "objectives": {
         "objective1": "Diseñar una estructura segura y eficiente: ",
