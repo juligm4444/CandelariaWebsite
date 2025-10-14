@@ -23,38 +23,50 @@
       "members": {
         "member1": {
           "name": "Guillermo Jimenez",
-          "role": "Profesor Asesor.",
+          "role": "Profesor Asesor",
           "charge": "Director del Departamento de Ingeniería Eléctrica y Electrónica.",
           "image": ""
         },
         "member2": {
           "name": "Juan Pablo Casas",
-          "role": "Profesor Asesor.",
+          "role": "Profesor Asesor",
           "charge": "Profesor Asociado del Departamento de Ingeniería Mecánica.",
           "image": ""
         },
         "member3": {
           "name": "Diego Rojas",
-          "role": "Miembro del Comité.",
-          "charge": "Responsable del Diseño del Chasis.",
+          "role": "Miembro del Comité",
+          "charge": "Estudiante de Maestría en Ingeniería Eléctrica.",
           "image": ""
         },
         "member4": {
-          "name": "Juan Bolivar",
-          "role": "Miembro del Comité.",
-          "charge": "Responsable del Sistema de Control.",
+          "name": "Juan David Bolivar",
+          "role": "Líder del Comité Ejecutivo",
+          "charge": "Ingeniero Eléctrico.",
           "image": ""
         },
         "member5": {
           "name": "Warley Sequeda",
-          "role": "Miembro del Comité.",
-          "charge": "Responsable del Desarrollo de Software.",
+          "role": "Miembro del Comité",
+          "charge": "Asesor.",
           "image": ""
         },
         "member6": {
           "name": "Esteban Cardona",
-          "role": "Miembro del Comité.",
-          "charge": "Responsable del Diseño Industrial.",
+          "role": "Miembro del Comité",
+          "charge": "Asesor de Baterías.",
+          "image": ""
+        },
+        "member7": {
+          "name": "Juan David Gutierrez",
+          "role": "Miembro del Comité",
+          "charge": "Estudiante de Ingeniería Industrial.",
+          "image": ""
+        },
+        "member8": {
+          "name": "Juliana Pérez",
+          "role": "Miembro del Comité",
+          "charge": "Estudiante de Administración de Empresas.",
           "image": ""
         }
       },
@@ -70,27 +82,27 @@
     "logistics": {
       "members": {
         "member1": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Juan David Gutierrez",
+          "role": "Líder del Equipo de Logística",
+          "charge": "Estudiante de Ingeniería Industrial.",
           "image": ""
         },
         "member2": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Alejandra Villareal",
+          "role": "Miembro del Equipo de Logística",
+          "charge": "Estudiante de Ingeniería Industrial.",
           "image": ""
         },
         "member3": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Mariana Vanegas",
+          "role": "Miembro del Equipo de Logística",
+          "charge": "Estudiante de Ingeniería Industrial.",
           "image": ""
         },
         "member4": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Andrés David Serrano",
+          "role": "Miembro del Equipo de Logística",
+          "charge": "Estudiante de Economía y Administración de Empresas.",
           "image": ""
         }
       },
@@ -105,11 +117,36 @@
     },
     "hr": {
       "members": {
-        "role1": "Líder de Equipo y Coordinadora de Comunicación Interna.",
-        "role2": "Encargada de Bienestar y Soporte.",
-        "role3": "Analista de Talento y Desarrollo.",
-        "role4": "Gestor de Reconocimiento y Visibilidad.",
-        "role5": "Líder de Cultura y Motivación."
+        "member1": {
+          "name": "Juliana Perez",
+          "role": "Líder del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Administración de Empresas.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Paula Castañeda",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Lenguas y Cultura.",
+          "image": ""
+        },
+        "member3": {
+          "name": "Estefanía Durán",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Psicología.",
+          "image": ""
+        },
+        "member4": {
+          "name": "Santiago Varón",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Ingeniería Industrial.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Ana María Castrillón",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Administración de Empresas.",
+          "image": ""
+        }
       },
       "objectives": {
         "objective1": "Fomentar el bienestar y cohesión del equipo: ",
@@ -123,40 +160,40 @@
     "design": {
       "members": {
         "member1": {
-          "name": "Juan Pérez",
-          "role": "Líder de Equipo",
-          "charge": "Coordinador del Área de Diseño.",
-          "image": "path/to/image1.jpg"
+          "name": "Mariana Silva Torres",
+          "role": "Líder del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
         },
         "member2": {
-          "name": "María Gómez",
-          "role": "Registro Visual",
-          "charge": "Responsable de la Documentación Gráfica.",
-          "image": "path/to/image2.jpg"
+          "name": "Natalia Yunda",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
         },
         "member3": {
-          "name": "Carlos López",
-          "role": "Marketing",
-          "charge": "Encargado de la Estrategia de Comunicación.",
-          "image": "path/to/image3.jpg"
+          "name": "Maira Lucia Duarte",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
         },
         "member4": {
-          "name": "Ana Torres",
-          "role": "Diseño y Desarrollo Web",
-          "charge": "Responsable de la Plataforma Digital.",
-          "image": "path/to/image4.jpg"
+          "name": "Julián Galindo",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
         },
         "member5": {
-          "name": "Luis Martínez",
-          "role": "Diseñador Gráfico",
-          "charge": "Encargado de la Identidad Visual.",
-          "image": "path/to/image5.jpg"
+          "name": "Valeria Marulanda",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
         },
         "member6": {
-          "name": "Laura Sánchez",
-          "role": "Investigadora de Mercado",
-          "charge": "Responsable del Análisis de Tendencias.",
-          "image": "path/to/image6.jpg"
+          "name": "María Gabriel Mosquera",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
         }
       },
       "objectives": {
@@ -171,27 +208,27 @@
     "cells": {
       "members": {
         "member1": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Cristian Gonzalez",
+          "role": "Líder del Equipo de Celdas",
+          "charge": "Estudiante de Ingeniería Eléctrica y Electrónica.",
           "image": ""
         },
         "member2": {
-          "name": "",
-          "role": "",
+          "name": "Jacobo Cerón",
+          "role": "Miembro del Equipo de Celdas.",
           "charge": "",
           "image": ""
         },
         "member3": {
-          "name": "",
-          "role": "",
+          "name": "María Fernanda Gonzalez",
+          "role": "Miembro del Equipo de Celdas.",
           "charge": "",
           "image": ""
         },
         "member4": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Andrés Manrique",
+          "role": "Miembro del Equipo de Celdas.",
+          "charge": "Estudiante de Maestría en Ingeniería Electrónica.",
           "image": ""
         }
       },
@@ -207,27 +244,39 @@
     "comtrack": {
       "members": {
         "member1": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Santiago León",
+          "role": "Líder del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Maestría en Ingeniería Electrónica.",
           "image": ""
         },
         "member2": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Andrés Pérez",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica y Mecánica.",
           "image": ""
         },
         "member3": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "Andrés Barbosa",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
           "image": ""
         },
         "member4": {
-          "name": "",
-          "role": "",
-          "charge": "",
+          "name": "María Lucía Navas",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Samuel Luque",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
+          "image": ""
+        },
+        "member6": {
+          "name": "Bryam Campuzano",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
           "image": ""
         }
       },
@@ -243,40 +292,46 @@
     "meccar": {
       "members": {
         "member1": {
-          "name": "Carlos Pérez",
-          "role": "Líder de Equipo",
-          "charge": "Coordinación General del Proyecto.",
-          "image": "path/to/image1.jpg"
+          "name": "Diego Rojas",
+          "role": "Líder del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Maestría en Ingeniería Eléctrica.",
+          "image": ""
         },
         "member2": {
-          "name": "Ana Gómez",
-          "role": "Ingeniera de Diseño",
-          "charge": "Responsable del Diseño Estético y Funcional.",
-          "image": "path/to/image2.jpg"
+          "name": "Nicolás Ortiz",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica",
+          "image": ""
         },
         "member3": {
-          "name": "Luis Rodríguez",
-          "role": "Ingeniero de Sistemas",
-          "charge": "Integración de Sistemas Electrónicos.",
-          "image": "path/to/image3.jpg"
+          "name": "Jerónimo Suárez",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
         },
         "member4": {
-          "name": "María López",
-          "role": "Especialista en Materiales",
-          "charge": "Selección de Materiales Compuestos.",
-          "image": "path/to/image4.jpg"
+          "name": "María Esteban Aristizaba",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
         },
         "member5": {
-          "name": "Javier Martínez",
-          "role": "Analista de Datos",
-          "charge": "Análisis de Datos de Rendimiento.",
-          "image": "path/to/image5.jpg"
+          "name": "Daniel José Carrascal",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
         },
         "member6": {
-          "name": "Sofía Hernández",
-          "role": "Técnica de Prototipado",
-          "charge": "Construcción y Pruebas de Prototipos.",
-          "image": "path/to/image6.jpg"
+          "name": "Juan Bonilla",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
+        },
+        "member7": {
+          "name": "Carlos Felipe Ramos",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Ingeniero Mecánico.",
+          "image": ""
         }
       },
       "objectives": {

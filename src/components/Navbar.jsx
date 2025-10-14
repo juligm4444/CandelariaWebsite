@@ -9,7 +9,7 @@ const links = [
   { k: 'lines', href: '#lines' },
   { k: 'publications', href: '#publications' },
   { k: 'projects', href: '#projects' },
-  { k: 'team', href: '#team' },
+  { k: 'teams', href: '#teams' },
   { k: 'contact', href: '#contact' },
 ];
 
