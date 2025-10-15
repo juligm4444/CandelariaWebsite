@@ -6,7 +6,7 @@
     "lines": "Lines",
     "publications": "Publications",
     "projects": "Projects",
-    "team": "Team",
+    "teams": "Team",
     "contact": "Contact"
   },
   "hero": {
@@ -19,7 +19,7 @@
     "text": "Our mission is to build a fully functional solar car capable of competing in the Australian challenge."
   },
   "teams": {
-    "committee": {
+    "Committee": {
       "members": {
         "member1": {
           "name": "Guillermo Jimenez",
@@ -79,7 +79,7 @@
         "description3": "Act as the main liaison between the project, the university, and external entities."
       }
     },
-    "logistics": {
+    "Logistics": {
       "members": {
         "member1": {
           "name": "Juan David Gutierrez",
@@ -115,7 +115,7 @@
         "description3": "Optimize logistics processes to increase group efficiency."
       }
     },
-    "hr": {
+    "Human Resources": {
       "members": {
         "member1": {
           "name": "Juliana Perez",
@@ -157,7 +157,7 @@
         "description3": "Ensure internal visibility and value individual and collective achievements."
       }
     },
-    "design": {
+    "Design": {
       "members": {
         "member1": {
           "name": "Mariana Silva Torres",
@@ -205,7 +205,7 @@
         "description3": "Produce visual materials that enable clear, impactful, and consistent communication for Project Candelaria."
       }
     },
-    "cells": {
+    "Cells": {
       "members": {
         "member1": {
           "name": "Cristian Gonzalez",
@@ -241,7 +241,7 @@
         "description3": "Analyze energy performance under different operating conditions."
       }
     },
-    "comtrack": {
+    "Communication and Traction": {
       "members": {
         "member1": {
           "name": "Santiago León",
@@ -289,7 +289,7 @@
         "description3": "Ensure that all systems operate efficiently and in coordination."
       }
     },
-    "meccar": {
+    "Mechanics and Fairing": {
       "members": {
         "member1": {
           "name": "Diego Rojas",

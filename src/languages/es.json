@@ -6,7 +6,7 @@
     "lines": "Líneas",
     "publications": "Publicaciones",
     "projects": "Proyectos",
-    "team": "Equipo",
+    "teams": "Equipo",
     "contact": "Contacto"
   },
   "hero": {
@@ -19,7 +19,7 @@
     "text": "Nuestra misión es elaborar un carro solar completamente funcional que pueda participar en la competencia de Australia."
   },
   "teams": {
-    "committee": {
+    "Comité": {
       "members": {
         "member1": {
           "name": "Guillermo Jimenez",
@@ -79,7 +79,7 @@
         "description3": "Actuar como enlace principal entre el proyecto, la universidad y entidades externas."
       }
     },
-    "logistics": {
+    "Logística": {
       "members": {
         "member1": {
           "name": "Juan David Gutierrez",
@@ -115,7 +115,7 @@
         "description3": "Optimizar los procesos logísticos para incrementar la eficiencia del grupo."
       }
     },
-    "hr": {
+    "Recursos Humanos": {
       "members": {
         "member1": {
           "name": "Juliana Perez",
@@ -157,7 +157,7 @@
         "description3": "Asegurar la visibilidad interna y valorar los logros individuales y colectivos."
       }
     },
-    "design": {
+    "Diseño": {
       "members": {
         "member1": {
           "name": "Mariana Silva Torres",
@@ -205,7 +205,7 @@
         "description3": "Producción de materiales visuales que permitan una comunicación clara, impactante y consistente para el proyecto Candelaria."
       }
     },
-    "cells": {
+    "Celdas": {
       "members": {
         "member1": {
           "name": "Cristian Gonzalez",
@@ -241,7 +241,7 @@
         "description3": "Analizar el desempeño energético bajo distintas condiciones de funcionamiento."
       }
     },
-    "comtrack": {
+    "Comunicación y Tracción": {
       "members": {
         "member1": {
           "name": "Santiago León",
@@ -289,7 +289,7 @@
         "description3": "Asegurar que todos los sistemas operen de forma eficiente y coordinada."
       }
     },
-    "meccar": {
+    "Mecánica y Carenado": {
       "members": {
         "member1": {
           "name": "Diego Rojas",

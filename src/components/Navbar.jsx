@@ -3,13 +3,14 @@ import { Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from './ThemeToggle';
 import { LanguageToggle } from './LanguageToggle';
+import { Link } from 'react-router-dom';
 
 const links = [
-  { k: 'home', href: '#home' },
+  { k: 'home', href: '/', isRoute: true },
   { k: 'lines', href: '#lines' },
   { k: 'publications', href: '#publications' },
   { k: 'projects', href: '#projects' },
-  { k: 'teams', href: '#teams' },
+  { k: 'teams', href: '/team', isRoute: true },
   { k: 'contact', href: '#contact' },
 ];
 
@@ -29,16 +30,23 @@ export const Navbar = () => {
       className={`fixed top-0 w-full z-40 transition-all ${
         scrolled ? 'bg-background/80 backdrop-blur border-b border-border' : ''
       }`}
+      style={{ height: '5.5rem' }} // Increased height
     >
-      <div className="container flex items-center justify-between py-4">
+      <div className="container flex items-center justify-between py-6" /* Increased py */>
         <img src="src/assets/images/MainLogo.png" alt="Logo" className="h-50 w-50 mr-3" />
 
         <div className="hidden md:flex gap-6 items-center">
-          {links.map((l) => (
-            <a key={l.k} href={l.href} className="text-sm hover:text-primary transition">
-              {t(`navbar.${l.k}`)}
-            </a>
-          ))}
+          {links.map((l, idx) =>
+            l.isRoute ? (
+              <Link key={l.k} to={l.href} className="text-sm hover:text-primary transition">
+                {t(`navbar.${l.k}`)}
+              </Link>
+            ) : (
+              <a key={l.k} href={l.href} className="text-sm hover:text-primary transition">
+                {t(`navbar.${l.k}`)}
+              </a>
+            )
+          )}
           <LanguageToggle />
           <ThemeToggle />
         </div>
@@ -52,16 +60,27 @@ export const Navbar = () => {
       </div>
       {open && (
         <div className="md:hidden flex flex-col gap-4 px-6 pb-6">
-          {links.map((l) => (
-            <a
-              key={l.k}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="border-b border-border pb-2"
-            >
-              {t(`navbar.${l.k}`)}
-            </a>
-          ))}
+          {links.map((l, idx) =>
+            l.isRoute ? (
+              <Link
+                key={l.k}
+                to={l.href}
+                onClick={() => setOpen(false)}
+                className="border-b border-border pb-2"
+              >
+                {t(`navbar.${l.k}`)}
+              </Link>
+            ) : (
+              <a
+                key={l.k}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className="border-b border-border pb-2"
+              >
+                {t(`navbar.${l.k}`)}
+              </a>
+            )
+          )}
           <div className="flex gap-4">
             <LanguageToggle />
             <ThemeToggle />

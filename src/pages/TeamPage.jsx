@@ -1,13 +1,11 @@
-import { Hero } from '../components/Hero';
 import { Navbar } from '../components/Navbar';
-import { Mission } from '../components/Mission';
+import { Team } from '../components/Team';
 
-export const HomePage = () => (
+export const TeamPage = () => (
   <div className="min-h-screen bg-background text-foreground">
     <Navbar />
     <main className="pt-24">
-      <Hero />
-      <Mission />
+      <Team />
     </main>
   </div>
 );
