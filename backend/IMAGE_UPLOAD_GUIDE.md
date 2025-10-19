@@ -16,6 +16,7 @@
 7. **Image is automatically uploaded!**
 
 **Where images are stored:**
+
 - `backend/media/members/` folder
 - Django automatically creates this folder
 - Images are served at: `http://localhost:8000/media/members/filename.jpg`
@@ -32,6 +33,7 @@ If your image is already online (LinkedIn, GitHub, etc.):
 4. **Save**
 
 **Example URLs:**
+
 ```
 https://avatars.githubusercontent.com/u/12345678
 https://i.imgur.com/abc123.jpg
@@ -55,6 +57,7 @@ https://example.com/photos/john-doe.jpg
 ## 🖼️ Image Best Practices
 
 ### Recommended Specs:
+
 - **Format**: JPG or PNG
 - **Dimensions**: 400x400 pixels (square)
 - **File size**: Under 500KB
@@ -63,6 +66,7 @@ https://example.com/photos/john-doe.jpg
 ### How to Resize Images:
 
 **Windows:**
+
 1. Right-click image → "Edit with Photos"
 2. Click "Resize"
 3. Choose "Define custom dimensions"
@@ -70,6 +74,7 @@ https://example.com/photos/john-doe.jpg
 5. Save
 
 **Online Tool:**
+
 - https://www.iloveimg.com/resize-image
 - Upload, set to 400x400, download
 
@@ -83,6 +88,7 @@ The Member model has TWO image fields:
 2. **`image_url`** - For external URLs (CharField)
 
 **Priority:**
+
 - If `image` is uploaded → uses uploaded file
 - If `image` is empty → uses `image_url`
 - If both empty → no image shown
@@ -126,11 +132,14 @@ backend/
 ### Image not showing in React:
 
 **Check:**
+
 1. Is Django serving media files?
-   - Visit: `http://localhost:8000/media/members/` 
+
+   - Visit: `http://localhost:8000/media/members/`
    - You should see your uploaded images listed
 
 2. Is the image path correct?
+
    - In React, check browser console (F12)
    - Look for 404 errors on image URLs
 

@@ -8,7 +8,7 @@ Since you already have tables in your database, we need to add the `image` colum
 
 ```sql
 -- Add image column to members table
-ALTER TABLE members 
+ALTER TABLE members
 ADD COLUMN image VARCHAR(100) NULL;
 ```
 
@@ -30,6 +30,7 @@ psql -U postgres -d candelaria_db
 ```
 
 Then paste:
+
 ```sql
 ALTER TABLE members ADD COLUMN image VARCHAR(100) NULL;
 ```
@@ -43,6 +44,7 @@ Type `\q` to exit.
 ### 1. Delete the bad migration file:
 
 Delete this file:
+
 ```
 backend/api/migrations/0001_initial.py
 ```
@@ -69,6 +71,7 @@ python manage.py runserver
 Go to: http://localhost:8000/admin/api/member/add/
 
 You'll see:
+
 - **Image URL** field (for external URLs)
 - **Image** field (for uploading files) ✨
 
@@ -79,6 +82,7 @@ You'll see:
 If you don't want to run SQL, you can just use the `image_url` field that already exists!
 
 **Simply:**
+
 1. Upload image to https://imgur.com/ or https://imgbb.com/
 2. Copy the image URL
 3. Paste in `image_url` field in Django admin

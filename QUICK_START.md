@@ -9,6 +9,7 @@
 ```
 
 This will:
+
 - ✅ Activate Python virtual environment
 - ✅ Start Django backend at http://localhost:8000/
 - ✅ Start React frontend at http://localhost:5174/
@@ -35,12 +36,12 @@ npm run dev
 
 ## 🌐 Access Your Application
 
-| Service | URL | Purpose |
-|---------|-----|---------|
-| **React Frontend** | http://localhost:5174/ | Main website |
-| **React Teams Page** | http://localhost:5174/team | View teams and members |
-| **Django Admin** | http://localhost:8000/admin/ | Manage data |
-| **Django API** | http://localhost:8000/api/ | REST API endpoints |
+| Service              | URL                          | Purpose                |
+| -------------------- | ---------------------------- | ---------------------- |
+| **React Frontend**   | http://localhost:5174/       | Main website           |
+| **React Teams Page** | http://localhost:5174/team   | View teams and members |
+| **Django Admin**     | http://localhost:8000/admin/ | Manage data            |
+| **Django API**       | http://localhost:8000/api/   | REST API endpoints     |
 
 ---
 
@@ -54,6 +55,7 @@ http://localhost:8000/admin/
 ## 📝 Create Your First Team
 
 1. **Start the servers**:
+
    ```powershell
    .\start_dev.ps1
    ```
@@ -64,6 +66,7 @@ http://localhost:8000/admin/
 3. **Login** with your superuser credentials
 
 4. **Create a Team**:
+
    - Click "Teams" → "+ Add team"
    - Fill in:
      - `name_en`: "Executive Committee" (or any name in English)
@@ -71,6 +74,7 @@ http://localhost:8000/admin/
    - Click "SAVE"
 
 5. **Create a Member**:
+
    - Click "Members" → "+ Add member"
    - Fill in all fields:
      - `name`: Full name
@@ -104,6 +108,7 @@ Simply close the PowerShell windows or press `CTRL+C` in each terminal.
 If you get a port error:
 
 **For Django (port 8000)**:
+
 ```powershell
 # Kill the process using port 8000
 netstat -ano | findstr :8000
@@ -111,6 +116,7 @@ taskkill /PID <PID_NUMBER> /F
 ```
 
 **For React (port 5174)**:
+
 ```powershell
 # Kill the process using port 5174
 netstat -ano | findstr :5174
@@ -120,6 +126,7 @@ taskkill /PID <PID_NUMBER> /F
 ### "Module not found" or "Django not installed"
 
 Make sure the virtual environment is activated:
+
 ```powershell
 cd backend
 .\venv\Scripts\Activate.ps1
@@ -130,6 +137,7 @@ You should see `(venv)` at the beginning of your prompt.
 ### Database connection error
 
 Check `backend/.env` file has correct PostgreSQL credentials:
+
 ```
 DB_NAME=candelaria_db
 DB_USER=postgres
