@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { MemberCard } from './MemberCard';
+import { teamsAPI } from '../services/api';
 
 // ScrollButton component to avoid repetition
 const ScrollButton = ({ direction, onClick, className, ...props }) => (
@@ -26,50 +27,80 @@ const ScrollButton = ({ direction, onClick, className, ...props }) => (
 );
 
 export const Team = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Get all teams from i18n
-  const teamsData = t('teams', { returnObjects: true }) || {};
+  // Fetch teams from Django backend
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        setLoading(true);
+        const lang = i18n.language || 'en'; // Get current language (en/es)
+        const response = await teamsAPI.getAll(lang);
 
-  // Committee swiper logic
-  const committeeData = teamsData.committee?.members || {};
-  const committeeMembers = Object.values(committeeData).filter(
-    (member) => member && member.name && member.name.trim() !== ''
-  );
-  const committeeScrollRef = useRef(null);
+        // Fetch members for each team
+        const teamsWithMembers = await Promise.all(
+          response.data.map(async (team) => {
+            try {
+              const membersResponse = await teamsAPI.getMembers(team.id, lang);
+              return {
+                ...team,
+                members: membersResponse.data,
+              };
+            } catch (err) {
+              console.error(`Error fetching members for team ${team.id}:`, err);
+              return {
+                ...team,
+                members: [],
+              };
+            }
+          })
+        );
 
-  const committeeScrollLeft = () => {
-    if (committeeScrollRef.current) {
-      const cardWidth = committeeScrollRef.current.querySelector('div')?.offsetWidth || 0;
-      const gap = 16; // 1rem = 16px (gap-4)
-      const scrollAmount = cardWidth + gap;
-      committeeScrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-    }
-  };
-  const committeeScrollRight = () => {
-    if (committeeScrollRef.current) {
-      const cardWidth = committeeScrollRef.current.querySelector('div')?.offsetWidth || 0;
-      const gap = 16; // 1rem = 16px (gap-4)
-      const scrollAmount = cardWidth + gap;
-      committeeScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
+        setTeams(teamsWithMembers);
+      } catch (err) {
+        console.error('Error fetching teams:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeams();
+  }, [i18n.language]); // Re-fetch when language changes
+
+  if (loading) {
+    return (
+      <section id="teams" className="py-16 container min-h-[900px]">
+        <div className="text-center">
+          <p className="text-muted-foreground">Cargando equipos...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="teams" className="py-16 container min-h-[900px]">
+        <div className="text-center text-red-500">
+          <p>Error: {error}</p>
+          <p className="text-sm mt-2">
+            Asegúrate de que el servidor Django esté corriendo en http://localhost:8000
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="teams" className="py-16 container min-h-[900px]">
-      <h2 className="text-3xl font-bold text-center mb-8">Equipos</h2>
+      <h2 className="text-3xl font-bold text-center mb-8">{t('teams.title', 'Equipos')}</h2>
 
-      {Object.entries(teamsData).map(([teamKey, team]) => {
-        const membersObj = team.members || {};
-        const members = Array.isArray(membersObj)
-          ? membersObj
-          : Object.values(membersObj).filter(
-              (member) => member && member.name && member.name.trim() !== ''
-            );
-        const teamName = t(
-          `teams.${teamKey}.name`,
-          teamKey.charAt(0).toUpperCase() + teamKey.slice(1)
-        );
+      {teams.map((team) => {
+        const members = team.members || [];
+        const teamName = i18n.language === 'es' ? team.name_es : team.name_en;
         const scrollRef = useRef(null);
 
         const scrollLeft = () => {
@@ -90,7 +121,7 @@ export const Team = () => {
         };
 
         return (
-          <div key={teamKey} className="mb-16">
+          <div key={team.id} className="mb-16">
             <h3 className="text-2xl font-semibold text-center mb-6">{teamName}</h3>
             <div className="relative max-w-7xl mx-auto">
               <ScrollButton direction="left" onClick={scrollLeft} />
@@ -101,11 +132,8 @@ export const Team = () => {
                 style={{ scrollBehavior: 'smooth' }}
               >
                 {members.length > 0 ? (
-                  members.map((member, idx) => (
-                    <div
-                      key={`member-${teamKey}-${idx}`}
-                      className="flex-none w-[calc(33.333%-0.67rem)]"
-                    >
+                  members.map((member) => (
+                    <div key={member.id} className="flex-none w-[calc(33.333%-0.67rem)]">
                       <MemberCard member={member} />
                     </div>
                   ))

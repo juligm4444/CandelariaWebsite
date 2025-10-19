@@ -9,12 +9,12 @@ export const MemberCard = ({ member }) => {
 
   return (
     <div
-      className="w-96 h-[28rem] mx-4 [perspective:1000px]"
+      className="w-full h-[28rem] [perspective:1000px]"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
     >
       <div
-        className={`relative w-full h-full [transform-style:preserve-3d] transition-transform duration-1000 ease-in-out ${
+        className={`relative w-full h-full [transform-style:preserve-3d] transition-transform duration-700 ${
           isFlipped ? '[transform:rotateY(180deg)]' : ''
         }`}
       >
@@ -23,14 +23,14 @@ export const MemberCard = ({ member }) => {
           {/* Top section: image/initial */}
           <div className={`flex items-center justify-center ${topSectionColor} rounded-t-lg h-1/2`}>
             <div className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold text-primary bg-white shadow-lg">
-              {member?.image ? (
+              {member?.image_url ? (
                 <img
-                  src={member.image}
+                  src={member.image_url}
                   alt={member?.name || 'Miembro'}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                member?.name?.charAt(0) || '?'
+                member?.name?.charAt(0)?.toUpperCase() || '?'
               )}
             </div>
           </div>
@@ -44,7 +44,7 @@ export const MemberCard = ({ member }) => {
             <p className="text-sm text-muted-foreground text-center font-bold">
               {member?.role || 'Rol no disponible'}
             </p>
-            <p className="text-sm text-center leading-relaxed">
+            <p className="text-sm text-center leading-relaxed text-muted-foreground">
               {member?.charge || 'Cargo no disponible'}
             </p>
           </div>
@@ -52,9 +52,20 @@ export const MemberCard = ({ member }) => {
 
         {/* Back of card */}
         <div
-          className={`absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg ${topSectionColor} text-primary-foreground shadow-lg p-6 flex flex-col items-center justify-center`}
+          className={`absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg bg-card border border-border shadow-lg p-6 flex flex-col items-center justify-center text-center`}
         >
-          <h4 className="text-lg font-semibold mb-4 text-center">Responsabilidad</h4>
+          <h3 className="text-xl font-bold mb-4 text-foreground">{member?.name}</h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              <span className="font-semibold text-foreground">Rol:</span> {member?.role}
+            </p>
+            <p>
+              <span className="font-semibold text-foreground">Cargo:</span> {member?.charge}
+            </p>
+            <p>
+              <span className="font-semibold text-foreground">Carrera:</span> {member?.career}
+            </p>
+          </div>
         </div>
       </div>
     </div>
