@@ -22,6 +22,17 @@ class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
 
+    def list(self, request):
+        """List all teams"""
+        teams = self.get_queryset()
+        data = [team.to_dict() for team in teams]
+        return Response(data)
+
+    def retrieve(self, request, pk=None):
+        """Get a specific team"""
+        team = self.get_object()
+        return Response(team.to_dict())
+
     @action(detail=True, methods=['get'])
     def members(self, request, pk=None):
         """Get all members of a specific team"""

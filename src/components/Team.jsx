@@ -26,6 +26,58 @@ const ScrollButton = ({ direction, onClick, className, ...props }) => (
   </button>
 );
 
+// TeamSection component - separate component to properly use useRef hook
+const TeamSection = ({ team, language }) => {
+  const scrollRef = useRef(null);
+  const members = team.members || [];
+  const teamName = language === 'es' ? team.name_es : team.name_en;
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      const cardWidth = scrollRef.current.querySelector('div')?.offsetWidth || 0;
+      const gap = 16;
+      const scrollAmount = cardWidth + gap;
+      scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      const cardWidth = scrollRef.current.querySelector('div')?.offsetWidth || 0;
+      const gap = 16;
+      const scrollAmount = cardWidth + gap;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div className="mb-16">
+      <h3 className="text-2xl font-semibold text-center mb-6">{teamName}</h3>
+      <div className="relative max-w-7xl mx-auto">
+        <ScrollButton direction="left" onClick={scrollLeft} />
+        <ScrollButton direction="right" onClick={scrollRight} />
+        <div
+          ref={scrollRef}
+          className="flex overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden gap-4 py-4 px-12"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {members.length > 0 ? (
+            members.map((member) => (
+              <div key={member.id} className="flex-none w-[calc(33.333%-0.67rem)]">
+                <MemberCard member={member} />
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground w-full">
+              No hay miembros disponibles
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Team = () => {
   const { t, i18n } = useTranslation();
   const [teams, setTeams] = useState([]);
@@ -98,55 +150,9 @@ export const Team = () => {
     <section id="teams" className="py-16 container min-h-[900px]">
       <h2 className="text-3xl font-bold text-center mb-8">{t('teams.title', 'Equipos')}</h2>
 
-      {teams.map((team) => {
-        const members = team.members || [];
-        const teamName = i18n.language === 'es' ? team.name_es : team.name_en;
-        const scrollRef = useRef(null);
-
-        const scrollLeft = () => {
-          if (scrollRef.current) {
-            const cardWidth = scrollRef.current.querySelector('div')?.offsetWidth || 0;
-            const gap = 16; // 1rem = 16px (gap-4)
-            const scrollAmount = cardWidth + gap;
-            scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-          }
-        };
-        const scrollRight = () => {
-          if (scrollRef.current) {
-            const cardWidth = scrollRef.current.querySelector('div')?.offsetWidth || 0;
-            const gap = 16; // 1rem = 16px (gap-4)
-            const scrollAmount = cardWidth + gap;
-            scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-          }
-        };
-
-        return (
-          <div key={team.id} className="mb-16">
-            <h3 className="text-2xl font-semibold text-center mb-6">{teamName}</h3>
-            <div className="relative max-w-7xl mx-auto">
-              <ScrollButton direction="left" onClick={scrollLeft} />
-              <ScrollButton direction="right" onClick={scrollRight} />
-              <div
-                ref={scrollRef}
-                className="flex overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden gap-4 py-4 px-12"
-                style={{ scrollBehavior: 'smooth' }}
-              >
-                {members.length > 0 ? (
-                  members.map((member) => (
-                    <div key={member.id} className="flex-none w-[calc(33.333%-0.67rem)]">
-                      <MemberCard member={member} />
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center text-muted-foreground w-full">
-                    No hay miembros disponibles
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      {teams.map((team) => (
+        <TeamSection key={team.id} team={team} language={i18n.language} />
+      ))}
     </section>
   );
 };

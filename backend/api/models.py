@@ -5,6 +5,8 @@ class Team(models.Model):
     """Team model representing different teams in the project"""
     name_en = models.CharField(max_length=100, unique=True)
     name_es = models.CharField(max_length=100, unique=True)
+    image_url = models.CharField(max_length=300, null=True, blank=True)
+    image = models.ImageField(upload_to='teams/', null=True, blank=True)
 
     class Meta:
         db_table = 'teams'
@@ -15,10 +17,14 @@ class Team(models.Model):
 
     def to_dict(self):
         """Return team data as dictionary"""
+        # Use uploaded image if available, otherwise fall back to image_url
+        team_image = self.image.url if self.image else self.image_url
+        
         return {
             'id': self.id,
             'name_en': self.name_en,
-            'name_es': self.name_es
+            'name_es': self.name_es,
+            'image_url': team_image
         }
 
 

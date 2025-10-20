@@ -20,14 +20,23 @@ export const MemberCard = ({ member }) => {
       >
         {/* Front of card */}
         <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-lg border border-border shadow-lg flex flex-col">
-          {/* Top section: image/initial */}
+          {/* Top section: image */}
           <div className={`flex items-center justify-center ${topSectionColor} rounded-t-lg h-1/2`}>
-            <div className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold text-primary bg-white shadow-lg">
+            <div className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-bold text-primary bg-white shadow-lg overflow-hidden">
               {member?.image_url ? (
                 <img
-                  src={member.image_url}
+                  src={
+                    member.image_url.startsWith('http')
+                      ? member.image_url
+                      : `http://localhost:8000${member.image_url}`
+                  }
                   alt={member?.name || 'Miembro'}
-                  className="w-full h-full rounded-full object-cover"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.textContent =
+                      member?.name?.charAt(0)?.toUpperCase() || '?';
+                  }}
                 />
               ) : (
                 member?.name?.charAt(0)?.toUpperCase() || '?'
@@ -42,6 +51,9 @@ export const MemberCard = ({ member }) => {
               {member?.name || 'Nombre no disponible'}
             </h3>
             <p className="text-sm text-muted-foreground text-center font-bold">
+              {member?.career || 'Carrera no disponible'}
+            </p>
+            <p className="text-sm text-center leading-relaxed text-muted-foreground">
               {member?.role || 'Rol no disponible'}
             </p>
             <p className="text-sm text-center leading-relaxed text-muted-foreground">
@@ -50,22 +62,11 @@ export const MemberCard = ({ member }) => {
           </div>
         </div>
 
-        {/* Back of card */}
+        {/* Back of card - Empty for now */}
         <div
           className={`absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-lg bg-card border border-border shadow-lg p-6 flex flex-col items-center justify-center text-center`}
         >
-          <h3 className="text-xl font-bold mb-4 text-foreground">{member?.name}</h3>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              <span className="font-semibold text-foreground">Rol:</span> {member?.role}
-            </p>
-            <p>
-              <span className="font-semibold text-foreground">Cargo:</span> {member?.charge}
-            </p>
-            <p>
-              <span className="font-semibold text-foreground">Carrera:</span> {member?.career}
-            </p>
-          </div>
+          {/* Back content will be added later */}
         </div>
       </div>
     </div>
