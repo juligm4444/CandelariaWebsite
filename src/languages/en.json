@@ -19,12 +19,32 @@
     "text": "Our mission is to build a fully functional solar car capable of competing in the Australian challenge."
   },
   "register": {
-    "title": "Sign Up",
-    "email": "Email Address",
-    "password": "Create Password",
-    "confirmation": "Confirm Password",
-    "button": "Create Account",
-    "question": "Already have an account?",
-    "login": "Log In"
+    "title": "Create your account",
+    "email": "Email address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "nameEn": "Full Name (English)",
+    "nameEs": "Full Name (Spanish)",
+    "team": "Team",
+    "selectTeam": "Select a team",
+    "career": "Career",
+    "role": "Role",
+    "charge": "Charge",
+    "imageUrl": "Profile Image URL",
+    "create": "Create account",
+    "creating": "Creating account...",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Sign in"
+  },
+  "login": {
+    "title": "Sign in to your account",
+    "email": "Email address",
+    "emailPlaceholder": "Email address",
+    "password": "Password",
+    "passwordPlaceholder": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Register here"
   }
 }

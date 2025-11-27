@@ -1,0 +1,16 @@
+# Allowed Emails for Candelaria Solar Car Team Registration
+# Only emails listed here can create accounts
+# Format: one email per line
+# Lines starting with # are comments
+
+# Team Leaders
+guillermo.jimenez@example.com
+julia.galindo@example.com
+
+# Team Members
+john.doe@example.com
+jane.smith@example.com
+carlos.rodriguez@example.com
+maria.garcia@example.com
+
+# Add new member emails below:

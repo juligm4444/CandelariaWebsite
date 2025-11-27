@@ -343,5 +343,34 @@
         "description3": "Ajustar proporciones y materiales para lograr un equilibrio entre estética y funcionalidad."
       }
     }
+  },
+  "register": {
+    "title": "Crea tu cuenta",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "nameEn": "Nombre Completo (Inglés)",
+    "nameEs": "Nombre Completo (Español)",
+    "team": "Equipo",
+    "selectTeam": "Selecciona un equipo",
+    "career": "Carrera",
+    "role": "Rol",
+    "charge": "Cargo",
+    "imageUrl": "URL de Imagen de Perfil",
+    "create": "Crear cuenta",
+    "creating": "Creando cuenta...",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "loginLink": "Iniciar sesión"
+  },
+  "login": {
+    "title": "Inicia sesión en tu cuenta",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "Correo electrónico",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Contraseña",
+    "signIn": "Iniciar sesión",
+    "signingIn": "Iniciando sesión...",
+    "noAccount": "¿No tienes una cuenta?",
+    "registerLink": "Regístrate aquí"
   }
 }

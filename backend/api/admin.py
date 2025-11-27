@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Team, Member, Admin, Publication, RedSocial
+from .models import Team, Member, Publication, RedSocial
 
 
 @admin.register(Team)
@@ -10,15 +10,10 @@ class TeamAdmin(admin.ModelAdmin):
 
 @admin.register(Member)
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'role_en', 'team']
-    list_filter = ['team']
-    search_fields = ['name', 'role_en', 'role_es']
-
-
-@admin.register(Admin)
-class AdminModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'email', 'member']
-    search_fields = ['email', 'member__name']
+    list_display = ['id', 'name', 'email', 'role_en', 'team', 'is_team_leader', 'is_active']
+    list_filter = ['team', 'is_team_leader', 'is_active']
+    search_fields = ['name', 'email', 'role_en', 'role_es']
+    list_editable = ['is_team_leader', 'is_active']
 
 
 @admin.register(Publication)
