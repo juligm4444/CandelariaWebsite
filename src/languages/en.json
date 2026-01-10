@@ -1,30 +1,142 @@
 {
   "navbar": {
-    "name": "Candelaria",
+    "name": "CANDELARIA",
     "home": "Home",
-    "about": "About",
-    "lines": "Lines",
+    "teams": "Teams",
     "publications": "Publications",
-    "projects": "Projects",
-    "teams": "Team",
-    "contact": "Contact"
+    "about": "About Us",
+    "login": "Log In"
   },
   "hero": {
-    "title": "Candelaria Solar Car",
-    "subtitle": "Interdisciplinary research focused on innovation, impact, and global outreach.",
-    "cta": "Explore Our Work"
+    "title": "CANDELARIA",
+    "subtitle": "Solar Vehicle Project",
+    "quote": "Defy the limits of the",
+    "quoteEmphasize": "sun",
+    "description": "A student-led solar vehicle project focused on a",
+    "descriptionEmphasize": "sustainable future",
+    "meetUsButton": "Meet Us",
+    "scrollDown": "Scroll Down",
+    "joinTitle": "Join Our Community",
+    "joinText": "Be part of the future of sustainable transportation",
+    "joinButton": "Register Now"
   },
   "mission": {
-    "title": "Mission",
-    "text": "Our mission is to build a fully functional solar car capable of competing in the Australian challenge."
+    "title": "Our Mission",
+    "description": "We are dedicated to advancing sustainable transportation through innovative solar vehicle technology, fostering engineering excellence, and inspiring the next generation of clean energy pioneers.",
+    "innovation": {
+      "title": "Innovation",
+      "text": "Pushing the boundaries of solar vehicle technology through creative engineering solutions and cutting-edge research."
+    },
+    "sustainability": {
+      "title": "Sustainability",
+      "text": "Committed to developing environmentally friendly transportation alternatives that reduce carbon emissions and promote clean energy."
+    },
+    "education": {
+      "title": "Education",
+      "text": "Providing hands-on learning experiences that prepare students for careers in sustainable engineering and renewable energy technologies."
+    }
   },
-  "register": {
-    "title": "Sign Up",
-    "email": "Email Address",
-    "password": "Create Password",
-    "confirmation": "Confirm Password",
-    "button": "Create Account",
-    "question": "Already have an account?",
-    "login": "Log In"
+  "teams": {
+    "title": "Our Teams",
+    "description": "Candelaria is divided in 7 different teams. Each one of them plays a crucial role in the project.",
+    "committee": {
+      "name": "Committee",
+      "description": "Project leadership and strategic direction",
+      "function1": "Strategic planning and decision making",
+      "function2": "Project oversight and coordination", 
+      "function3": "Resource allocation and management"
+    },
+    "logistics": {
+      "name": "Logistics",
+      "description": "Operations and human resources management",
+      "function1": "Supply chain management",
+      "function2": "Transportation coordination",
+      "function3": "Event planning and execution"
+    },
+    "hr": {
+      "name": "Human Resources", 
+      "function1": "Team member recruitment",
+      "function2": "Training and development",
+      "function3": "Team culture and engagement"
+    },
+    "design": {
+      "name": "Design",
+      "description": "Vehicle design and aesthetics",
+      "function1": "Vehicle aerodynamics optimization",
+      "function2": "Structural design and analysis",
+      "function3": "CAD modeling and prototyping"
+    },
+    "cells": {
+      "name": "Cells",
+      "description": "Solar panel and energy systems",
+      "function1": "Solar panel integration", 
+      "function2": "Energy efficiency optimization",
+      "function3": "Battery management systems"
+    },
+    "comtrac": {
+      "name": "ComTrac",
+      "description": "Communication and tracking systems",
+      "function1": "Communication systems",
+      "function2": "Telemetry and tracking",
+      "function3": "Race strategy coordination"
+    },
+    "mechanics": {
+      "name": "Mechanics & Fairing",
+      "description": "Mechanical engineering and vehicle assembly",
+      "function1": "Mechanical systems assembly",
+      "function2": "Vehicle maintenance and repair", 
+      "function3": "Body construction and finishing"
+    },
+    "electronics": {
+      "name": "Electronics",
+      "description": "Electrical systems and control"
+    },
+    "memberCount": "{{count}} Members",
+    "viewTeam": "View Team"
+  },
+  "sponsors": {
+    "title": "Our Sponsors",
+    "logoAlt": "Sponsor Logo",
+    "imageAlt": "Sponsor Image"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "socialDescription": "If you are interested in the project or want to know more about it, feel free to contact us. Also, you can check our social media accounts where we post the most important information about the project.",
+    "description": "Have questions about our solar vehicle project? Want to join our team or support our mission? We'd love to hear from you!",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter a valid email address",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Enter your message",
+    "submitButton": "Send",
+    "successMessage": "Thank you for your message! We'll get back to you soon.",
+    "errorMessage": "Sorry, there was an error sending your message. Please try again."
+  },
+  "supportUs": {
+    "description": "At the moment, Candelaria project has only being sponsored by the Universidad de los Andes and the effort of its members. But if you are interested in sponsor or support the project to participate in upcoming solar vehicle competitions, clicking the following button, you will be redirected to a payment gateway where you can voluntarily give a monetary support to the project:",
+    "button": "Support Us",
+    "imagePlaceholder": "Support Image"
+  },
+  "about": {
+    "titleMain": "What drives Candelaria:",
+    "collaboration": "Interdisciplinary collaboration",
+    "collaborationText": "to design and build a high-performance solar vehicle.",
+    "research": "Research and knowledge generation",
+    "researchText": "in solar mobility, shared through publications and education.",
+    "excellence": "Design excellence and real-world performance",
+    "excellenceText": "validated through testing and international competitions.",
+    "imagePlaceholder": "Solar Vehicle Image",
+    "imageDescription": "Our latest solar vehicle prototype"
+  },
+  "footer": {
+    "rights": "All rights Reserved to Candelaria",
+    "socialMedia": "Follow us on social media"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "tryAgain": "Try Again",
+    "close": "Close"
   }
 }

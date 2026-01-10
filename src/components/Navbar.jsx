@@ -1,92 +1,63 @@
-import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { ThemeToggle } from './ThemeToggle';
-import { LanguageToggle } from './LanguageToggle';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-
-const links = [
-  { k: 'home', href: '/', isRoute: true },
-  { k: 'lines', href: '#lines' },
-  { k: 'publications', href: '#publications' },
-  { k: 'projects', href: '#projects' },
-  { k: 'teams', href: '/team', isRoute: true },
-  { k: 'contact', href: '#contact' },
-];
+import { useTranslation } from 'react-i18next';
+import MainLogo from '../assets/images/MainLogo.png';
 
 export const Navbar = () => {
-  const { t } = useTranslation();
-  const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'es' : 'en';
+    i18n.changeLanguage(newLang);
+  };
 
   return (
-    <nav
-      className={`fixed top-0 w-full z-40 transition-all ${
-        scrolled ? 'bg-background/80 backdrop-blur border-b border-border' : ''
-      }`}
-      style={{ height: '5.5rem' }} // Increased height
-    >
-      <div className="container flex items-center justify-between py-6" /* Increased py */>
-        <img src="src/assets/images/MainLogo.png" alt="Logo" className="h-50 w-50 mr-3" />
-
-        <div className="hidden md:flex gap-6 items-center">
-          {links.map((l, idx) =>
-            l.isRoute ? (
-              <Link key={l.k} to={l.href} className="text-sm hover:text-primary transition">
-                {t(`navbar.${l.k}`)}
-              </Link>
-            ) : (
-              <a key={l.k} href={l.href} className="text-sm hover:text-primary transition">
-                {t(`navbar.${l.k}`)}
-              </a>
-            )
-          )}
-          <LanguageToggle />
-          <ThemeToggle />
+    <nav className="w-full bg-gray-100 border-b border-black px-8 py-2">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
+        {/* Logo - stays on left */}
+        <div className="flex items-center">
+          <img 
+            src={MainLogo} 
+            alt="Candelaria Logo" 
+            className="h-8 w-auto object-contain"
+          />
         </div>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="md:hidden p-2"
-          aria-label="Toggle menu"
-        >
-          {open ? <X /> : <Menu />}
-        </button>
+        
+        {/* All other elements aligned to the right */}
+        <div className="flex items-center space-x-8">
+          {/* Navigation Links */}
+          <Link to="/" className="text-black text-base font-medium hover:text-gray-600 transition-colors">
+            {t('navbar.home')}
+          </Link>
+          <Link to="/team" className="text-black text-base font-medium hover:text-gray-600 transition-colors">
+            {t('navbar.teams')}
+          </Link>
+          <a href="#publications" className="text-black text-base font-medium hover:text-gray-600 transition-colors">
+            {t('navbar.publications')}
+          </a>
+          <a href="#about" className="text-black text-base font-medium hover:text-gray-600 transition-colors">
+            {t('navbar.about')}
+          </a>
+          
+          {/* Controls */}
+          <button 
+            onClick={toggleLanguage}
+            className="border border-black px-2 py-1 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
+          >
+            {i18n.language === 'en' ? 'EN' : 'ES'}
+          </button>
+          
+          <button className="p-1 hover:bg-gray-200 rounded-full transition-colors">
+            <svg width="18" height="17" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 0L12.5 7.5L20 10L12.5 12.5L10 19L7.5 12.5L0 10L7.5 7.5L10 0Z" fill="black"/>
+            </svg>
+          </button>
+          
+          <button className="border border-black px-3 py-1 rounded-lg text-black text-sm font-medium hover:bg-gray-200 transition-colors">
+            {t('navbar.login')}
+          </button>
+        </div>
       </div>
-      {open && (
-        <div className="md:hidden flex flex-col gap-4 px-6 pb-6">
-          {links.map((l, idx) =>
-            l.isRoute ? (
-              <Link
-                key={l.k}
-                to={l.href}
-                onClick={() => setOpen(false)}
-                className="border-b border-border pb-2"
-              >
-                {t(`navbar.${l.k}`)}
-              </Link>
-            ) : (
-              <a
-                key={l.k}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="border-b border-border pb-2"
-              >
-                {t(`navbar.${l.k}`)}
-              </a>
-            )
-          )}
-          <div className="flex gap-4">
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
-        </div>
-      )}
     </nav>
   );
 };

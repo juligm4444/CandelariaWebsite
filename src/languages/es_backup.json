@@ -1,0 +1,424 @@
+{
+  "navbar": {
+    "name": "CANDELARIA",
+    "home": "Inicio",
+    "teams": "Equipos",
+    "publications": "Publicaciones",
+    "about": "Acerca de",
+    "login": "Iniciar Sesión"
+  },
+  "hero": {
+    "title": "CANDELARIA",
+    "subtitle": "Proyecto de Vehículo Solar",
+    "tagline": "Desafía los límites del sol",
+    "description": "Un proyecto estudiantil de vehículo solar enfocado en un futuro sostenible.",
+    "scrollDown": "Desplazar Abajo",
+    "joinTitle": "Únete a Nuestra Comunidad",
+    "joinText": "Sé parte del futuro del transporte sostenible",
+    "joinButton": "Regístrate Ahora"
+  },
+  "mission": {
+    "title": "Nuestra Misión",
+    "description": "Estamos dedicados a avanzar en el transporte sostenible a través de tecnología innovadora de vehículos solares, fomentando la excelencia en ingeniería e inspirando a la próxima generación de pioneros de energía limpia.",
+    "innovation": {
+      "title": "Innovación",
+      "text": "Empujando los límites de la tecnología de vehículos solares a través de soluciones creativas de ingeniería e investigación de vanguardia."
+    },
+    "sustainability": {
+      "title": "Sostenibilidad",
+      "text": "Comprometidos con el desarrollo de alternativas de transporte amigables con el medio ambiente que reduzcan las emisiones de carbono y promuevan la energía limpia."
+    },
+    "education": {
+      "title": "Educación",
+      "text": "Proporcionando experiencias de aprendizaje práctico que preparan a los estudiantes para carreras en ingeniería sostenible y tecnologías de energía renovable."
+    }
+  },
+  "teams": {
+    "title": "Nuestros Equipos",
+    "description": "Conoce los equipos dedicados que hacen posible nuestro proyecto de vehículo solar.",
+    "committee": {
+      "name": "Comité",
+      "description": "Liderazgo del proyecto y dirección estratégica"
+    },
+    "logistics": {
+      "name": "Logística y RH",
+      "description": "Gestión de operaciones y recursos humanos"
+    },
+    "design": {
+      "name": "Diseño",
+      "description": "Diseño del vehículo y estética"
+    },
+    "cells": {
+      "name": "Celdas",
+      "description": "Paneles solares y sistemas de energía"
+    },
+    "comtrac": {
+      "name": "ComTrac",
+      "description": "Sistemas de comunicación y rastreo"
+    },
+    "mechanics": {
+      "name": "Mecánica",
+      "description": "Ingeniería mecánica y ensamblaje del vehículo"
+    },
+    "electronics": {
+      "name": "Electrónica",
+      "description": "Sistemas eléctricos y control"
+    },
+    "memberCount": "{{count}} Miembros",
+    "viewTeam": "Ver Equipo"
+  },
+  "sponsors": {
+    "title": "Nuestros Patrocinadores",
+    "logoAlt": "Logo del Patrocinador",
+    "imageAlt": "Imagen del Patrocinador"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "description": "¿Tienes preguntas sobre nuestro proyecto de vehículo solar? ¿Quieres unirte a nuestro equipo o apoyar nuestra misión? ¡Nos encantaría saber de ti!",
+    "nameLabel": "Nombre Completo",
+    "namePlaceholder": "Ingresa tu nombre completo",
+    "emailLabel": "Dirección de Correo",
+    "emailPlaceholder": "Ingresa tu dirección de correo",
+    "messageLabel": "Mensaje",
+    "messagePlaceholder": "Cuéntanos sobre tu interés en nuestro proyecto...",
+    "submitButton": "Enviar Mensaje",
+    "successMessage": "¡Gracias por tu mensaje! Te responderemos pronto.",
+    "errorMessage": "Lo sentimos, hubo un error al enviar tu mensaje. Por favor intenta de nuevo."
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados a Candelaria",
+    "socialMedia": "Síguenos en redes sociales"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "tryAgain": "Intentar de Nuevo",
+    "close": "Cerrar"
+  },
+  "teams": {
+    "Comité": {
+      "members": {
+        "member1": {
+          "name": "Guillermo Jimenez",
+          "role": "Profesor Asesor",
+          "charge": "Director del Departamento de Ingeniería Eléctrica y Electrónica.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Juan Pablo Casas",
+          "role": "Profesor Asesor",
+          "charge": "Profesor Asociado del Departamento de Ingeniería Mecánica.",
+          "image": ""
+        },
+        "member3": {
+          "name": "Diego Rojas",
+          "role": "Miembro del Comité",
+          "charge": "Estudiante de Maestría en Ingeniería Eléctrica.",
+          "image": ""
+        },
+        "member4": {
+          "name": "Juan David Bolivar",
+          "role": "Líder del Comité Ejecutivo",
+          "charge": "Ingeniero Eléctrico.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Warley Sequeda",
+          "role": "Miembro del Comité",
+          "charge": "Asesor.",
+          "image": ""
+        },
+        "member6": {
+          "name": "Esteban Cardona",
+          "role": "Miembro del Comité",
+          "charge": "Asesor de Baterías.",
+          "image": ""
+        },
+        "member7": {
+          "name": "Juan David Gutierrez",
+          "role": "Miembro del Comité",
+          "charge": "Estudiante de Ingeniería Industrial.",
+          "image": ""
+        },
+        "member8": {
+          "name": "Juliana Pérez",
+          "role": "Miembro del Comité",
+          "charge": "Estudiante de Administración de Empresas.",
+          "image": ""
+        }
+      },
+      "objectives": {
+        "objective1": "Supervisar el progreso del proyecto: ",
+        "description1": "Asegurar que cada área avance conforme al cronograma y los estándares de calidad definidos.",
+        "objective2": "Tomar decisiones estratégicas: ",
+        "description2": "Guiar la dirección general del proyecto mediante una gestión efectiva y colaborativa.",
+        "objective3": "Representar al equipo: ",
+        "description3": "Actuar como enlace principal entre el proyecto, la universidad y entidades externas."
+      }
+    },
+    "Logística": {
+      "members": {
+        "member1": {
+          "name": "Juan David Gutierrez",
+          "role": "Líder del Equipo de Logística",
+          "charge": "Estudiante de Ingeniería Industrial.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Alejandra Villareal",
+          "role": "Miembro del Equipo de Logística",
+          "charge": "Estudiante de Ingeniería Industrial.",
+          "image": ""
+        },
+        "member3": {
+          "name": "Mariana Vanegas",
+          "role": "Miembro del Equipo de Logística",
+          "charge": "Estudiante de Ingeniería Industrial.",
+          "image": ""
+        },
+        "member4": {
+          "name": "Andrés David Serrano",
+          "role": "Miembro del Equipo de Logística",
+          "charge": "Estudiante de Economía y Administración de Empresas.",
+          "image": ""
+        }
+      },
+      "objectives": {
+        "objective1": "Coordinar recursos y materiales: ",
+        "description1": "Garantizar la disponibilidad y correcta distribución de insumos para todos los equipos.",
+        "objective2": "Gestionar inventarios y finanzas: ",
+        "description2": "Mantener el control de compras, documentación y gastos internos del proyecto.",
+        "objective3": "Promover la mejora continua:",
+        "description3": "Optimizar los procesos logísticos para incrementar la eficiencia del grupo."
+      }
+    },
+    "Recursos Humanos": {
+      "members": {
+        "member1": {
+          "name": "Juliana Perez",
+          "role": "Líder del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Administración de Empresas.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Paula Castañeda",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Lenguas y Cultura.",
+          "image": ""
+        },
+        "member3": {
+          "name": "Estefanía Durán",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Psicología.",
+          "image": ""
+        },
+        "member4": {
+          "name": "Santiago Varón",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Ingeniería Industrial.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Ana María Castrillón",
+          "role": "Miembro del Equipo de Recursos Humanos",
+          "charge": "Estudiante de Administración de Empresas.",
+          "image": ""
+        }
+      },
+      "objectives": {
+        "objective1": "Fomentar el bienestar y cohesión del equipo: ",
+        "description1": "Cuidar y fortalecer el talento humano del proyecto.",
+        "objective2": "Desarrollar sistemas de apoyo y seguimiento: ",
+        "description2": "Acompañar al grupo mediante herramientas que impulsen el crecimiento personal y profesional.",
+        "objective3": "Promover la comunicación y el reconocimiento: ",
+        "description3": "Asegurar la visibilidad interna y valorar los logros individuales y colectivos."
+      }
+    },
+    "Diseño": {
+      "members": {
+        "member1": {
+          "name": "Mariana Silva Torres",
+          "role": "Líder del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Natalia Yunda",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
+        },
+        "member3": {
+          "name": "Maira Lucia Duarte",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
+        },
+        "member4": {
+          "name": "Julián Galindo",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Valeria Marulanda",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
+        },
+        "member6": {
+          "name": "María Gabriel Mosquera",
+          "role": "Miembro del Equipo de Diseño",
+          "charge": "Estudiante de Diseño.",
+          "image": ""
+        }
+      },
+      "objectives": {
+        "objective1": "Definición de la estética interna y externa del vehículo: ",
+        "description1": "Desarrollo de un concepto visual innovador y funcional que asegure la armonía entre el diseño, la ingeniería y la identidad del proyecto.",
+        "objective2": "Creación de uniformes: ",
+        "description2": "Diseño de vestimenta que refuerce la imagen institucional y fortalezca la cohesión del equipo.",
+        "objective3": "Creación de piezas gráficas para la identidad grupal: ",
+        "description3": "Producción de materiales visuales que permitan una comunicación clara, impactante y consistente para el proyecto Candelaria."
+      }
+    },
+    "Celdas": {
+      "members": {
+        "member1": {
+          "name": "Cristian Gonzalez",
+          "role": "Líder del Equipo de Celdas",
+          "charge": "Estudiante de Ingeniería Eléctrica y Electrónica.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Jacobo Cerón",
+          "role": "Miembro del Equipo de Celdas.",
+          "charge": "",
+          "image": ""
+        },
+        "member3": {
+          "name": "María Fernanda Gonzalez",
+          "role": "Miembro del Equipo de Celdas.",
+          "charge": "",
+          "image": ""
+        },
+        "member4": {
+          "name": "Andrés Manrique",
+          "role": "Miembro del Equipo de Celdas.",
+          "charge": "Estudiante de Maestría en Ingeniería Electrónica.",
+          "image": ""
+        }
+      },
+      "objectives": {
+        "objective1": "Optimizar la gestión energética: ",
+        "description1": "Diseñar e implementar un sistema inteligente de control y administración de energía.",
+        "objective2": "Seleccionar y evaluar componentes solares: ",
+        "description2": "Escoger paneles y baterías que maximicen la eficiencia del vehículo.",
+        "objective3": "Simular escenarios de operación: ",
+        "description3": "Analizar el desempeño energético bajo distintas condiciones de funcionamiento."
+      }
+    },
+    "Comunicación y Tracción": {
+      "members": {
+        "member1": {
+          "name": "Santiago León",
+          "role": "Líder del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Maestría en Ingeniería Electrónica.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Andrés Pérez",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica y Mecánica.",
+          "image": ""
+        },
+        "member3": {
+          "name": "Andrés Barbosa",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
+          "image": ""
+        },
+        "member4": {
+          "name": "María Lucía Navas",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Samuel Luque",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
+          "image": ""
+        },
+        "member6": {
+          "name": "Bryam Campuzano",
+          "role": "Miembro del Equipo de Comunicaciones y Tracción",
+          "charge": "Estudiante de Ingeniería Electrónica.",
+          "image": ""
+        }
+      },
+      "objectives": {
+        "objective1": "Diseñar e implementar sistemas de comunicación: ",
+        "description1": "Integrar hardware y software para la adquisición y procesamiento de datos.",
+        "objective2": "Optimizar el rendimiento motriz: ",
+        "description2": "Seleccionar y evaluar motores y baterías mediante pruebas de desempeño.",
+        "objective3": "Validar el funcionamiento integral del vehículo:",
+        "description3": "Asegurar que todos los sistemas operen de forma eficiente y coordinada."
+      }
+    },
+    "Mecánica y Carenado": {
+      "members": {
+        "member1": {
+          "name": "Diego Rojas",
+          "role": "Líder del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Maestría en Ingeniería Eléctrica.",
+          "image": ""
+        },
+        "member2": {
+          "name": "Nicolás Ortiz",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica",
+          "image": ""
+        },
+        "member3": {
+          "name": "Jerónimo Suárez",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
+        },
+        "member4": {
+          "name": "María Esteban Aristizaba",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
+        },
+        "member5": {
+          "name": "Daniel José Carrascal",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
+        },
+        "member6": {
+          "name": "Juan Bonilla",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Estudiante de Ingeniería Mecánica.",
+          "image": ""
+        },
+        "member7": {
+          "name": "Carlos Felipe Ramos",
+          "role": "Miembro del Equipo de Mecánica y Carenado",
+          "charge": "Ingeniero Mecánico.",
+          "image": ""
+        }
+      },
+      "objectives": {
+        "objective1": "Diseñar una estructura segura y eficiente: ",
+        "description1": "Desarrollar el chasis y la carrocería con criterios de resistencia y ligereza.",
+        "objective2": "Optimizar la aerodinámica del vehículo: ",
+        "description2": "Analizar y validar el flujo de aire para maximizar la eficiencia y el rendimiento.",
+        "objective3": "Perfeccionar la superficie y forma del carenado: ",
+        "description3": "Ajustar proporciones y materiales para lograr un equilibrio entre estética y funcionalidad."
+      }
+    }
+  }
+}
