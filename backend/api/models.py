@@ -29,8 +29,10 @@ class Team(models.Model):
 
 
 class Member(models.Model):
-    """Member model representing team members"""
+    """Member model representing team members with authentication"""
     name = models.CharField(max_length=200)
+    email = models.EmailField(max_length=200, unique=True, null=True, blank=True)
+    password_hash = models.CharField(max_length=255, null=True, blank=True)
     career_en = models.CharField(max_length=200)
     career_es = models.CharField(max_length=200)
     role_en = models.CharField(max_length=100)
@@ -38,7 +40,10 @@ class Member(models.Model):
     charge_en = models.CharField(max_length=200)
     charge_es = models.CharField(max_length=200)
     image_url = models.CharField(max_length=300, null=True, blank=True)
-    image = models.ImageField(upload_to='members/', null=True, blank=True)  # For file uploads
+    image = models.ImageField(upload_to='members/', null=True, blank=True)
+    is_team_leader = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
@@ -53,12 +58,26 @@ class Member(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self, language='en'):
+    def set_password(self, raw_password):
+        """Hash password using bcrypt"""
+        import bcrypt
+        salt = bcrypt.gensalt(rounds=12)
+        self.password_hash = bcrypt.hashpw(raw_password.encode('utf-8'), salt).decode('utf-8')
+
+    def check_password(self, raw_password):
+        """Verify password against hash"""
+        import bcrypt
+        return bcrypt.checkpw(
+            raw_password.encode('utf-8'),
+            self.password_hash.encode('utf-8')
+        )
+
+    def to_dict(self, language='en', include_email=False):
         """Return member data as dictionary for specified language"""
         # Use uploaded image if available, otherwise fall back to image_url
         image_url = self.image.url if self.image else self.image_url
         
-        return {
+        data = {
             'id': self.id,
             'name': self.name,
             'career': self.career_en if language == 'en' else self.career_es,
@@ -66,83 +85,32 @@ class Member(models.Model):
             'charge': self.charge_en if language == 'en' else self.charge_es,
             'image_url': image_url,
             'team_id': self.team.id,
-            'team_name': self.team.name_en if language == 'en' else self.team.name_es
+            'team_name': self.team.name_en if language == 'en' else self.team.name_es,
+            'is_team_leader': self.is_team_leader
         }
-
-
-class Admin(models.Model):
-    """Admin model for team leaders who can login and manage content"""
-    member = models.OneToOneField(
-        Member,
-        on_delete=models.CASCADE,
-        related_name='admin_profile',
-        db_column='member_id'
-    )
-    email = models.EmailField(max_length=200, unique=True)
-    password_hash = models.CharField(max_length=255)
-    # Note: No separate salt field needed! Bcrypt stores salt within the hash
-
-    class Meta:
-        db_table = 'admins'
-        ordering = ['id']
-
-    def __str__(self):
-        return f"Admin: {self.email}"
-
-    def to_dict(self):
-        """Return admin data as dictionary"""
-        return {
-            'id': self.id,
-            'member_id': self.member.id,
-            'member_name': self.member.name,
-            'email': self.email
-        }
-
-    def set_password(self, password):
-        """
-        Hash a password using bcrypt and store it.
-        Bcrypt automatically generates a unique salt for each password.
         
-        Usage:
-            admin = Admin(member=member, email='test@example.com')
-            admin.set_password('mypassword')
-            admin.save()
-        """
-        import bcrypt
-        # bcrypt requires bytes
-        password_bytes = password.encode('utf-8')
-        # Generate salt and hash (salt is included in the hash)
-        salt = bcrypt.gensalt(rounds=12)  # rounds=12 is good balance of security/speed
-        hashed = bcrypt.hashpw(password_bytes, salt)
-        # Store as string
-        self.password_hash = hashed.decode('utf-8')
-
-    def check_password(self, password):
-        """
-        Check if the provided password matches the stored bcrypt hash.
-        Bcrypt automatically extracts the salt from the stored hash.
-        
-        Returns:
-            bool: True if password matches, False otherwise
+        # Only include email for authenticated requests
+        if include_email:
+            data['email'] = self.email
             
-        Usage:
-            if admin.check_password('mypassword'):
-                # Login successful
-        """
-        import bcrypt
-        password_bytes = password.encode('utf-8')
-        hash_bytes = self.password_hash.encode('utf-8')
-        return bcrypt.checkpw(password_bytes, hash_bytes)
+        return data
 
 
 class Publication(models.Model):
     """Publication model for team publications and posts"""
-    title_en = models.CharField(max_length=300, unique=True)
-    title_es = models.CharField(max_length=300, unique=True)
+    title_en = models.CharField(max_length=300)
+    title_es = models.CharField(max_length=300)
     content_en = models.TextField()
     content_es = models.TextField()
-    publication_date = models.DateField()
+    publication_date = models.DateField(auto_now_add=True)
     image_url = models.CharField(max_length=500, null=True, blank=True)
+    author = models.ForeignKey(
+        Member,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='publications',
+        db_column='author_id'
+    )
     team = models.ForeignKey(
         Team,
         on_delete=models.SET_NULL,
@@ -151,6 +119,8 @@ class Publication(models.Model):
         related_name='publications',
         db_column='team_id'
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'publications'
@@ -167,8 +137,12 @@ class Publication(models.Model):
             'content': self.content_en if language == 'en' else self.content_es,
             'publication_date': self.publication_date.isoformat(),
             'image_url': self.image_url,
+            'author_id': self.author.id if self.author else None,
+            'author_name': self.author.name if self.author else None,
             'team_id': self.team.id if self.team else None,
-            'team_name': (self.team.name_en if language == 'en' else self.team.name_es) if self.team else None
+            'team_name': (self.team.name_en if language == 'en' else self.team.name_es) if self.team else None,
+            'created_at': self.created_at.isoformat() if hasattr(self, 'created_at') else None,
+            'updated_at': self.updated_at.isoformat() if hasattr(self, 'updated_at') else None
         }
 
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Team, Member, Admin, Publication, RedSocial
+from .models import Team, Member, Publication, RedSocial
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -18,18 +18,13 @@ class MemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = [
             'id', 'name', 'career_en', 'career_es', 'role_en', 'role_es',
-            'charge_en', 'charge_es', 'image_url', 'team', 'team_name_en', 'team_name_es'
+            'charge_en', 'charge_es', 'image_url', 'team', 'team_name_en', 'team_name_es',
+            'email', 'is_team_leader', 'is_active', 'created_at'
         ]
-
-
-class AdminSerializer(serializers.ModelSerializer):
-    """Serializer for Admin model (excludes sensitive data)"""
-    member_name = serializers.CharField(source='member.name', read_only=True)
-    
-    class Meta:
-        model = Admin
-        fields = ['id', 'member', 'member_name', 'email']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'created_at']
+        extra_kwargs = {
+            'email': {'write_only': True}  # Don't expose email in public API
+        }
 
 
 class PublicationSerializer(serializers.ModelSerializer):
