@@ -8,15 +8,15 @@ const LANGS = [
 
 export const LanguageToggle = () => {
   const { i18n } = useTranslation();
-  const [lang, setLang] = useState(i18n.language);
+  const [lang, setLang] = useState(i18n.language || 'en');
 
   useEffect(() => {
     const stored = localStorage.getItem('lang');
-    if (stored && stored !== lang) {
+    if (stored && stored !== i18n.language) {
       i18n.changeLanguage(stored);
       setLang(stored);
     }
-  }, []);
+  }, [i18n, i18n.language]);
 
   const toggle = () => {
     const next = lang === 'en' ? 'es' : 'en';
@@ -26,7 +26,7 @@ export const LanguageToggle = () => {
   };
 
   return (
-    <button onClick={toggle} className="px-3 py-1 text-sm rounded-full border border-border">
+    <button onClick={toggle} className="lang-button" aria-label="Change language">
       {LANGS.find(l => l.code === lang)?.label}
     </button>
   );
