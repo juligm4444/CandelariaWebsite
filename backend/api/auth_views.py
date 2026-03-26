@@ -39,9 +39,14 @@ def register_view(request):
     if serializer.is_valid():
         member = serializer.save()
         
-        # Generate JWT tokens
-        refresh = RefreshToken()
-        refresh['user_id'] = member.id
+        # Generate JWT tokens - use the member's associated Django User
+        if not member.user:
+            return Response({
+                'error': 'Account was not properly configured. Please contact an administrator.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        refresh = RefreshToken.for_user(member.user)
+        refresh['member_id'] = member.id
         refresh['email'] = member.email
         refresh['is_team_leader'] = member.is_team_leader
         
@@ -97,9 +102,14 @@ def login_view(request):
             'error': 'Invalid email or password'
         }, status=status.HTTP_401_UNAUTHORIZED)
     
-    # Generate JWT tokens
-    refresh = RefreshToken()
-    refresh['user_id'] = member.id
+    # Generate JWT tokens - use the member's associated Django User
+    if not member.user:
+        return Response({
+            'error': 'Account is not properly configured. Please contact an administrator.'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    refresh = RefreshToken.for_user(member.user)
+    refresh['member_id'] = member.id
     refresh['email'] = member.email
     refresh['is_team_leader'] = member.is_team_leader
     
@@ -154,18 +164,16 @@ def current_user_view(request):
     GET /api/auth/me/
     Headers: Authorization: Bearer <access_token>
     """
-    # Get member ID from JWT token
-    member_id = request.auth.payload.get('user_id')
-    
+    # Get member from authenticated Django User
     try:
-        member = Member.objects.get(id=member_id)
+        member = Member.objects.get(user=request.user)
         return Response({
             'member': member.to_dict(include_email=True)
         }, status=status.HTTP_200_OK)
     
     except Member.DoesNotExist:
         return Response({
-            'error': 'Member not found'
+            'error': 'Member profile not found'
         }, status=status.HTTP_404_NOT_FOUND)
 
 

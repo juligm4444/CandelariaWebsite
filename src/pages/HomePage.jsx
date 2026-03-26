@@ -78,23 +78,6 @@ export const HomePage = () => {
             <div className="landing-hero-copy">
               <p className="landing-kicker">{t('home.hero.kicker')}</p>
               <p className="landing-subtitle page-intro">{t('home.hero.subtitle')}</p>
-
-              <div
-                className="landing-hero-highlights"
-                role="list"
-                aria-label={t('home.hero.mainPoints')}
-              >
-                {heroHighlights.map((item, index) => (
-                  <div
-                    className="landing-hero-highlight"
-                    role="listitem"
-                    key={`${item.title}-${index}`}
-                  >
-                    <span>{item.title}</span>
-                    <p>{item.body}</p>
-                  </div>
-                ))}
-              </div>
             </div>
 
             <div className="landing-hero-actions">

@@ -7,26 +7,28 @@ import { Navbar } from '../components/Navbar';
 const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: false,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (only after auth check is complete)
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
+    if (!authLoading && isAuthenticated) {
+      navigate('/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleChange = (e) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
     setError(''); // Clear error when user types
   };
@@ -39,7 +41,7 @@ const LoginPage = () => {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/');
     } else {
       setError(result.error);
       setLoading(false);
@@ -47,29 +49,21 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="app-shell">
       <Navbar />
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-              {t('login.title')}
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              {t('login.noAccount')}{' '}
-              <Link
-                to="/register"
-                className="font-medium text-[#FFB800] hover:text-[#FFA500] dark:text-[#FFB800] dark:hover:text-[#FFA500]"
-              >
-                {t('login.registerLink')}
-              </Link>
-            </p>
-          </div>
+      <main className="login-main">
+        <div className="login-container">
+          <div className="login-card">
+            {/* Header */}
+            <div className="login-header">
+              <h1>{t('login.title')}</h1>
+              <p>{t('login.subtitle')}</p>
+            </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {/* Error Message */}
             {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
-                <p className="text-sm text-red-800 dark:text-red-400">
+              <div className="login-error">
+                <p>
                   {typeof error === 'string'
                     ? error
                     : 'Login failed. Please check your credentials.'}
@@ -77,11 +71,10 @@ const LoginPage = () => {
               </div>
             )}
 
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email" className="sr-only">
-                  {t('login.email')}
-                </label>
+            {/* Form */}
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="email">{t('login.email')}</label>
                 <input
                   id="email"
                   name="email"
@@ -90,14 +83,13 @@ const LoginPage = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] focus:z-10 sm:text-sm"
                   placeholder={t('login.emailPlaceholder')}
+                  className="form-input"
                 />
               </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  {t('login.password')}
-                </label>
+
+              <div className="form-group">
+                <label htmlFor="password">{t('login.password')}</label>
                 <input
                   id="password"
                   name="password"
@@ -106,24 +98,46 @@ const LoginPage = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] focus:z-10 sm:text-sm"
                   placeholder={t('login.passwordPlaceholder')}
+                  className="form-input"
                 />
               </div>
-            </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#FFB800] hover:bg-[#FFA500] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFB800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
+              <div className="form-options">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                  />
+                  <span>{t('login.rememberMe')}</span>
+                </label>
+                <Link to="/forgot-password" className="forgot-link">
+                  {t('login.forgotPassword')}
+                </Link>
+              </div>
+
+              <button type="submit" disabled={loading} className="login-button">
                 {loading ? t('login.signingIn') : t('login.signIn')}
               </button>
+            </form>
+
+            {/* Footer */}
+            <div className="login-footer">
+              <p>
+                {t('login.noAccount')}{' '}
+                <Link to="/register" className="register-link">
+                  {t('login.registerLink')}
+                </Link>
+              </p>
+              <Link to="/" className="back-home-link">
+                ← {t('login.backToHome')}
+              </Link>
             </div>
-          </form>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

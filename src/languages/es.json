@@ -372,23 +372,28 @@
       "items": [
         {
           "title": "Innovación responsable",
-          "body": "Exploramos nuevas soluciones técnicas con criterio ético, priorizando seguridad, viabilidad e impacto sostenible."
+          "body": "Exploramos nuevas soluciones técnicas con criterio ético, priorizando seguridad, viabilidad e impacto sostenible.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Colaboración interdisciplinaria",
-          "body": "Integramos conocimientos de ingeniería, diseño, administración y otras áreas para construir respuestas más completas."
+          "body": "Integramos conocimientos de ingeniería, diseño, administración y otras áreas para construir respuestas más completas.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Sostenibilidad con impacto real",
-          "body": "Buscamos resultados medibles en movilidad limpia, eficiencia energetica y transformacion social desde la universidad."
+          "body": "Buscamos resultados medibles en movilidad limpia, eficiencia energetica y transformacion social desde la universidad.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Rigor academico",
-          "body": "Tomamos decisiones basadas en evidencia, validación técnica y aprendizaje continuo en cada etapa del proyecto."
+          "body": "Tomamos decisiones basadas en evidencia, validación técnica y aprendizaje continuo en cada etapa del proyecto.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Liderazgo estudiantil",
-          "body": "Formamos líderes capaces de movilizar equipos, inspirar comunidad y proponer soluciones para desafíos globales."
+          "body": "Formamos líderes capaces de movilizar equipos, inspirar comunidad y proponer soluciones para desafíos globales.",
+          "image": "/src/assets/images/MainLogo.png"
         }
       ]
     },
@@ -507,5 +512,68 @@
     "title": "Página no encontrada",
     "body": "La ruta solicitada no existe en esta version.",
     "action": "Volver al inicio"
+  },
+  "login": {
+    "title": "Bienvenido de Vuelta",
+    "subtitle": "Inicia sesión en tu cuenta",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "Ingresa tu correo",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "rememberMe": "Recordarme",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signIn": "Iniciar Sesión",
+    "signingIn": "Iniciando sesión...",
+    "noAccount": "¿No tienes una cuenta?",
+    "registerLink": "Regístrate",
+    "orDivider": "O",
+    "backToHome": "Volver al Inicio"
+  },
+  "register": {
+    "title": "Crear Cuenta",
+    "subtitle": "Únete a la comunidad Candelaria",
+    "name": "Nombre completo",
+    "namePlaceholder": "Ingresa tu nombre completo",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "Ingresa tu correo",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Crea una contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Confirma tu contraseña",
+    "signUp": "Registrarse",
+    "signingUp": "Creando cuenta...",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "loginLink": "Iniciar sesión"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "subtitle": "Gestiona tu información de perfil",
+    "personalInfo": "Información Personal",
+    "careerInfo": "Información de Carrera",
+    "roleInfo": "Información de Rol",
+    "chargeInfo": "Responsabilidades",
+    "name": "Nombre Completo",
+    "email": "Correo Electrónico",
+    "emailHint": "El correo no puede ser modificado",
+    "careerEn": "Carrera (Inglés)",
+    "careerEs": "Carrera (Español)",
+    "roleEn": "Rol (Inglés)",
+    "roleEs": "Rol (Español)",
+    "chargeEn": "Cargo (Inglés)",
+    "chargeEs": "Cargo (Español)",
+    "changePhoto": "Cambiar Foto",
+    "photoHint": "JPG, PNG o GIF (máx 5MB)",
+    "save": "Guardar Cambios",
+    "saving": "Guardando...",
+    "logout": "Cerrar Sesión",
+    "updateSuccess": "¡Perfil actualizado exitosamente!",
+    "updateError": "Error al actualizar el perfil. Por favor intenta de nuevo.",
+    "socialLinks": "Enlaces de Redes Sociales",
+    "platform": "Plataforma",
+    "url": "URL",
+    "selectPlatform": "Selecciona una plataforma",
+    "addSocialLink": "+ Agregar Enlace",
+    "socialLinkError": "Por favor selecciona una plataforma e ingresa una URL",
+    "socialLinkExists": "Ya tienes un enlace para esta plataforma"
   }
 }

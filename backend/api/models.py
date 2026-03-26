@@ -1,4 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Team(models.Model):
@@ -30,6 +33,13 @@ class Team(models.Model):
 
 class Member(models.Model):
     """Member model representing team members with authentication"""
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='member_profile',
+        null=True,
+        blank=True
+    )
     name = models.CharField(max_length=200)
     email = models.EmailField(max_length=200, unique=True, null=True, blank=True)
     password_hash = models.CharField(max_length=255, null=True, blank=True)
@@ -43,7 +53,7 @@ class Member(models.Model):
     image = models.ImageField(upload_to='members/', null=True, blank=True)
     is_team_leader = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
@@ -90,9 +100,15 @@ class Member(models.Model):
             'social_links': [link.to_dict() for link in self.social_links.all()]
         }
         
-        # Only include email for authenticated requests
+        # Only include email and all language versions for authenticated requests
         if include_email:
             data['email'] = self.email
+            data['career_en'] = self.career_en
+            data['career_es'] = self.career_es
+            data['role_en'] = self.role_en
+            data['role_es'] = self.role_es
+            data['charge_en'] = self.charge_en
+            data['charge_es'] = self.charge_es
             
         return data
 
@@ -105,6 +121,7 @@ class Publication(models.Model):
     content_es = models.TextField()
     publication_date = models.DateField(auto_now_add=True)
     image_url = models.CharField(max_length=500, null=True, blank=True)
+    image = models.ImageField(upload_to='publications/', null=True, blank=True)
     author = models.ForeignKey(
         Member,
         on_delete=models.SET_NULL,
@@ -132,12 +149,15 @@ class Publication(models.Model):
 
     def to_dict(self, language='en'):
         """Return publication data as dictionary for specified language"""
+        # Use uploaded image if available, otherwise fall back to image_url
+        pub_image = self.image.url if self.image else self.image_url
+        
         return {
             'id': self.id,
             'title': self.title_en if language == 'en' else self.title_es,
             'content': self.content_en if language == 'en' else self.content_es,
             'publication_date': self.publication_date.isoformat(),
-            'image_url': self.image_url,
+            'image_url': pub_image,
             'author_id': self.author.id if self.author else None,
             'author_name': self.author.name if self.author else None,
             'team_id': self.team.id if self.team else None,

@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
     access: localStorage.getItem('access_token'),
     refresh: localStorage.getItem('refresh_token'),
   });
+  const [skipLoadUser, setSkipLoadUser] = useState(false);
 
   const logout = useCallback(async () => {
     try {
@@ -37,11 +38,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     } catch (error) {
       console.error('Failed to load user:', error);
-      // If token is invalid, clear it
+      // Only logout if token is invalid (401), not on network errors or other issues
       if (error.response?.status === 401) {
+        console.log('Token is invalid, logging out...');
         logout();
+      } else {
+        // For other errors (network issues, server errors), just set loading to false
+        // but keep the user logged in
+        console.log('Network or server error, keeping user logged in');
+        setLoading(false);
       }
-      setLoading(false);
     }
   }, [logout]);
 
@@ -65,7 +71,14 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
     } catch (error) {
       console.error('Failed to refresh token:', error);
-      logout();
+      // Only logout if refresh token is actually invalid (401)
+      // Not on network errors
+      if (error.response?.status === 401) {
+        console.log('Refresh token is invalid, logging out...');
+        logout();
+      } else {
+        console.log('Failed to refresh token due to network/server error, will retry later');
+      }
     }
   }, [logout, tokens.refresh]);
 
@@ -80,12 +93,18 @@ export const AuthProvider = ({ children }) => {
 
   // Load user on mount if tokens exist
   useEffect(() => {
+    if (skipLoadUser) {
+      setSkipLoadUser(false);
+      setLoading(false);
+      return;
+    }
+    
     if (tokens.access) {
       loadUser();
     } else {
       setLoading(false);
     }
-  }, [loadUser, tokens.access]);
+  }, [loadUser, tokens.access, skipLoadUser]);
 
   // Auto-refresh token before expiry
   useEffect(() => {
@@ -112,12 +131,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('access_token', newTokens.access);
       localStorage.setItem('refresh_token', newTokens.refresh);
 
+      // Set user first
+      setUser(member);
+      
+      // Mark to skip loadUser on next token change
+      setSkipLoadUser(true);
+      
+      // Then update tokens
       setTokens({
         access: newTokens.access,
         refresh: newTokens.refresh,
       });
-
-      setUser(member);
+      
+      // Set loading to false
+      setLoading(false);
 
       return { success: true, member };
     } catch (error) {
@@ -142,12 +169,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('access_token', newTokens.access);
       localStorage.setItem('refresh_token', newTokens.refresh);
 
+      // Set user first
+      setUser(member);
+      
+      // Mark to skip loadUser on next token change
+      setSkipLoadUser(true);
+      
+      // Then update tokens
       setTokens({
         access: newTokens.access,
         refresh: newTokens.refresh,
       });
-
-      setUser(member);
+      
+      // Set loading to false
+      setLoading(false);
 
       return { success: true, member };
     } catch (error) {

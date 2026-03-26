@@ -372,23 +372,28 @@
       "items": [
         {
           "title": "Responsible innovation",
-          "body": "We explore new technical solutions with ethical criteria, prioritizing safety, feasibility, and sustainable impact."
+          "body": "We explore new technical solutions with ethical criteria, prioritizing safety, feasibility, and sustainable impact.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Interdisciplinary collaboration",
-          "body": "We integrate engineering, design, business, and other fields to build stronger and more complete solutions."
+          "body": "We integrate engineering, design, business, and other fields to build stronger and more complete solutions.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Sustainability with real impact",
-          "body": "We pursue measurable results in clean mobility, energy efficiency, and social transformation from the university context."
+          "body": "We pursue measurable results in clean mobility, energy efficiency, and social transformation from the university context.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Academic rigor",
-          "body": "We make decisions based on evidence, technical validation, and continuous learning at every stage."
+          "body": "We make decisions based on evidence, technical validation, and continuous learning at every stage.",
+          "image": "/src/assets/images/MainLogo.png"
         },
         {
           "title": "Student leadership",
-          "body": "We develop leaders who can mobilize teams, inspire communities, and propose solutions for global challenges."
+          "body": "We develop leaders who can mobilize teams, inspire communities, and propose solutions for global challenges.",
+          "image": "/src/assets/images/MainLogo.png"
         }
       ]
     },
@@ -507,5 +512,68 @@
     "title": "Page Not Found",
     "body": "The route you requested does not exist in this release.",
     "action": "Back To Home"
+  },
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to your account",
+    "email": "Email address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot your password?",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Sign up",
+    "orDivider": "OR",
+    "backToHome": "Back to Home"
+  },
+  "register": {
+    "title": "Create Account",
+    "subtitle": "Join the Candelaria community",
+    "name": "Full name",
+    "namePlaceholder": "Enter your full name",
+    "email": "Email address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Create a password",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "signUp": "Sign Up",
+    "signingUp": "Creating account...",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Sign in"
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your profile information",
+    "personalInfo": "Personal Information",
+    "careerInfo": "Career Information",
+    "roleInfo": "Role Information",
+    "chargeInfo": "Responsibilities",
+    "name": "Full Name",
+    "email": "Email",
+    "emailHint": "Email cannot be changed",
+    "careerEn": "Career (English)",
+    "careerEs": "Career (Spanish)",
+    "roleEn": "Role (English)",
+    "roleEs": "Role (Spanish)",
+    "chargeEn": "Charge (English)",
+    "chargeEs": "Charge (Spanish)",
+    "changePhoto": "Change Photo",
+    "photoHint": "JPG, PNG or GIF (max 5MB)",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "logout": "Logout",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile. Please try again.",
+    "socialLinks": "Social Media Links",
+    "platform": "Platform",
+    "url": "URL",
+    "selectPlatform": "Select a platform",
+    "addSocialLink": "+ Add Link",
+    "socialLinkError": "Please select a platform and enter a URL",
+    "socialLinkExists": "You already have a link for this platform"
   }
 }

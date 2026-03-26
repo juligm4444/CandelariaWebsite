@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
 import MainLogo from '../assets/images/MainLogo.png';
 import { LanguageToggle } from './LanguageToggle';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Navbar = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const { isAuthenticated, user } = useAuth();
 
   const navItems = [
     { to: '/vehicle', label: t('site.nav.vehicle') },
@@ -55,9 +57,25 @@ export const Navbar = () => {
 
         <div className="site-actions">
           <LanguageToggle />
-          <Link to="/login" className="nav-login-button">
-            {t('site.nav.login')}
-          </Link>
+          {isAuthenticated && user ? (
+            <Link to="/profile" className="profile-avatar-link" onClick={closeMenu}>
+              {user.image_url ? (
+                <img 
+                  src={user.image_url} 
+                  alt={user.name} 
+                  className="profile-avatar"
+                />
+              ) : (
+                <div className="profile-avatar-placeholder">
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <Link to="/login" className="nav-login-button">
+              {t('site.nav.login')}
+            </Link>
+          )}
           <button
             type="button"
             className="mobile-nav-toggle"

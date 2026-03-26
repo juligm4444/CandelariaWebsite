@@ -103,8 +103,11 @@ export const AboutPage = () => {
             <div className="about-values-grid">
               {valueItems.map((item, index) => (
                 <article key={`${item.title}-${index}`}>
-                  <h4>{item.title}</h4>
-                  <p>{item.body}</p>
+                  {item.image && <img src={item.image} alt="" />}
+                  <div>
+                    <h4>{item.title}</h4>
+                    <p>{item.body}</p>
+                  </div>
                 </article>
               ))}
             </div>

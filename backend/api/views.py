@@ -2,7 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
+from django.db.models import Prefetch
 from .models import Team, Member, Publication, RedSocial
 from .serializers import (
     TeamSerializer, MemberSerializer,
@@ -17,6 +19,13 @@ from .permissions import (
 )
 
 
+class StandardResultsSetPagination(PageNumberPagination):
+    """Standard pagination for API results"""
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class TeamViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Team model
@@ -27,8 +36,9 @@ class TeamViewSet(viewsets.ModelViewSet):
     DELETE /api/teams/{id}/ - Delete team (team leader only)
     GET /api/teams/{id}/members/ - Get all members of a team (public)
     """
-    queryset = Team.objects.all()
+    queryset = Team.objects.all().only('id', 'name_en', 'name_es', 'image_url', 'image')
     serializer_class = TeamSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_permissions(self):
         """
@@ -55,7 +65,8 @@ class TeamViewSet(viewsets.ModelViewSet):
     def members(self, request, pk=None):
         """Get all members of a specific team"""
         team = self.get_object()
-        members = team.members.all()
+        # Optimize with prefetch_related for social links
+        members = team.members.prefetch_related('social_links').all()
         language = request.query_params.get('lang', 'en')
         data = [member.to_dict(language) for member in members]
         return Response(data)
@@ -71,8 +82,9 @@ class MemberViewSet(viewsets.ModelViewSet):
     DELETE /api/members/{id}/ - Delete member (team leader of same team)
     GET /api/members/{id}/social-links/ - Get member's social media links (public)
     """
-    queryset = Member.objects.all()
+    queryset = Member.objects.select_related('team').prefetch_related('social_links').all()
     serializer_class = MemberSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_permissions(self):
         """
@@ -129,8 +141,9 @@ class PublicationViewSet(viewsets.ModelViewSet):
     PUT /api/publications/{id}/ - Update publication (author or team leader)
     DELETE /api/publications/{id}/ - Delete publication (author or team leader)
     """
-    queryset = Publication.objects.all()
+    queryset = Publication.objects.select_related('team', 'author').all()
     serializer_class = PublicationSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_permissions(self):
         """
