@@ -126,7 +126,7 @@ const RegisterPage = () => {
     setLoading(true);
 
     // Prepare data (remove confirmPassword)
-    const { confirmPassword, ...registrationData } = formData;
+    const { confirmPassword: _confirmPassword, ...registrationData } = formData;
 
     // Convert team_id to number
     registrationData.team_id = parseInt(registrationData.team_id);

@@ -8,7 +8,7 @@
       "publications": "Publicaciones",
       "about": "Nosotros",
       "support": "Apoyo",
-      "login": "Iniciar sesión",
+      "login": "Login",
       "openMenu": "Abrir menú",
       "closeMenu": "Cerrar menú"
     }
@@ -31,7 +31,22 @@
     "title": "CANDELARIA",
     "hero": {
       "kicker": "Desafía los límites del sol",
-      "subtitle": "Redefiniendo la movilidad sostenible a través de ingeniería de vanguardia y energía estelar. El futuro de la velocidad es infinito.",
+      "subtitle": "Candelaria es un proyecto estudiantil interdisciplinario que diseña, construye y valida un vehículo solar de competencia para impulsar la movilidad limpia en Latinoamérica. Fue creado para estudiantes, investigadores, patrocinadores y comunidades que creen en una ingeniería de alto nivel con impacto ambiental, académico y social.",
+      "mainPoints": "Puntos principales del hero",
+      "highlights": [
+        {
+          "title": "Qué es",
+          "body": "Una iniciativa universitaria de movilidad solar que integra ingeniería, diseño y estrategia aplicada."
+        },
+        {
+          "title": "Para quién",
+          "body": "Creada para estudiantes y aliados que buscan innovación real con resultados medibles."
+        },
+        {
+          "title": "Enfoque central",
+          "body": "Eficiencia energética, confiabilidad técnica y formación de líderes en movilidad sostenible."
+        }
+      ],
       "primaryAction": "Míralo en Acción",
       "secondaryAction": "Conoce al Equipo"
     },
@@ -193,7 +208,7 @@
     "hero": {
       "titleA": "Nuestros",
       "titleB": "Equipos",
-      "subtitle": "Conoce las áreas que impulsan a Candelaria y explora sus funciones clave dentro del proyecto."
+      "subtitle": "Nuestros equipos están organizados para convertir ideas en soluciones validadas, desde el diseño conceptual y la simulación hasta la manufactura, la operación y la comunicación. Conoce cómo cada área aporta capacidades específicas para sostener un proyecto competitivo, interdisciplinario y con impacto real."
     },
     "detailKicker": "Equipo seleccionado",
     "fallbackSummary": "Este equipo aporta de forma transversal al desarrollo integral del carro solar.",
@@ -294,7 +309,10 @@
   "publications": {
     "titleA": "Nuestras",
     "titleB": "Publicaciones",
-    "subtitle": "En esta página compartimos avances, hitos y actualizaciones del proyecto para que la comunidad siga de cerca nuestro progreso.",
+    "subtitle": "En esta sección compartimos avances técnicos, hitos estratégicos y decisiones clave del proyecto para que la comunidad pueda entender qué estamos construyendo, por qué es relevante y cómo evoluciona cada etapa de desarrollo.",
+    "detailTitleA": "Detalle de",
+    "detailTitleB": "Publicación",
+    "detailSubtitle": "Lee la publicación completa con su contexto, objetivos y resultados más importantes.",
     "filtersTitle": "Filtros",
     "allTeams": "Todos los Equipos",
     "allYears": "Todos los años",
@@ -303,6 +321,7 @@
     "prev": "Anterior",
     "next": "Siguiente",
     "readPost": "Leer publicación",
+    "backToList": "Volver a publicaciones",
     "emptyTitle": "Aún no hay publicaciones",
     "emptyBody": "Puedes insertar una publicación para validar la conexión con base de datos y el flujo de traducción.",
     "by": "Por"
@@ -312,7 +331,7 @@
       "kicker": "Energía Cinética",
       "titleA": "El Futuro es",
       "titleB": "Radiante",
-      "subtitle": "No solo capturamos luz; diseñamos la infraestructura de la próxima civilización energética.",
+      "subtitle": "Candelaria es mucho más que un proyecto de competencia: es una plataforma formativa de largo plazo donde estudiantes desarrollan habilidades técnicas avanzadas, liderazgo interdisciplinario y soluciones concretas para una movilidad más limpia y una transición energética responsable.",
       "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuA9JSh246tK_BPDc6zMI8z68MbdrA0181Cn7MrC8h8Ih7sB0uz0s8gx2Ugj5DVbL8HZXnW9KQlTbAOMMVJisetXjttZ_PFspb7kfymo_Nd-GyCanUHeYCZBYYdGosskD6gaqyGLqZ1801BwfAw__tsoTFDhDDnD3p4XDr-Sa0B6lXTtRgG2hdBVSO6AbbMNwZODfUOElBxTx2Dx5CeTIKvS9wCRS8t8QH0qNHvrEN2ZMUcrJWAzZ47-YZbiZ5qU59qvjYNlK39xfQQ",
       "imageAlt": "Instalación solar futurista al atardecer"
     },
@@ -417,12 +436,12 @@
     "hero": {
       "titleA": "Impulsa la",
       "titleB": "Velocidad",
-      "subtitle": "Candelaria Solar es impulsada por su comunidad. Tu apoyo nos permite seguir innovando."
+      "subtitle": "Candelaria crece gracias a una comunidad que cree en el talento estudiantil, el rigor técnico y la innovación sostenible. Tu apoyo nos permite prototipar con mayor calidad, validar soluciones más seguras y abrir más oportunidades de formación para nuevos líderes en movilidad limpia."
     },
     "plans": {
       "kicker": "Patrocinios",
       "title": "Membresías de élite",
-      "subtitle": "Beneficios exclusivos, acceso anticipado y estatus pionero.",
+      "subtitle": "Elige el nivel de apoyo que mejor refleje tu compromiso y súmate a un esquema de colaboración diseñado para generar visibilidad, impacto y crecimiento conjunto.",
       "recommended": "Recomendado",
       "items": [
         {
@@ -449,7 +468,7 @@
     "contribution": {
       "titleA": "Tu Energía,",
       "titleB": "Nuestra Velocidad.",
-      "body": "Cada contribución impulsa la investigación en nuevas fronteras tecnológicas.",
+      "body": "Cada aporte, sin importar su tamaño, nos ayuda a financiar componentes, sesiones de prueba y formación de estudiantes. Tu confianza acelera prototipos más seguros, mejor desempeño en pista y una comunidad universitaria más preparada para liderar la movilidad sostenible.",
       "inputLabel": "Monto personalizado",
       "placeholder": "Ingresa monto",
       "action": "Contribuir ahora",

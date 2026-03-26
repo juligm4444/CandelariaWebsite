@@ -6,6 +6,20 @@
 .\start_dev.ps1
 ```
 
+### For macOS/Linux:
+
+```bash
+./start_dev.sh
+```
+
+The macOS/Linux startup script now:
+
+- loads backend environment variables automatically,
+- verifies PostgreSQL connectivity,
+- starts PostgreSQL via Homebrew service when possible,
+- creates `candelaria_db` if it does not exist,
+- runs Django migrations before launching the backend.
+
 This one command starts both Django and React automatically!
 
 ---

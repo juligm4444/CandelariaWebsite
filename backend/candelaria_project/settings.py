@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from urllib.parse import parse_qs, urlparse
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -83,8 +84,30 @@ WSGI_APPLICATION = 'candelaria_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+def build_database_settings():
+    database_url = os.getenv('DATABASE_URL', '').strip()
+
+    if database_url:
+        parsed = urlparse(database_url)
+        query = parse_qs(parsed.query)
+        sslmode = query.get('sslmode', [os.getenv('DB_SSLMODE', 'require')])[0]
+
+        config = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': (parsed.path or '').lstrip('/') or os.getenv('DB_NAME', 'candelaria_db'),
+            'USER': parsed.username or os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': parsed.password or os.getenv('DB_PASSWORD', ''),
+            'HOST': parsed.hostname or os.getenv('DB_HOST', 'localhost'),
+            'PORT': str(parsed.port or os.getenv('DB_PORT', '5432')),
+        }
+
+        if sslmode:
+            config['OPTIONS'] = {'sslmode': sslmode}
+
+        return {'default': config}
+
+    sslmode = os.getenv('DB_SSLMODE', '').strip()
+    config = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME', 'candelaria_db'),
         'USER': os.getenv('DB_USER', 'postgres'),
@@ -92,7 +115,14 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
-}
+
+    if sslmode:
+        config['OPTIONS'] = {'sslmode': sslmode}
+
+    return {'default': config}
+
+
+DATABASES = build_database_settings()
 
 
 # Password validation

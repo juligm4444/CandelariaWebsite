@@ -26,6 +26,6 @@ class PublicationAdmin(admin.ModelAdmin):
 
 @admin.register(RedSocial)
 class RedSocialAdmin(admin.ModelAdmin):
-    list_display = ['id', 'member', 'link']
-    list_filter = ['member']
-    search_fields = ['member__name', 'link']
+    list_display = ['id', 'member', 'platform', 'url']
+    list_filter = ['member', 'platform']
+    search_fields = ['member__name', 'url', 'platform']

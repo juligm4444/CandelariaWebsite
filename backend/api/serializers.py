@@ -46,4 +46,4 @@ class RedSocialSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = RedSocial
-        fields = ['id', 'link', 'icon_url', 'member', 'member_name']
+        fields = ['id', 'platform', 'url', 'member', 'member_name']

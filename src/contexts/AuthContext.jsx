@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext(null);
@@ -11,37 +11,26 @@ export const AuthProvider = ({ children }) => {
     refresh: localStorage.getItem('refresh_token'),
   });
 
-  // Configure axios defaults
-  useEffect(() => {
-    if (tokens.access) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
-    } else {
+  const logout = useCallback(async () => {
+    try {
+      if (tokens.refresh) {
+        await axios.post('http://localhost:8000/api/auth/logout/', {
+          refresh: tokens.refresh,
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear tokens and user regardless of API call success
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
       delete axios.defaults.headers.common['Authorization'];
+      setTokens({ access: null, refresh: null });
+      setUser(null);
     }
-  }, [tokens.access]);
-
-  // Load user on mount if tokens exist
-  useEffect(() => {
-    if (tokens.access) {
-      loadUser();
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  // Auto-refresh token before expiry
-  useEffect(() => {
-    if (!tokens.access || !tokens.refresh) return;
-
-    // Refresh token every 50 minutes (tokens expire in 1 hour)
-    const refreshInterval = setInterval(() => {
-      refreshAccessToken();
-    }, 50 * 60 * 1000);
-
-    return () => clearInterval(refreshInterval);
   }, [tokens.refresh]);
 
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/auth/me/');
       setUser(response.data.member);
@@ -54,9 +43,9 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     }
-  };
+  }, [logout]);
 
-  const refreshAccessToken = async () => {
+  const refreshAccessToken = useCallback(async () => {
     try {
       const response = await axios.post('http://localhost:8000/api/token/refresh/', {
         refresh: tokens.refresh,
@@ -78,7 +67,40 @@ export const AuthProvider = ({ children }) => {
       console.error('Failed to refresh token:', error);
       logout();
     }
-  };
+  }, [logout, tokens.refresh]);
+
+  // Configure axios defaults
+  useEffect(() => {
+    if (tokens.access) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [tokens.access]);
+
+  // Load user on mount if tokens exist
+  useEffect(() => {
+    if (tokens.access) {
+      loadUser();
+    } else {
+      setLoading(false);
+    }
+  }, [loadUser, tokens.access]);
+
+  // Auto-refresh token before expiry
+  useEffect(() => {
+    if (!tokens.access || !tokens.refresh) return undefined;
+
+    // Refresh token every 50 minutes (tokens expire in 1 hour)
+    const refreshInterval = setInterval(
+      () => {
+        refreshAccessToken();
+      },
+      50 * 60 * 1000
+    );
+
+    return () => clearInterval(refreshInterval);
+  }, [refreshAccessToken, tokens.access, tokens.refresh]);
 
   const register = async (userData) => {
     try {
@@ -134,25 +156,6 @@ export const AuthProvider = ({ children }) => {
         success: false,
         error: error.response?.data?.error || 'Login failed',
       };
-    }
-  };
-
-  const logout = async () => {
-    try {
-      if (tokens.refresh) {
-        await axios.post('http://localhost:8000/api/auth/logout/', {
-          refresh: tokens.refresh,
-        });
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Clear tokens and user regardless of API call success
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      delete axios.defaults.headers.common['Authorization'];
-      setTokens({ access: null, refresh: null });
-      setUser(null);
     }
   };
 

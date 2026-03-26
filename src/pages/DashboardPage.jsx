@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -21,13 +21,7 @@ const DashboardPage = () => {
   const [formError, setFormError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       // Load user's publications
@@ -48,7 +42,13 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isTeamLeader, user?.team_id]);
+
+  useEffect(() => {
+    if (user) {
+      loadData();
+    }
+  }, [loadData, user]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -63,7 +63,7 @@ const DashboardPage = () => {
     setFormError('');
 
     try {
-      const response = await axios.post('http://localhost:8000/api/publications/', {
+      await axios.post('http://localhost:8000/api/publications/', {
         ...formData,
         team_id: user.team_id,
       });

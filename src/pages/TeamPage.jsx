@@ -316,7 +316,7 @@ export const TeamPage = () => {
           <h1>
             {t('team.hero.titleA')} <span className="team-title-glow">{t('team.hero.titleB')}</span>
           </h1>
-          <p>{t('team.hero.subtitle')}</p>
+          <p className="page-intro">{t('team.hero.subtitle')}</p>
         </section>
 
         {loading && <p className="state-msg">{t('common.loading')}</p>}

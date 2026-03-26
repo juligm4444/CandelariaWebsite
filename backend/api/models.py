@@ -86,7 +86,8 @@ class Member(models.Model):
             'image_url': image_url,
             'team_id': self.team.id,
             'team_name': self.team.name_en if language == 'en' else self.team.name_es,
-            'is_team_leader': self.is_team_leader
+            'is_team_leader': self.is_team_leader,
+            'social_links': [link.to_dict() for link in self.social_links.all()]
         }
         
         # Only include email for authenticated requests
@@ -148,8 +149,24 @@ class Publication(models.Model):
 
 class RedSocial(models.Model):
     """Social media links for team members"""
-    link = models.CharField(max_length=300, unique=True)
-    icon_url = models.CharField(max_length=300)
+    PLATFORM_BEHANCE = 'behance'
+    PLATFORM_PORTFOLIO = 'portfolio'
+    PLATFORM_GITHUB = 'github'
+    PLATFORM_INSTAGRAM = 'instagram'
+    PLATFORM_LINKEDIN = 'linkedin'
+    PLATFORM_X = 'x'
+
+    PLATFORM_CHOICES = [
+        (PLATFORM_BEHANCE, 'Behance'),
+        (PLATFORM_PORTFOLIO, 'Portfolio'),
+        (PLATFORM_GITHUB, 'GitHub'),
+        (PLATFORM_INSTAGRAM, 'Instagram'),
+        (PLATFORM_LINKEDIN, 'LinkedIn'),
+        (PLATFORM_X, 'X'),
+    ]
+
+    url = models.CharField(max_length=300, unique=True)
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
     member = models.ForeignKey(
         Member,
         on_delete=models.CASCADE,
@@ -162,14 +179,13 @@ class RedSocial(models.Model):
         ordering = ['id']
 
     def __str__(self):
-        return f"{self.member.name} - {self.link}"
+        return f"{self.member.name} - {self.platform}"
 
     def to_dict(self):
         """Return social media data as dictionary"""
         return {
             'id': self.id,
-            'link': self.link,
-            'icon_url': self.icon_url,
+            'platform': self.platform,
+            'url': self.url,
             'member_id': self.member.id,
-            'member_name': self.member.name
         }

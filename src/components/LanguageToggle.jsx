@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 
 const LANGS = [
   { code: 'en', label: 'EN' },
-  { code: 'es', label: 'ES' }
+  { code: 'es', label: 'ES' },
 ];
 
 export const LanguageToggle = () => {
@@ -11,12 +11,8 @@ export const LanguageToggle = () => {
   const [lang, setLang] = useState(i18n.language || 'en');
 
   useEffect(() => {
-    const stored = localStorage.getItem('lang');
-    if (stored && stored !== i18n.language) {
-      i18n.changeLanguage(stored);
-      setLang(stored);
-    }
-  }, [i18n, i18n.language]);
+    setLang(i18n.language || 'en');
+  }, [i18n.language]);
 
   const toggle = () => {
     const next = lang === 'en' ? 'es' : 'en';
@@ -27,7 +23,7 @@ export const LanguageToggle = () => {
 
   return (
     <button onClick={toggle} className="lang-button" aria-label="Change language">
-      {LANGS.find(l => l.code === lang)?.label}
+      {LANGS.find((l) => l.code === lang)?.label}
     </button>
   );
 };

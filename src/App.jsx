@@ -4,6 +4,7 @@ import { NotFound } from './pages/NotFound';
 import { VehiclePage } from './pages/VehiclePage';
 import { TeamPage } from './pages/TeamPage';
 import { PublicationsPage } from './pages/PublicationsPage';
+import { PublicationDetailPage } from './pages/PublicationDetailPage';
 import { AboutPage } from './pages/AboutPage';
 import { SupportPage } from './pages/SupportPage';
 import LoginPage from './pages/LoginPage';
@@ -15,10 +16,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route index element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/vehicle" element={<VehiclePage />} />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/publications" element={<PublicationsPage />} />
+        <Route path="/publications/:id" element={<PublicationDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/support" element={<SupportPage />} />
         <Route path="/login" element={<LoginPage />} />

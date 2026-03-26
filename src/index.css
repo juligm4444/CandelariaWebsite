@@ -182,6 +182,12 @@ a {
   margin-right: auto;
 }
 
+.page-intro {
+  text-align: justify;
+  text-justify: inter-word;
+  max-width: 860px;
+}
+
 .site-actions {
   display: inline-flex;
   gap: 0.75rem;
@@ -479,11 +485,13 @@ a {
     text-decoration-color 180ms ease;
 }
 
-.footer-link:hover {
+.footer-link:hover,
+.footer-link.is-selected {
   color: var(--cyan);
   opacity: 1;
   text-decoration: underline;
   text-decoration-thickness: 1px;
+  text-shadow: 0 0 10px rgba(255, 185, 90, 0.35);
 }
 
 .landing-main {
@@ -558,7 +566,6 @@ a {
   font-family: 'Sansation', sans-serif;
   font-size: clamp(1.6rem, 3vw, 2.7rem);
   color: var(--cyan);
-  font-style: italic;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -569,6 +576,38 @@ a {
   color: var(--muted);
   font-size: clamp(1rem, 1.8vw, 1.2rem);
   line-height: 1.7;
+}
+
+.landing-hero-highlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+}
+
+.landing-hero-highlight {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(150, 141, 157, 0.2);
+  background: rgba(37, 29, 42, 0.55);
+  padding: 0.9rem 1rem;
+  text-align: left;
+}
+
+.landing-hero-highlight span {
+  display: block;
+  color: var(--cyan);
+  font-family: 'Sansation', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.landing-hero-highlight p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
 }
 
 .landing-hero-actions {
@@ -1587,6 +1626,16 @@ a {
   border: 1px solid rgba(150, 141, 157, 0.18);
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.team-function-item:hover {
+  transform: translateX(3px);
+  border-color: rgba(255, 185, 90, 0.42);
+  background: rgba(47, 39, 52, 0.85);
 }
 
 .team-function-badge {
@@ -1861,6 +1910,7 @@ a {
 .team-member-body {
   padding: 1rem;
   background: linear-gradient(180deg, rgba(24, 16, 29, 0), #18101d 70%);
+  text-align: center;
 }
 
 .team-member-body span {
@@ -2439,6 +2489,7 @@ a {
     transform 220ms ease,
     box-shadow 220ms ease;
   min-height: 430px;
+  text-align: center;
 }
 
 .support-plan-card:hover {
@@ -2457,6 +2508,19 @@ a {
   letter-spacing: 0.12em;
 }
 
+.support-plan-icon-wrap {
+  width: 3.1rem;
+  height: 3.1rem;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 185, 90, 0.35);
+  background: rgba(255, 185, 90, 0.12);
+  color: var(--cyan);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .support-plan-price {
   margin: 0;
   font-family: 'Sansation', sans-serif;
@@ -2465,7 +2529,8 @@ a {
 
 .support-plan-card ul {
   margin: 0;
-  padding-left: 1rem;
+  padding-left: 0;
+  list-style: none;
   color: var(--muted);
   display: grid;
   gap: 0.5rem;
@@ -2480,6 +2545,56 @@ a {
 .support-plan-card.is-recommended {
   border-left: 4px solid var(--violet);
   background: rgba(58, 50, 63, 0.75);
+}
+
+.publication-detail-shell {
+  padding-bottom: 3rem;
+}
+
+.publication-detail-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(150, 141, 157, 0.16);
+  background: rgba(37, 29, 42, 0.55);
+  overflow: hidden;
+}
+
+.publication-detail-image-wrap {
+  width: 100%;
+  max-height: 460px;
+  overflow: hidden;
+}
+
+.publication-detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.publication-detail-content {
+  padding: 1.5rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.publication-detail-content h2 {
+  margin: 0;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+}
+
+.publication-detail-body {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.publication-detail-body p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.85;
+  text-align: justify;
+}
+
+.publication-detail-actions {
+  padding-top: 0.5rem;
 }
 
 .support-contribution {
@@ -2641,6 +2756,10 @@ a {
 
   .team-selection-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .landing-hero-highlights {
+    grid-template-columns: 1fr;
   }
 
   .team-selected-layout {
