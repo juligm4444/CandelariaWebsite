@@ -2,23 +2,182 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
-import { membersAPI } from '../services/api';
+import { membersAPI, teamsAPI } from '../services/api';
+import LogoCommittee from '../assets/images/LOGO-COM.png';
+import LogoHR from '../assets/images/LOGO-RRHH.png';
+import LogoDesign from '../assets/images/LOGO-DIS.png';
+import LogoChassis from '../assets/images/LOGO-CHA.png';
+import LogoCells from '../assets/images/LOGO-CEL.png';
+import LogoLogistics from '../assets/images/LOGO-LOG.png';
+import LogoBatteries from '../assets/images/LOGO-BAT.png';
+import IconBehance from '../assets/icons/behance.svg';
+import IconPortfolio from '../assets/icons/portfolio.svg';
+import IconGithub from '../assets/icons/github.svg';
+import IconInstagram from '../assets/icons/instagram.svg';
+import IconLinkedin from '../assets/icons/linkedin.svg';
+import IconX from '../assets/icons/x.svg';
+import MainLogo from '../assets/images/MainLogo.png';
+
+const LOGO_BY_KEY = {
+  committee: LogoCommittee,
+  hr: LogoHR,
+  design: LogoDesign,
+  chassis: LogoChassis,
+  cells: LogoCells,
+  logistics: LogoLogistics,
+  batteries: LogoBatteries,
+};
+
+const SOCIAL_ICON_BY_PLATFORM = {
+  behance: IconBehance,
+  portfolio: IconPortfolio,
+  github: IconGithub,
+  instagram: IconInstagram,
+  linkedin: IconLinkedin,
+  x: IconX,
+};
+
+const normalize = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const TeamMemberCard = ({ member }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const handleInteraction = () => {
+    if (window.innerWidth < 768) {
+      setIsFlipped((prev) => !prev);
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (window.innerWidth >= 768) {
+      setIsFlipped(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (window.innerWidth >= 768) {
+      setIsFlipped(false);
+    }
+  };
+
+  const imageUrl = member?.image_url
+    ? member.image_url.startsWith('http')
+      ? member.image_url
+      : `http://localhost:8000${member.image_url}`
+    : null;
+
+  const socialLinks = Array.isArray(member?.social_links) ? member.social_links : [];
+
+  return (
+    <article
+      className="team-member-flip"
+      style={{ perspective: '1000px' }}
+      onClick={handleInteraction}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
+        className="team-member-flip-inner"
+        style={{
+          transformStyle: 'preserve-3d',
+          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        }}
+      >
+        {/* Front face */}
+        <div
+          className="team-member-flip-face team-member-flip-front"
+          style={{ backfaceVisibility: 'hidden' }}
+        >
+          <div className="team-member-image-wrap">
+            {imageUrl ? (
+              <img src={imageUrl} alt={member.name} className="team-member-image" />
+            ) : (
+              <div className="team-member-fallback">{member?.name?.charAt(0) || 'C'}</div>
+            )}
+          </div>
+          <div className="team-member-body">
+            <span>{member.role}</span>
+            <h4>{member.name}</h4>
+            <p>{member.charge}</p>
+          </div>
+        </div>
+
+        {/* Back face */}
+        <div
+          className="team-member-flip-face team-member-flip-back"
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+        >
+          <h4>{member.name}</h4>
+          <p>{member.career}</p>
+          {socialLinks.length > 0 && (
+            <div className="team-member-social-row">
+              {socialLinks.map((link) => {
+                const icon = SOCIAL_ICON_BY_PLATFORM[link.platform];
+                if (!icon) return null;
+                return (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="team-member-social-link"
+                    aria-label={link.platform}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img src={icon} alt={link.platform} />
+                  </a>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+};
 
 export const TeamPage = () => {
   const { t, i18n } = useTranslation();
   const [members, setMembers] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTeam, setSelectedTeam] = useState('all');
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [memberStart, setMemberStart] = useState(0);
+  const [membersPerView, setMembersPerView] = useState(3);
 
   useEffect(() => {
-    const loadMembers = async () => {
+    const onResize = () => {
+      if (window.innerWidth < 760) {
+        setMembersPerView(1);
+      } else if (window.innerWidth < 1080) {
+        setMembersPerView(2);
+      } else {
+        setMembersPerView(3);
+      }
+    };
+
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
       setLoading(true);
       setError('');
       try {
-        const response = await membersAPI.getAll(i18n.language);
-        setMembers(Array.isArray(response.data) ? response.data : []);
+        const [membersResponse, teamsResponse] = await Promise.all([
+          membersAPI.getAll(i18n.language),
+          teamsAPI.getAll(i18n.language),
+        ]);
+
+        setMembers(Array.isArray(membersResponse.data) ? membersResponse.data : []);
+        setTeams(Array.isArray(teamsResponse.data) ? teamsResponse.data : []);
       } catch {
         setError(t('common.loadError'));
       } finally {
@@ -26,97 +185,234 @@ export const TeamPage = () => {
       }
     };
 
-    loadMembers();
+    loadData();
   }, [i18n.language, t]);
 
-  const availableTeams = useMemo(() => {
-    return [...new Set(members.map((member) => member.team_name).filter(Boolean))].sort();
-  }, [members]);
+  const teamCatalog = useMemo(() => t('team.catalog', { returnObjects: true }) || [], [t]);
 
-  const filteredMembers = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    return members.filter((member) => {
-      const matchesTeam = selectedTeam === 'all' || member.team_name === selectedTeam;
-      if (!query) return matchesTeam;
-
-      const haystack = `${member.name || ''} ${member.role || ''} ${member.career || ''}`.toLowerCase();
-      return matchesTeam && haystack.includes(query);
+  const catalogMap = useMemo(() => {
+    const map = new Map();
+    teamCatalog.forEach((item, index) => {
+      map.set(item.key, { ...item, order: index });
     });
-  }, [members, searchTerm, selectedTeam]);
+    return map;
+  }, [teamCatalog]);
 
-  const groupedMembers = useMemo(() => {
-    return filteredMembers.reduce((acc, member) => {
-      const teamName = member.team_name || t('team.unknownTeam');
-      if (!acc[teamName]) acc[teamName] = [];
-      acc[teamName].push(member);
-      return acc;
-    }, {});
-  }, [filteredMembers, t]);
+  const resolvedTeams = useMemo(() => {
+    if (teams.length === 0) {
+      return teamCatalog.map((item, index) => ({
+        id: item.key,
+        key: item.key,
+        order: index,
+        name: item.name,
+        summary: item.summary,
+        functions: item.functions || [],
+        aliases: item.aliases || [],
+        logo: LOGO_BY_KEY[item.key] || MainLogo,
+      }));
+    }
+
+    const mapped = teams.map((team) => {
+      const localizedName = i18n.language === 'es' ? team.name_es : team.name_en;
+      const found = teamCatalog.find((catalogItem) => {
+        return (catalogItem.aliases || []).some((alias) =>
+          normalize(localizedName).includes(normalize(alias))
+        );
+      });
+
+      const key = found?.key || normalize(localizedName).replace(/\s+/g, '-');
+      const defaults = catalogMap.get(key);
+
+      return {
+        id: team.id,
+        key,
+        order: defaults?.order ?? 999,
+        name: localizedName || team.name_es || team.name_en || t('team.unknownTeam'),
+        summary: found?.summary || t('team.fallbackSummary'),
+        functions: found?.functions || [],
+        aliases: found?.aliases || [],
+        logo: LOGO_BY_KEY[key] || MainLogo,
+      };
+    });
+
+    return mapped.sort((a, b) => {
+      if (a.key === 'committee') return -1;
+      if (b.key === 'committee') return 1;
+      if (a.order !== b.order) return a.order - b.order;
+      return a.name.localeCompare(b.name);
+    });
+  }, [catalogMap, i18n.language, t, teamCatalog, teams]);
+
+  useEffect(() => {
+    if (resolvedTeams.length === 0) return;
+
+    const preferred = resolvedTeams.find((team) => team.key === 'committee') || resolvedTeams[0];
+
+    setSelectedTeamId((current) => {
+      const stillExists = resolvedTeams.some((team) => String(team.id) === String(current));
+      return stillExists ? current : preferred.id;
+    });
+  }, [resolvedTeams]);
+
+  const selectedTeam = useMemo(() => {
+    return (
+      resolvedTeams.find((team) => String(team.id) === String(selectedTeamId)) ||
+      resolvedTeams[0] ||
+      null
+    );
+  }, [resolvedTeams, selectedTeamId]);
+
+  const teamCards = useMemo(() => {
+    if (!selectedTeam) return [];
+    return resolvedTeams.filter((team) => String(team.id) !== String(selectedTeam.id)).slice(0, 6);
+  }, [resolvedTeams, selectedTeam]);
+
+  const selectedMembers = useMemo(() => {
+    if (!selectedTeam) return [];
+
+    return members.filter((member) => {
+      const byId = String(member.team_id || member.team || '') === String(selectedTeam.id);
+      const byName = normalize(member.team_name).includes(normalize(selectedTeam.name));
+      const byAlias = (selectedTeam.aliases || []).some((alias) =>
+        normalize(member.team_name).includes(normalize(alias))
+      );
+
+      return byId || byName || byAlias;
+    });
+  }, [members, selectedTeam]);
+
+  useEffect(() => {
+    setMemberStart(0);
+  }, [selectedTeamId]);
+
+  const visibleMembers = useMemo(() => {
+    const total = selectedMembers.length;
+    if (total === 0) return [];
+
+    const count = Math.min(membersPerView, total);
+    return Array.from({ length: count }, (_, index) => {
+      const memberIndex = (memberStart + index) % total;
+      return selectedMembers[memberIndex];
+    });
+  }, [memberStart, membersPerView, selectedMembers]);
+
+  const moveCarousel = (direction) => {
+    if (selectedMembers.length === 0) return;
+
+    setMemberStart((current) => {
+      if (direction === 'left') {
+        return (current - 1 + selectedMembers.length) % selectedMembers.length;
+      }
+
+      return (current + 1) % selectedMembers.length;
+    });
+  };
 
   return (
     <div className="app-shell">
       <Navbar />
-      <main className="page-wrap">
-        <section className="hero-block compact">
-          <p className="eyebrow">{t('team.eyebrow')}</p>
-          <h1>{t('team.title')}</h1>
-          <p>{t('team.subtitle')}</p>
-        </section>
-
-        <section className="filter-row">
-          <input
-            type="text"
-            className="filter-input"
-            placeholder={t('team.searchPlaceholder')}
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-          />
-          <select
-            className="filter-select"
-            value={selectedTeam}
-            onChange={(event) => setSelectedTeam(event.target.value)}
-          >
-            <option value="all">{t('team.allTeams')}</option>
-            {availableTeams.map((teamName) => (
-              <option key={teamName} value={teamName}>
-                {teamName}
-              </option>
-            ))}
-          </select>
+      <main className="team-main section-shell">
+        <section className="team-hero">
+          <h1>
+            {t('team.hero.titleA')} <span className="team-title-glow">{t('team.hero.titleB')}</span>
+          </h1>
+          <p>{t('team.hero.subtitle')}</p>
         </section>
 
         {loading && <p className="state-msg">{t('common.loading')}</p>}
         {error && <p className="state-msg error">{error}</p>}
 
-        {!loading && !error && filteredMembers.length === 0 && (
-          <article className="panel-card">
-            <h2>{t('team.emptyTitle')}</h2>
-            <p>{t('team.emptyBody')}</p>
-          </article>
-        )}
-
-        {!loading && !error &&
-          Object.entries(groupedMembers).map(([teamName, teamMembers]) => (
-            <section className="team-section" key={teamName}>
-              <h2>{teamName}</h2>
-              <div className="member-grid">
-                {teamMembers.map((member) => (
-                  <article className="member-card" key={member.id}>
-                    <div className="avatar-wrap">
-                      {member.image_url ? (
-                        <img src={member.image_url} alt={member.name} className="avatar" />
-                      ) : (
-                        <div className="avatar-fallback">{member.name?.charAt(0)}</div>
-                      )}
+        {!loading && !error && selectedTeam && (
+          <>
+            <section className="team-selected-panel">
+              <article className="team-selected-card">
+                <div className="team-selected-layout">
+                  <div className="team-selected-content">
+                    <span>{t('team.detailKicker')}</span>
+                    <div className="team-selected-header">
+                      <img
+                        src={selectedTeam.logo}
+                        alt={selectedTeam.name}
+                        className="team-selected-logo"
+                      />
+                      <h2>{selectedTeam.name}</h2>
                     </div>
-                    <h3>{member.name}</h3>
-                    <p>{member.role}</p>
-                    <p className="muted">{member.career}</p>
-                  </article>
-                ))}
-              </div>
+                    <p className="team-selected-summary">{selectedTeam.summary}</p>
+                    <div className="team-selected-functions">
+                      {selectedTeam.functions.map((item, index) => (
+                        <div key={`${item}-${index}`} className="team-function-item">
+                          <span className="team-function-badge">0{index + 1}</span>
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    className="team-selected-photo-placeholder"
+                    aria-label={t('team.photoPlaceholder')}
+                  >
+                    <span>{t('team.photoPlaceholder')}</span>
+                  </div>
+                </div>
+              </article>
             </section>
-          ))}
+
+            <section className="team-selection-grid">
+              {teamCards.map((team) => (
+                <button
+                  key={`${team.id}-${team.name}`}
+                  type="button"
+                  className="team-compact-card"
+                  onClick={() => setSelectedTeamId(team.id)}
+                >
+                  <img src={team.logo} alt={team.name} className="team-compact-logo" />
+                  <div className="team-compact-info">
+                    <h3>{team.name}</h3>
+                    <p>{team.summary}</p>
+                  </div>
+                </button>
+              ))}
+            </section>
+
+            <section className="team-members-section">
+              <h2>{t('team.membersTitle')}</h2>
+
+              {selectedMembers.length === 0 ? (
+                <article className="panel-card">
+                  <h2>{t('team.emptyTitle')}</h2>
+                  <p>{t('team.emptyBody')}</p>
+                </article>
+              ) : (
+                <div className="team-members-shell">
+                  <button
+                    className="team-carousel-arrow"
+                    onClick={() => moveCarousel('left')}
+                    aria-label={t('team.carousel.prev')}
+                    type="button"
+                  >
+                    {t('team.carousel.prevShort')}
+                  </button>
+
+                  <div className="team-members-carousel">
+                    {visibleMembers.map((member) => (
+                      <TeamMemberCard key={`${member.id}-${selectedTeam.id}`} member={member} />
+                    ))}
+                  </div>
+
+                  <button
+                    className="team-carousel-arrow"
+                    onClick={() => moveCarousel('right')}
+                    aria-label={t('team.carousel.next')}
+                    type="button"
+                  >
+                    {t('team.carousel.nextShort')}
+                  </button>
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </main>
       <Footer />
     </div>

@@ -8,7 +8,9 @@
       "publications": "Publications",
       "about": "About",
       "support": "Support",
-      "login": "Login"
+      "login": "Login",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
     }
   },
   "common": {
@@ -17,103 +19,470 @@
   },
   "footer": {
     "tagline": "Solar mobility, engineering precision, and community impact.",
-    "rights": "© 2026 Candelaria Solar Project"
+    "rights": "© 2026 Candelaria Solar Car.",
+    "links": {
+      "uniandes": "Universidad de los Andes",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn",
+      "github": "GitHub"
+    }
   },
   "home": {
-    "eyebrow": "Neon Velocity",
-    "title": "Defy The Limits Of The Sun",
-    "subtitle": "A dark-mode, performance-first experience inspired by your Stitch Final screens and connected to your live backend data.",
-    "primaryAction": "Explore Vehicle",
-    "secondaryAction": "Meet The Team",
-    "kpis": {
-      "members": "Registered members",
-      "availability": "Data source",
-      "availabilityValue": "PostgreSQL via Django API",
-      "mode": "Language mode",
-      "modeValue": "EN / ES toggle"
+    "title": "CANDELARIA",
+    "hero": {
+      "kicker": "Defy the limits of the sun",
+      "subtitle": "Redefining sustainable mobility through cutting-edge engineering and stellar energy. The future of speed is infinite.",
+      "primaryAction": "See It In Action",
+      "secondaryAction": "Meet The Team"
     },
-    "sections": {
-      "updates": "Latest publication",
-      "mission": "Mission",
-      "missionBody": "We design, test, and race a high-efficiency solar vehicle while building an interdisciplinary engineering culture.",
-      "routing": "New navigation",
-      "routingBody": "Each top-level section now has its own page: Vehicle, Team, Publications, About, and Support."
+    "ticker": {
+      "items": [
+        {
+          "label": "Current Speed",
+          "value": "124.5",
+          "unit": "KM/H"
+        },
+        {
+          "label": "Solar Efficiency",
+          "value": "98.2",
+          "unit": "%"
+        },
+        {
+          "label": "Total Distance",
+          "value": "4,821",
+          "unit": "KM"
+        },
+        {
+          "label": "Battery Status",
+          "value": "87.4",
+          "unit": "KWH"
+        }
+      ]
     },
-    "noPublication": "No publication found yet in the database."
+    "updates": {
+      "eyebrow": "Current",
+      "title": "Latest Updates",
+      "readMore": "Read more",
+      "fallbackItems": [
+        {
+          "date": "20 FEB 2026",
+          "title": "Aerodynamic Optimization: Alpha Phase Completed",
+          "body": "We reduced the drag coefficient by 15% through the new reinforced polymer chassis. Wind tunnel trials exceeded every expectation.",
+          "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAWmn_Ouh3UOE6f6UxVegROIrIfJOk_wGAysf7xO8IjxdOu7OTIgWFUPrT4n8RprVAfYm4rYTD2EGELS-adpiY9u9MssLBLa9_Dw8hBdC_ZF44G52aSE_jbDiVNg-waNwUoVc1jroitiXyYJM-7GoGOYyxGixA67yhvHZm65hx2CTne7wITmnKmbT5uD7XhYB5v-b8HINaR2ee8KLugh7xRMWcU2J4c53NVx_-Bcmayu2esYAHYZlBP0qxcHfj4JHZC735Cuc4eCZk",
+          "alt": "Futuristic solar car prototype close up"
+        },
+        {
+          "date": "12 OCT 2024",
+          "title": "Stellar-G2 High Sensitivity Panels",
+          "body": "Second-generation solar cells were integrated successfully, capturing energy even under low-light conditions.",
+          "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBufzwjZ0Vdc4Pdv7oJzBUc5YO0fXQ2L8BQg4KngWg_h5OmrrrN0ZeRYyl3SsUGXRc0P7AiTZnv3dur2rz2bxPAxwKAvnOOOXA9AveInti9DYY9MMsX49ve6CEb6birgy78QBTnJsnrLxE-4ln_8n545jqB1u_wxPwWGpg7eY2_9MVueJ0VPlsXCdlPGwarw8AQ6NZsIo9GEkxowZ8KW2ZORDDSYfiNIQDrw6UaRDIW7txHAExwCLkydqFjQqyozW4UEAwUlRSlVYQ",
+          "alt": "High tech solar panel engineering workspace"
+        }
+      ]
+    },
+    "appreciation": {
+      "title": "Thank you for being part of the",
+      "highlight": "Candelaria Mission.",
+      "body": "Every kilometer traveled is proof of the unwavering support of our community. We are building more than a vehicle; we are designing tomorrow.",
+      "cta": "Support Us",
+      "imageAlt": "Team looking at a sunset over a solar project"
+    },
+    "sponsors": {
+      "title": "Powered by Titans of Industry",
+      "items": [
+        {
+          "name": "UNIANDES",
+          "caption": "I+D Research"
+        },
+        {
+          "name": "CANDELARIA",
+          "caption": "Solar Mobility"
+        }
+      ]
+    }
   },
   "vehicle": {
-    "eyebrow": "Vehicle Final",
-    "title": "Engineering Andina Telemetry",
-    "subtitle": "A performance dashboard narrative inspired by the Vehículo (Final) Stitch screen.",
-    "kpis": {
-      "speed": {
-        "label": "Cruise speed",
-        "value": "95 KM/H"
+    "hero": {
+      "titleA": "Our",
+      "titleB": "Vehicle"
+    },
+    "viewer": {
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAub4WtRr1KFvx9yL4ed18tK8zDz44CMiPezLroJhWFMtTsK03lz_6EpSHYjPgnU3gI0zwqfJEZYrE3mY6QTBAebTnPYC0cEBGuMPBURnHFqA6UlPYUTePZc-o_cGK1_GRFeMQcPEqOF7mGO0vreMa_800PWMQFryS64tBhP06InLSR0IMBnJ1bYwE7FhX9K5R9P-UkLazdopLh4rqhF5pgkhW0kuWSORXGJigotxZkyK7N1FCg1L8TK5H3PfKtIzZDzh7mk7Uodwo",
+      "imageAlt": "Candelaria solar vehicle concept",
+      "hotspots": [
+        {
+          "position": "left",
+          "icon": "bolt",
+          "title": "Photovoltaic Cells",
+          "body": "24% efficiency with monocrystalline technology."
+        },
+        {
+          "position": "right",
+          "icon": "aero",
+          "title": "Aerodynamics",
+          "body": "Optimized drag coefficient of 0.12 Cx."
+        }
+      ],
+      "telemetry": {
+        "title": "Telemetry",
+        "cruiseLabel": "Cruise Speed",
+        "cruiseValue": "95",
+        "cruiseUnit": "KM/H",
+        "solarLabel": "Solar Charge",
+        "solarPercent": "82",
+        "solarInput": "INPUT: 1.2KW"
       },
-      "efficiency": {
-        "label": "Solar input",
-        "value": "82% / 1.2KW"
+      "system": {
+        "title": "System State",
+        "motorTempLabel": "MOTOR TEMP",
+        "motorTempValue": "42C",
+        "tirePressureLabel": "TIRE PRESSURE",
+        "tirePressureValue": "32 PSI"
       },
-      "battery": {
-        "label": "System state",
-        "value": "Nominal"
+      "specs": {
+        "title": "Specifications",
+        "items": [
+          {
+            "label": "Weight",
+            "value": "180 KG"
+          },
+          {
+            "label": "Material",
+            "value": "Carbon Fiber"
+          },
+          {
+            "label": "Autonomy",
+            "value": "INFINITE SOLAR"
+          }
+        ]
+      },
+      "liveTag": "LIVE",
+      "liveStatus": "SATELLITE LINK ACTIVE",
+      "controls": {
+        "rotate": "Rotate",
+        "simulate": "View Simulation",
+        "zoom": "Zoom"
       }
     },
-    "sections": {
-      "ai": {
-        "title": "AI Brain",
-        "body": "Predictive energy routing reacts to weather and race conditions in real time."
-      },
-      "solar": {
-        "title": "Solar Capture",
-        "body": "Aerospace-grade panel integration maximizes photon capture across changing light conditions."
-      },
-      "aero": {
-        "title": "Zero Resistance",
-        "body": "Composite bodywork and low-drag geometry focus on every watt of efficiency."
-      }
+    "bento": {
+      "titleA": "Andean",
+      "titleB": "Engineering",
+      "compositeIcon": "ARCH",
+      "cards": [
+        {
+          "title": "AI Brain",
+          "body": "Predictive energy management analyzes weather in real time to optimize electric motor consumption."
+        },
+        {
+          "title": "Solar Capture",
+          "body": "Aerospace-grade panels integrated into the body capture every available photon even on cloudy days.",
+          "metric": "980W/m2"
+        },
+        {
+          "title": "Zero Resistance",
+          "body": "Ceramic bearings and low-resistance tires designed specifically for the Bridgestone World Solar Challenge."
+        },
+        {
+          "title": "Composite Materials",
+          "body": "The monocoque chassis uses a carbon fiber and honeycomb core sandwich, achieving exceptional rigidity with minimal mass."
+        }
+      ]
     }
   },
   "team": {
-    "eyebrow": "Teams Final",
-    "title": "Team Members",
-    "subtitle": "This page is fully populated from PostgreSQL through /api/members/.",
-    "searchPlaceholder": "Search by member, role, or career",
-    "allTeams": "All teams",
+    "hero": {
+      "titleA": "Our",
+      "titleB": "Teams",
+      "subtitle": "Discover the areas that power Candelaria and explore their core functions in the project."
+    },
+    "detailKicker": "Selected team",
+    "fallbackSummary": "This team contributes across the project to support the full solar car development cycle.",
+    "membersTitle": "Members",
+    "photoPlaceholder": "Team Photo Placeholder",
+    "members": {
+      "flipHint": "Hover or tap to flip"
+    },
+    "carousel": {
+      "prev": "Previous",
+      "next": "Next",
+      "prevShort": "<",
+      "nextShort": ">"
+    },
     "emptyTitle": "No members yet",
-    "emptyBody": "Create members in PostgreSQL and they will appear here automatically.",
-    "unknownTeam": "Unassigned Team"
+    "emptyBody": "There are no registered members for this team at the moment.",
+    "unknownTeam": "Unassigned Team",
+    "catalog": [
+      {
+        "key": "committee",
+        "name": "Committee",
+        "aliases": ["committee", "comite"],
+        "summary": "Coordinates the overall project vision and keeps all areas aligned around shared goals.",
+        "functions": [
+          "Sets strategic objectives, technical priorities, and semester impact goals.",
+          "Aligns communication between teams and facilitates timely interdisciplinary decisions.",
+          "Represents Candelaria institutionally and strengthens academic and industry partnerships."
+        ]
+      },
+      {
+        "key": "hr",
+        "name": "Human Resources",
+        "aliases": ["human resources", "rrhh", "talent", "recursos humanos"],
+        "summary": "Sustains team talent and culture to keep a healthy and effective working rhythm.",
+        "functions": [
+          "Reduces operational friction by improving information flow, coordination, and internal follow-up.",
+          "Accelerates talent availability through clear profiles, agile selection, and structured onboarding.",
+          "Strengthens wellbeing, recognition, and social media presence to position Candelaria across campus."
+        ]
+      },
+      {
+        "key": "design",
+        "name": "Design",
+        "aliases": ["design", "diseno"],
+        "summary": "Builds a coherent visual identity for the car, the initiative, and public communication.",
+        "functions": [
+          "Defines and maintains Candelaria's official visual identity across every communication touchpoint.",
+          "Designs the vehicle exterior and cosmetic elements with aerodynamic and brand criteria.",
+          "Develops merchandise, products, and the official website to amplify reach and positioning."
+        ]
+      },
+      {
+        "key": "chassis",
+        "name": "Chassis",
+        "aliases": ["chassis", "chasis"],
+        "summary": "Develops a lightweight, safe, and stable structure to maximize on-track performance.",
+        "functions": [
+          "Optimizes surface area and validates vehicle aerodynamics to reduce drag.",
+          "Evaluates stability, rigidity, and weight through iterative simulation and technical testing.",
+          "Designs a robust structural architecture that meets safety and manufacturability criteria."
+        ]
+      },
+      {
+        "key": "cells",
+        "name": "Cells",
+        "aliases": ["cells", "celdas", "solar"],
+        "summary": "Turns solar radiation into usable and reliable energy to extend vehicle autonomy.",
+        "functions": [
+          "Analyzes energy and radiation to estimate solar performance across environmental scenarios.",
+          "Runs autonomy calculations and simulations to optimize vehicle energy strategy.",
+          "Leads electrical design and solar array manufacturing with efficiency and quality standards."
+        ]
+      },
+      {
+        "key": "logistics",
+        "name": "Logistics",
+        "aliases": ["logistics", "logistica"],
+        "summary": "Manages resources, processes, and institutional coordination so the project runs continuously.",
+        "functions": [
+          "Controls budget, petty cash, fundraising, and disbursements to ensure financial sustainability.",
+          "Plans procurement, inventory, and relationships with departments and institutional partners.",
+          "Coordinates areas, standardizes internal processes, and documents workflows for stronger execution."
+        ]
+      },
+      {
+        "key": "batteries",
+        "name": "Batteries",
+        "aliases": ["batteries", "battery", "baterias"],
+        "summary": "Designs storage and traction systems for safe, efficient, and intelligent energy usage.",
+        "functions": [
+          "Sizes the energy storage system to balance capacity, weight, and reliability.",
+          "Selects and synchronizes motors to maximize propulsion efficiency under different conditions.",
+          "Integrates sensors, communication, and safety monitoring for stable solar car operation."
+        ]
+      }
+    ]
   },
   "publications": {
-    "eyebrow": "Publicaciones Final",
-    "title": "Research And Updates",
-    "subtitle": "This page is fully populated from PostgreSQL through /api/publications/.",
-    "filterByTeam": "Team filter",
-    "allTeams": "All teams",
+    "titleA": "Our",
+    "titleB": "Publications",
+    "subtitle": "This page shares project progress, milestones, and updates so visitors can follow Candelaria's evolution.",
+    "filtersTitle": "Filters",
+    "allTeams": "All Teams",
+    "allYears": "All years",
+    "sortRecent": "Sort: Recent",
+    "sortPopular": "Sort: Popular",
+    "prev": "Prev",
+    "next": "Next",
+    "readPost": "Read publication",
     "emptyTitle": "No publications yet",
     "emptyBody": "You can insert one publication to validate the database connection and translation flow.",
     "by": "By"
   },
   "about": {
-    "eyebrow": "Nosotros Final",
-    "title": "About Candelaria",
-    "subtitle": "Mission, vision, values, and roadmap in one semantic page.",
-    "missionTitle": "Mission",
-    "missionBody": "Accelerate the transition toward autonomous clean-energy mobility with practical engineering and public impact.",
-    "visionTitle": "Vision 2030",
-    "visionBody": "Build a robust ecosystem where each community can generate, monitor, and optimize energy with confidence.",
-    "valuesTitle": "Values",
-    "valuesBody": "Intrepidity, transparency, velocity, and synchronized collaboration guide how we design and deliver."
+    "hero": {
+      "kicker": "Kinetic Energy",
+      "titleA": "The Future Is",
+      "titleB": "Radiant",
+      "subtitle": "We do not just harvest light; we design the infrastructure of the next energy civilization.",
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuA9JSh246tK_BPDc6zMI8z68MbdrA0181Cn7MrC8h8Ih7sB0uz0s8gx2Ugj5DVbL8HZXnW9KQlTbAOMMVJisetXjttZ_PFspb7kfymo_Nd-GyCanUHeYCZBYYdGosskD6gaqyGLqZ1801BwfAw__tsoTFDhDDnD3p4XDr-Sa0B6lXTtRgG2hdBVSO6AbbMNwZODfUOElBxTx2Dx5CeTIKvS9wCRS8t8QH0qNHvrEN2ZMUcrJWAzZ47-YZbiZ5qU59qvjYNlK39xfQQ",
+      "imageAlt": "Futuristic solar installation at dusk"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "body": "To be a benchmark student initiative in Latin America in sustainable mobility and clean energy, recognized for technical excellence, interdisciplinary focus, and the ability to form young leaders committed to innovation, sustainability, and global change. Likewise, we aim to win the Bridgestone World Solar Challenge."
+    },
+    "vision": {
+      "title": "Vision 2030",
+      "body": "To foster interdisciplinary training, collaboration, and innovation through electromobility and energy-transition projects, generating academic, social, and environmental impact while positioning the student community as an active force in building a sustainable future."
+    },
+    "roadmap": {
+      "titleA": "Roadmap",
+      "titleB": "Velocity",
+      "subtitle": "Semester Objectives and Long-Term Goals",
+      "items": [
+        {
+          "badge": "2024.S2",
+          "title": "Orbital Expansion",
+          "body": "Launch micro-grids across 15 new cities, targeting 500MW installed capacity."
+        },
+        {
+          "badge": "2025.S1",
+          "title": "Distribution AI",
+          "body": "Integrate predictive load management to optimize consumption by 40%."
+        },
+        {
+          "badge": "LONG TERM",
+          "title": "Net Zero Global",
+          "body": "Achieve negative-carbon operations at continental scale."
+        }
+      ]
+    },
+    "values": {
+      "titleA": "Our",
+      "titleB": "Values",
+      "side": "01 // PURPOSE  02 // IMPACT  03 // LEADERSHIP",
+      "items": [
+        {
+          "title": "Responsible innovation",
+          "body": "We explore new technical solutions with ethical criteria, prioritizing safety, feasibility, and sustainable impact."
+        },
+        {
+          "title": "Interdisciplinary collaboration",
+          "body": "We integrate engineering, design, business, and other fields to build stronger and more complete solutions."
+        },
+        {
+          "title": "Sustainability with real impact",
+          "body": "We pursue measurable results in clean mobility, energy efficiency, and social transformation from the university context."
+        },
+        {
+          "title": "Academic rigor",
+          "body": "We make decisions based on evidence, technical validation, and continuous learning at every stage."
+        },
+        {
+          "title": "Student leadership",
+          "body": "We develop leaders who can mobilize teams, inspire communities, and propose solutions for global challenges."
+        }
+      ]
+    },
+    "description": {
+      "titleA": "What is",
+      "titleB": "Candelaria",
+      "paragraphs": [
+        "Candelaria is an interdisciplinary student initiative born in 2022 at Universidad de los Andes, focused on electromobility, energy transition, and sustainable innovation.",
+        "The project emerged from a group of students motivated by the possibility of building a solar-powered vehicle for the World Solar Challenge, who realized their impact could go beyond a competition. Candelaria evolved into an academic and collaborative platform that seeks to lead dialogue, learning, and action around sustainable mobility inside and outside the university.",
+        "Candelaria is made up of students and graduates from multiple schools, engineering, design, business, and others, working together to develop real, creative, and technically solid solutions to current energy challenges."
+      ]
+    },
+    "history": {
+      "titleA": "Our",
+      "titleB": "History",
+      "subtitle": "The path of an idea that became an engine of change.",
+      "items": [
+        {
+          "title": "Foundation (2021)",
+          "body": "Candelaria was born in a garage lab with a mission to democratize solar energy through intelligent networks."
+        },
+        {
+          "title": "First Functional Prototype",
+          "body": "We achieved the first successful community-scale wireless energy transfer."
+        },
+        {
+          "title": "Team Expansion",
+          "body": "AI and orbital-network specialists joined, doubling our R&D and deployment capacity."
+        },
+        {
+          "title": "Current Milestones",
+          "body": "Launch of molecular management platform and international market opening."
+        }
+      ]
+    },
+    "support": {
+      "title": "Do you want to support",
+      "highlight": "Candelaria?",
+      "body": "At the moment, Candelaria project has only being sponsored by the Universidad de los Andes and the effort of its members. But if you are interested in sponsor or support the project with any help, we will be forever thankful with you.",
+      "cta": "Support Us",
+      "imageAlt": "Solar car team collaboration"
+    }
   },
   "support": {
-    "eyebrow": "Soporte Final",
-    "title": "Support The Mission",
-    "subtitle": "Elite memberships, direct contributions, and strategic sponsorship.",
-    "membershipTitle": "Memberships",
-    "membershipBody": "Offer layered support plans with exclusive perks, telemetry access, and sponsor visibility.",
-    "donationTitle": "Direct Contributions",
-    "donationBody": "Each contribution powers R&D, testing cycles, and student-led innovation.",
-    "cta": "Contribute Now"
+    "hero": {
+      "titleA": "Power the",
+      "titleB": "Speed",
+      "subtitle": "Candelaria Solar is driven by its community. Your support helps us keep innovating in kinetic energy and celestial design."
+    },
+    "plans": {
+      "kicker": "Sponsorship",
+      "title": "Elite Memberships",
+      "subtitle": "Exclusive benefits, early access, and pioneer status in our ecosystem.",
+      "recommended": "Recommended",
+      "items": [
+        {
+          "name": "Orbital",
+          "price": "$500 /month",
+          "features": ["Digital badge", "VIP newsletter"],
+          "action": "Subscribe"
+        },
+        {
+          "name": "Kinetic",
+          "price": "$2,500 /month",
+          "features": ["Exclusive merch", "Live telemetry access", "Publication mention"],
+          "action": "Choose plan",
+          "recommended": true
+        },
+        {
+          "name": "Nebula",
+          "price": "$10,000 /month",
+          "features": ["Everything above", "Facility visit", "Team dinner"],
+          "action": "Subscribe"
+        }
+      ]
+    },
+    "contribution": {
+      "titleA": "Your Energy,",
+      "titleB": "Our Speed.",
+      "body": "Every contribution powers research into new technological frontiers.",
+      "inputLabel": "Custom amount",
+      "placeholder": "Enter amount",
+      "action": "Contribute now",
+      "safe": "Secure transaction"
+    },
+    "merch": {
+      "kicker": "Candelaria Ecosystem",
+      "title": "Official Gear",
+      "cta": "Add to cart",
+      "items": [
+        {
+          "name": "Void Pulse Hoodie",
+          "description": "Premium cotton 400 GSM",
+          "price": "$120",
+          "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuA3JeEFbHBJ1lQ-4ohZitfDieypitx-WPwJDc40ahxxNAilQfRx1Bd1efvweyakqudlvc-1yevUE7GV-2_p5EOTuAUNIMQt-50XcHKDi52GsC9gcx1N90HF5NOqpHFsz_5lMYk9AywxwswWKS6WpBhkcSsqLkNUSbizTbZo0G8LNZhp3hL5tzo44Dyb-hOzkkjsL0KX3LxlMPAh9MsHIXiDJ3tI8wLgiPFYIMhtO4MBYo5Naq_hA4S9OpKIb4immJNloX-TMGCVHT8",
+          "alt": "Void Pulse hoodie"
+        },
+        {
+          "name": "Solar Flare Cap",
+          "description": "Reflective technical fabric",
+          "price": "$45",
+          "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAJ4aJEMsruu9B4G-aa5ASMGxCV8F5IFiY3vpqK8wWjskHQCNLoX378hsbdRTakyVUN28dAUvTPjeL-GnOhL2VQP-2TdQ6rZKuBgq799xx7LixZVXdMplBH287xJmudKvSoRnxtJaaITWW1cKv5S1P43GsKVd2T3bR9P4_nWEtbc9XXkC3nsQehGLgXdSGJIX0NCOkxD5bXHZJmiAPRfTXmjPkFeLtxwi2J8TeWBHtscwU-0lkuG-9cD_8JPvvcl62l8S1JZPHY4Sk",
+          "alt": "Solar Flare cap"
+        },
+        {
+          "name": "Kinetic 500 Bottle",
+          "description": "Aerospace-grade steel",
+          "price": "$65",
+          "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDB2H1bjozDC64m0IRPDi6pGB2RnUJ58j5I0S1Lgb6XP9w0JaCQv9BCilBAxqnkIPqcF4lQRhXNZEApCggI5pZ5uxCFhicEMIHh6fnjwdJOGbo_VzXHwrY0eYBSRXSwEeDwTpB5XmWfPdgg018DPirCtnsHMjbZH9DV64KJ17sEN_ibDBs2Ksdf-hMjBG_l7rNfy2U0mzu4DiYKqvao4GWc3fc_pj8ZrjQBgzNswM-Rxby8SVrddmUzDZr_DuERjF7tgiJEMaa71s0",
+          "alt": "Kinetic 500 bottle"
+        }
+      ]
+    }
   },
   "notFound": {
     "title": "Page Not Found",
