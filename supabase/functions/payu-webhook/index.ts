@@ -11,7 +11,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
 
-  const payload = await req.json().catch(() => null) as Record<string, string> | null;
+  const payload = (await req.json().catch(() => null)) as Record<string, string> | null;
   if (!payload) {
     return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400 });
   }
@@ -20,7 +20,9 @@ serve(async (req) => {
   const state = String(payload.state_pol ?? payload.state ?? '').toLowerCase();
 
   if (!txRef) {
-    return new Response(JSON.stringify({ error: 'Missing transaction reference' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'Missing transaction reference' }), {
+      status: 400,
+    });
   }
 
   let status = 'pending';
@@ -37,8 +39,11 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 
-  return new Response(JSON.stringify({ status: 'ok', transaction: txRef, payment_status: status }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({ status: 'ok', transaction: txRef, payment_status: status }),
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
 });

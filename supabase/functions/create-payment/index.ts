@@ -7,7 +7,8 @@ const PAYU_API_LOGIN = Deno.env.get('PAYU_API_LOGIN') ?? '';
 const PAYU_API_KEY = Deno.env.get('PAYU_API_KEY') ?? '';
 const PAYU_MERCHANT_ID = Deno.env.get('PAYU_MERCHANT_ID') ?? '';
 const PAYU_ACCOUNT_ID = Deno.env.get('PAYU_ACCOUNT_ID') ?? '';
-const PAYU_BASE_URL = Deno.env.get('PAYU_BASE_URL') ?? 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi';
+const PAYU_BASE_URL =
+  Deno.env.get('PAYU_BASE_URL') ?? 'https://sandbox.api.payulatam.com/payments-api/4.0/service.cgi';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -27,7 +28,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 });
   }
 
-  const body = await req.json().catch(() => null) as {
+  const body = (await req.json().catch(() => null)) as {
     amount?: number;
     currency?: string;
     type?: 'donation' | 'subscription' | 'product';
@@ -107,6 +108,6 @@ serve(async (req) => {
       reference_code: referenceCode,
       payu_response: payuJson,
     }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
 });

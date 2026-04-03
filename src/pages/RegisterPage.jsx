@@ -345,7 +345,8 @@ const RegisterPage = () => {
                 </>
               ) : (
                 <p className="field-hint">
-                  This email is not in the internal whitelist. Your account will be created as an external supporter.
+                  This email is not in the internal whitelist. Your account will be created as an
+                  external supporter.
                 </p>
               )}
 

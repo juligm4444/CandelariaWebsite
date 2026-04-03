@@ -398,7 +398,9 @@ const DashboardPage = () => {
                           {imageUrl ? (
                             <img src={imageUrl} alt={member.name} className="team-member-image" />
                           ) : (
-                            <div className="team-member-fallback">{member.name?.charAt(0) || 'M'}</div>
+                            <div className="team-member-fallback">
+                              {member.name?.charAt(0) || 'M'}
+                            </div>
                           )}
                         </div>
                         <div className="team-member-body team-member-manage-body">

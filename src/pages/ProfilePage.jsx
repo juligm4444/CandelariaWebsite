@@ -164,7 +164,10 @@ export const ProfilePage = () => {
           setTimeout(() => window.location.reload(), 1200);
         } else {
           const error = await response.json();
-          setMessage({ type: 'error', text: error.error || t('profile.updateError') || 'Failed to update profile' });
+          setMessage({
+            type: 'error',
+            text: error.error || t('profile.updateError') || 'Failed to update profile',
+          });
         }
         return;
       }
@@ -239,45 +242,45 @@ export const ProfilePage = () => {
 
           <form className="profile-form" onSubmit={handleSubmit}>
             {isInternal && (
-            <div className="profile-image-section">
-              <div className="profile-image-preview">
-                {imagePreview ? (
-                  <img src={imagePreview} alt={user.name} />
-                ) : (
-                  <div className="profile-image-placeholder">
-                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                  </div>
-                )}
+              <div className="profile-image-section">
+                <div className="profile-image-preview">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt={user.name} />
+                  ) : (
+                    <div className="profile-image-placeholder">
+                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                  )}
+                </div>
+                <div className="profile-image-upload">
+                  <label htmlFor="image-upload" className="image-upload-button">
+                    {t('profile.changePhoto') || 'Change Photo'}
+                  </label>
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="image-upload-input"
+                  />
+                  <p className="image-upload-hint">
+                    {t('profile.photoHint') || 'JPG, PNG or GIF (max 5MB)'}
+                  </p>
+                </div>
               </div>
-              <div className="profile-image-upload">
-                <label htmlFor="image-upload" className="image-upload-button">
-                  {t('profile.changePhoto') || 'Change Photo'}
-                </label>
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="image-upload-input"
-                />
-                <p className="image-upload-hint">
-                  {t('profile.photoHint') || 'JPG, PNG or GIF (max 5MB)'}
-                </p>
-              </div>
-            </div>
             )}
 
             {!isInternal && (
-            <div className="profile-image-section">
-              <div className="profile-image-preview">
-                <div className="profile-image-placeholder">
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              <div className="profile-image-section">
+                <div className="profile-image-preview">
+                  <div className="profile-image-placeholder">
+                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                </div>
+                <div className="profile-external-badge">
+                  <span>{t('profile.externalSupporter') || 'External Supporter'}</span>
                 </div>
               </div>
-              <div className="profile-external-badge">
-                <span>{t('profile.externalSupporter') || 'External Supporter'}</span>
-              </div>
-            </div>
             )}
 
             <div className="form-single-column">
@@ -303,127 +306,132 @@ export const ProfilePage = () => {
               </div>
 
               {isInternal && (
-              <>
-              <div className="form-group">
-                <label htmlFor="team_id">{t('profile.team') || 'Team'}</label>
-                <select
-                  id="team_id"
-                  name="team_id"
-                  value={formData.team_id}
-                  onChange={handleChange}
-                  className="form-input"
-                  required
-                >
-                  <option value="">{t('profile.selectTeam') || 'Select a team'}</option>
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {language === 'es' ? team.name_es : team.name_en}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="career_key">{t('profile.career') || 'Career'}</label>
-                <select
-                  id="career_key"
-                  name="career_key"
-                  value={formData.career_key}
-                  onChange={handleChange}
-                  className="form-input"
-                  required
-                >
-                  <option value="">{t('profile.selectCareer') || 'Select a career'}</option>
-                  {CAREER_OPTIONS.map((career) => (
-                    <option key={career.key} value={career.key}>
-                      {getLocalizedCareerLabel(career, language)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="role">{t('profile.role') || 'Role'}</label>
-                <input
-                  id="role"
-                  name="role"
-                  type="text"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <div className="profile-section">
-                <h2>{t('profile.socialLinks') || 'Social Media Links'}</h2>
-
-                <div className="social-links-list">
-                  {socialLinks.map((link) => (
-                    <div key={link.id} className="social-link-item">
-                      <div className="social-link-info">
-                        <span className="social-link-platform">{link.platform}</span>
-                        <span className="social-link-url">{link.url}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSocialLink(link.id)}
-                        className="social-link-remove"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="social-link-add-form">
+                <>
                   <div className="form-group">
-                    <label htmlFor="platform">{t('profile.platform') || 'Platform'}</label>
+                    <label htmlFor="team_id">{t('profile.team') || 'Team'}</label>
                     <select
-                      id="platform"
-                      value={newSocialLink.platform}
-                      onChange={(e) =>
-                        setNewSocialLink((prev) => ({ ...prev, platform: e.target.value }))
-                      }
+                      id="team_id"
+                      name="team_id"
+                      value={formData.team_id}
+                      onChange={handleChange}
                       className="form-input"
+                      required
                     >
-                      <option value="">{t('profile.selectPlatform') || 'Select a platform'}</option>
-                      {socialPlatforms.map((platform) => (
-                        <option
-                          key={platform.value}
-                          value={platform.value}
-                          disabled={socialLinks.some((link) => link.platform === platform.value)}
-                        >
-                          {platform.label}
+                      <option value="">{t('profile.selectTeam') || 'Select a team'}</option>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {language === 'es' ? team.name_es : team.name_en}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="url">{t('profile.url') || 'URL'}</label>
-                    <input
-                      id="url"
-                      type="url"
-                      placeholder="https://..."
-                      value={newSocialLink.url}
-                      onChange={(e) =>
-                        setNewSocialLink((prev) => ({ ...prev, url: e.target.value }))
-                      }
+                    <label htmlFor="career_key">{t('profile.career') || 'Career'}</label>
+                    <select
+                      id="career_key"
+                      name="career_key"
+                      value={formData.career_key}
+                      onChange={handleChange}
                       className="form-input"
+                      required
+                    >
+                      <option value="">{t('profile.selectCareer') || 'Select a career'}</option>
+                      {CAREER_OPTIONS.map((career) => (
+                        <option key={career.key} value={career.key}>
+                          {getLocalizedCareerLabel(career, language)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="role">{t('profile.role') || 'Role'}</label>
+                    <input
+                      id="role"
+                      name="role"
+                      type="text"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="form-input"
+                      required
                     />
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleAddSocialLink}
-                    className="social-link-add-button"
-                  >
-                    {t('profile.addSocialLink') || '+ Add Link'}
-                  </button>
-                </div>
-              </div>
-              </>)}
+                  <div className="profile-section">
+                    <h2>{t('profile.socialLinks') || 'Social Media Links'}</h2>
+
+                    <div className="social-links-list">
+                      {socialLinks.map((link) => (
+                        <div key={link.id} className="social-link-item">
+                          <div className="social-link-info">
+                            <span className="social-link-platform">{link.platform}</span>
+                            <span className="social-link-url">{link.url}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSocialLink(link.id)}
+                            className="social-link-remove"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="social-link-add-form">
+                      <div className="form-group">
+                        <label htmlFor="platform">{t('profile.platform') || 'Platform'}</label>
+                        <select
+                          id="platform"
+                          value={newSocialLink.platform}
+                          onChange={(e) =>
+                            setNewSocialLink((prev) => ({ ...prev, platform: e.target.value }))
+                          }
+                          className="form-input"
+                        >
+                          <option value="">
+                            {t('profile.selectPlatform') || 'Select a platform'}
+                          </option>
+                          {socialPlatforms.map((platform) => (
+                            <option
+                              key={platform.value}
+                              value={platform.value}
+                              disabled={socialLinks.some(
+                                (link) => link.platform === platform.value
+                              )}
+                            >
+                              {platform.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="url">{t('profile.url') || 'URL'}</label>
+                        <input
+                          id="url"
+                          type="url"
+                          placeholder="https://..."
+                          value={newSocialLink.url}
+                          onChange={(e) =>
+                            setNewSocialLink((prev) => ({ ...prev, url: e.target.value }))
+                          }
+                          className="form-input"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleAddSocialLink}
+                        className="social-link-add-button"
+                      >
+                        {t('profile.addSocialLink') || '+ Add Link'}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="profile-actions">

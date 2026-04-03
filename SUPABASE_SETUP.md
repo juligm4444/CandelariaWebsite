@@ -1,6 +1,7 @@
 # Supabase Setup And Migration Guide
 
 This project uses two data paths:
+
 - Django API database (backend/.env)
 - Supabase Auth + Supabase SQL migrations (supabase/migrations)
 
@@ -38,6 +39,7 @@ This guide covers the Supabase side for the dual-user registration model.
 - supabase/migrations/20260402_registration_profile_sync.sql
 
 They implement:
+
 - whitelist-driven internal role assignment
 - open signup for non-whitelisted users
 - profiles upsert on auth signup (idempotent)
@@ -46,21 +48,25 @@ They implement:
 ## Frontend Environment Variables (Vite)
 
 Create a local env file from .env.example and set:
+
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_ANON_KEY
 
 Note:
+
 - This repo is Vite + React, not Next.js.
-- Use VITE_ prefixed variables for browser-side access.
+- Use VITE\_ prefixed variables for browser-side access.
 
 ## Frontend Supabase Integration
 
 Implemented files:
+
 - src/lib/supabaseClient.js
 - src/hooks/useUserProfile.js
 - src/components/PrivateRoute.jsx
 
 Behavior:
+
 - useUserProfile fetches profiles row for the authenticated Supabase user.
 - internal-only routes accept either Django auth internal flag or Supabase profile internal flag.
 
