@@ -6,7 +6,7 @@ Write-Host ""
 
 # Start Django in a new window
 Write-Host "Starting Django Backend..." -ForegroundColor Cyan
-Start-Process powershell -ArgumentList "-NoExit", "-File", "$PSScriptRoot\backend\start_django.ps1"
+Start-Process powershell -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-File", "$PSScriptRoot\backend\start_django.ps1"
 
 # Wait a bit for Django to start
 Start-Sleep -Seconds 3
@@ -20,6 +20,6 @@ Write-Host "Both servers are starting in separate windows!" -ForegroundColor Gre
 Write-Host ""
 Write-Host "Django Backend: http://localhost:8000/" -ForegroundColor Yellow
 Write-Host "Django Admin:   http://localhost:8000/admin/" -ForegroundColor Yellow
-Write-Host "React Frontend: http://localhost:5174/" -ForegroundColor Yellow
+Write-Host "React Frontend: http://localhost:5173/" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Close those windows to stop the servers" -ForegroundColor Gray

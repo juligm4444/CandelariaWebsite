@@ -1,132 +1,82 @@
-# ✅ Supabase PostgreSQL Connection - Setup Complete
+# Supabase Setup And Migration Guide
 
-## 🎯 What Was Configured
+This project uses two data paths:
+- Django API database (backend/.env)
+- Supabase Auth + Supabase SQL migrations (supabase/migrations)
 
-Your Django backend is now successfully connected to Supabase PostgreSQL database!
+This guide covers the Supabase side for the dual-user registration model.
 
-## 📋 Connection Details
+## Project Ref
 
-- **Database Type**: PostgreSQL (Supabase)
-- **Host**: `aws-1-us-east-2.pooler.supabase.com`
-- **Port**: `5432`
-- **Database**: `postgres`
-- **User**: `postgres.thlhtuktznnlvxytbapa`
-- **SSL Mode**: `require`
+- thlhtuktznnlvxytbapa
 
-## 📁 Files Modified
+## One-Time Local Setup (CLI)
 
-### 1. `/backend/.env` (Created)
-Contains your database credentials and Django configuration:
-```env
-DB_NAME=postgres
-DB_USER=postgres.thlhtuktznnlvxytbapa
-DB_PASSWORD=$Aut0_S0lar$
-DB_HOST=aws-1-us-east-2.pooler.supabase.com
-DB_PORT=5432
-DB_SSLMODE=require
-```
+1. Install Supabase CLI (or use npx):
+   npx supabase --version
 
-**⚠️ IMPORTANT**: This file is in `.gitignore` and will NOT be committed to Git. Keep it secure!
+2. Create a Personal Access Token in Supabase Dashboard:
+   Dashboard > Account Settings > Access Tokens
 
-### 2. `/backend/requirements.txt` (Updated)
-- Changed `psycopg2-binary==2.9.9` → `psycopg[binary]>=3.2.0`
-- Reason: Python 3.13 compatibility
+3. Set token in PowerShell session:
+   $env:SUPABASE_ACCESS_TOKEN = "your_personal_access_token"
 
-### 3. `/backend/venv/` (Created)
-- Python virtual environment with all dependencies installed
-- To activate: `source backend/venv/bin/activate`
+4. Link this repository to the Supabase project:
+   npx supabase link --project-ref thlhtuktznnlvxytbapa
 
-## 🗄️ Current Database Status
+## Apply Migrations
 
-Your Supabase database contains:
-- ✅ **7 Teams**
-- ✅ **7 Members**  
-- ✅ **1 Publication**
+1. Push pending migrations:
+   npx supabase db push
 
-All Django migrations are up to date.
+2. Verify migration state:
+   npx supabase migration list
 
-## 🚀 How to Start the Backend
+## Current Supabase Migration Files
 
-1. **Activate the virtual environment**:
-   ```bash
-   cd backend
-   source venv/bin/activate
-   ```
+- supabase/migrations/20260402_dual_user_support.sql
+- supabase/migrations/20260402_registration_profile_sync.sql
 
-2. **Run the Django development server**:
-   ```bash
-   python manage.py runserver
-   ```
+They implement:
+- whitelist-driven internal role assignment
+- open signup for non-whitelisted users
+- profiles upsert on auth signup (idempotent)
+- whitelist-to-profile sync trigger for post-signup invitations
 
-3. **The API will be available at**: `http://localhost:8000`
+## Frontend Environment Variables (Vite)
 
-## 🔧 Common Commands
+Create a local env file from .env.example and set:
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_ANON_KEY
 
-### Check Database Connection
-```bash
-python manage.py check --database default
-```
+Note:
+- This repo is Vite + React, not Next.js.
+- Use VITE_ prefixed variables for browser-side access.
 
-### Run Migrations
-```bash
-python manage.py migrate
-```
+## Frontend Supabase Integration
 
-### Create a Superuser
-```bash
-python manage.py createsuperuser
-```
+Implemented files:
+- src/lib/supabaseClient.js
+- src/hooks/useUserProfile.js
+- src/components/PrivateRoute.jsx
 
-### Access Django Admin
-```bash
-# After creating a superuser, visit:
-http://localhost:8000/admin
-```
+Behavior:
+- useUserProfile fetches profiles row for the authenticated Supabase user.
+- internal-only routes accept either Django auth internal flag or Supabase profile internal flag.
 
-### Query Data via Django Shell
-```bash
-python manage.py shell
-```
+## Security Notes
 
-## 🔐 Security Notes
+1. Never commit real tokens or passwords.
+2. Rotate any token that was pasted into chat, screenshots, or terminal history.
+3. Keep .env and .env.local values private.
 
-1. **Never commit `.env` file** - It's already in `.gitignore`
-2. **For production**: 
-   - Generate a new `SECRET_KEY`
-   - Set `DEBUG=False`
-   - Update `ALLOWED_HOSTS` with your domain
-3. **Supabase Dashboard**: Access at [https://supabase.com/dashboard](https://supabase.com/dashboard)
+## Useful Commands
 
-## 📊 Database Schema
+- npx supabase migration list
+- npx supabase db push
+- npm run build
+- cd backend ; python manage.py check
 
-Your models from `api/models.py`:
-- `Team` - Team information with images
-- `Member` - Team members with social links
-- `Publication` - Publications with multilingual content
-- `RedSocial` - Social media links for members
+## Last Updated
 
-## 🛠️ Troubleshooting
-
-### If connection fails:
-1. Check Supabase project status
-2. Verify password hasn't changed
-3. Ensure IP is not blocked in Supabase settings
-4. Check `.env` file for typos
-
-### Reset database password:
-Go to Supabase Dashboard → Settings → Database → Reset Database Password
-
-## ✨ Next Steps
-
-1. ✅ Database connected
-2. ✅ Migrations applied
-3. ✅ Data accessible
-4. 🔜 Create admin user: `python manage.py createsuperuser`
-5. 🔜 Start backend server: `python manage.py runserver`
-6. 🔜 Test API endpoints
-
----
-
-**Setup completed on**: March 26, 2026
-**Django Version**: 4.2.7
-**Database Driver**: psycopg 3.3.3
+- 2026-04-02

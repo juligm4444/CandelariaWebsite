@@ -1,13 +1,20 @@
 # Django Startup Script for Candelaria Website
-# This script activates the virtual environment and starts the Django server
+# Starts Django with a deterministic Python executable to avoid activation policy issues.
 
-# Change to the backend directory
 Set-Location $PSScriptRoot
 
-Write-Host "Activating Python virtual environment..." -ForegroundColor Cyan
+$pythonExe = Join-Path $PSScriptRoot 'venv\Scripts\python.exe'
+if (-not (Test-Path $pythonExe)) {
+  $pythonExe = 'python'
+  Write-Host "Virtual environment python not found. Falling back to system python." -ForegroundColor Yellow
+}
 
-# Activate virtual environment
-& ".\venv\Scripts\Activate.ps1"
+Write-Host "Applying database migrations..." -ForegroundColor Cyan
+& $pythonExe manage.py migrate
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "Migration failed. Django server was not started." -ForegroundColor Red
+  exit $LASTEXITCODE
+}
 
 Write-Host "Starting Django development server..." -ForegroundColor Green
 Write-Host ""
@@ -18,8 +25,7 @@ Write-Host ""
 Write-Host "Press CTRL+C to stop the server" -ForegroundColor Gray
 Write-Host ""
 
-# Start Django server
-python manage.py runserver
+& $pythonExe manage.py runserver
 
 Write-Host ""
 Write-Host "Django server stopped." -ForegroundColor Yellow

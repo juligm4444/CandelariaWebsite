@@ -17,12 +17,12 @@ is_local_host() {
 }
 
 load_backend_env() {
-    local env_example="$BACKEND_DIR/.env.example"
+    local env_example="$PROJECT_ROOT/.env.example"
     local env_file="$BACKEND_DIR/.env"
 
     if [ ! -f "$env_file" ] && [ -f "$env_example" ]; then
         cp "$env_example" "$env_file"
-        echo "Created backend/.env from .env.example"
+        echo "Created backend/.env from root .env.example"
     fi
 
     if [ -f "$env_file" ]; then
