@@ -11,15 +11,12 @@ class IsTeamLeader(permissions.BasePermission):
     
     def has_permission(self, request, view):
         # Check if user is authenticated
-        if not request.user or not request.auth:
+        if not request.user or not request.user.is_authenticated:
             return False
-        
-        # Get member from JWT token
+
         try:
-            member_id = request.auth.payload.get('user_id')
-            is_team_leader = request.auth.payload.get('is_team_leader', False)
-            return is_team_leader
-        except:
+            return bool(getattr(request.user.member_profile, 'is_team_leader', False))
+        except Exception:
             return False
 
 
@@ -31,27 +28,26 @@ class IsOwnerOrTeamLeader(permissions.BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Check if user is authenticated
-        if not request.user or not request.auth:
+        if not request.user or not request.user.is_authenticated:
             return False
-        
+
         try:
-            member_id = request.auth.payload.get('user_id')
-            is_team_leader = request.auth.payload.get('is_team_leader', False)
-            
+            member = request.user.member_profile
+
             # Team leaders can do anything
-            if is_team_leader:
+            if member.is_team_leader:
                 return True
-            
+
             # Check if user is the owner (for Member objects)
-            if hasattr(obj, 'id') and obj.id == member_id:
+            if hasattr(obj, 'id') and obj.id == member.id:
                 return True
-            
+
             # Check if user is the author (for Publication objects)
-            if hasattr(obj, 'author_id') and obj.author_id == member_id:
+            if hasattr(obj, 'author_id') and obj.author_id == member.id:
                 return True
-            
+
             return False
-        except:
+        except Exception:
             return False
 
 
@@ -65,28 +61,22 @@ class IsPublicationAuthorOrTeamLeader(permissions.BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Check if user is authenticated
-        if not request.user or not request.auth:
+        if not request.user or not request.user.is_authenticated:
             return False
-        
+
         try:
-            from .models import Member
-            
-            member_id = request.auth.payload.get('user_id')
-            is_team_leader = request.auth.payload.get('is_team_leader', False)
-            
+            member = request.user.member_profile
+
             # Check if user is the author
-            if hasattr(obj, 'author_id') and obj.author_id == member_id:
+            if hasattr(obj, 'author_id') and obj.author_id == member.id:
                 return True
-            
+
             # If team leader, check if publication belongs to their team
-            if is_team_leader:
-                member = Member.objects.get(id=member_id)
-                # Team leader can manage publications from their team
-                if hasattr(obj, 'team_id') and obj.team_id == member.team_id:
-                    return True
-            
+            if member.is_team_leader and hasattr(obj, 'team_id') and obj.team_id == member.team_id:
+                return True
+
             return False
-        except:
+        except Exception:
             return False
 
 
@@ -98,24 +88,18 @@ class IsSameTeam(permissions.BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Check if user is authenticated
-        if not request.user or not request.auth:
+        if not request.user or not request.user.is_authenticated:
             return False
-        
+
         try:
-            from .models import Member
-            
-            member_id = request.auth.payload.get('user_id')
-            is_team_leader = request.auth.payload.get('is_team_leader', False)
-            
-            # Get current user's team
-            member = Member.objects.get(id=member_id)
-            
+            member = request.user.member_profile
+
             # Check if object has team_id and it matches
             if hasattr(obj, 'team_id'):
                 return obj.team_id == member.team_id
-            
+
             return False
-        except:
+        except Exception:
             return False
 
 
@@ -128,28 +112,22 @@ class IsTeamLeaderOfSameTeam(permissions.BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Check if user is authenticated
-        if not request.user or not request.auth:
+        if not request.user or not request.user.is_authenticated:
             return False
-        
+
         try:
-            from .models import Member
-            
-            member_id = request.auth.payload.get('user_id')
-            is_team_leader = request.auth.payload.get('is_team_leader', False)
-            
+            member = request.user.member_profile
+
             # Must be a team leader
-            if not is_team_leader:
+            if not member.is_team_leader:
                 return False
-            
-            # Get current user's team
-            member = Member.objects.get(id=member_id)
-            
+
             # Check if object has team_id and it matches
             if hasattr(obj, 'team_id'):
                 return obj.team_id == member.team_id
-            
+
             return False
-        except:
+        except Exception:
             return False
 
 

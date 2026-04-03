@@ -1,5 +1,17 @@
 from django.contrib import admin
-from .models import Team, Member, Publication, RedSocial
+from .models import (
+    Team,
+    Member,
+    Publication,
+    RedSocial,
+    PaymentCheckoutSession,
+    PaymentWebhookEvent,
+    SecurityAuditEvent,
+    InternalWhitelistEntry,
+    UserProfile,
+    Subscription,
+    Payment,
+)
 
 
 @admin.register(Team)
@@ -10,13 +22,13 @@ class TeamAdmin(admin.ModelAdmin):
 
 @admin.register(Member)
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'email', 'role_en', 'team', 'is_team_leader', 'is_active']
-    list_filter = ['team', 'is_team_leader', 'is_active']
+    list_display = ['id', 'name', 'email', 'role_en', 'team', 'is_team_leader', 'is_coleader', 'is_active']
+    list_filter = ['team', 'is_team_leader', 'is_coleader', 'is_active']
     search_fields = ['name', 'email', 'role_en', 'role_es']
-    list_editable = ['is_team_leader', 'is_active']
-    fields = ['user', 'name', 'email', 'image', 'image_url', 'career_en', 'career_es', 
-              'role_en', 'role_es', 'charge_en', 'charge_es', 'team', 
-              'is_team_leader', 'is_active', 'password_hash']
+    list_editable = ['is_team_leader', 'is_coleader', 'is_active']
+    fields = ['user', 'name', 'email', 'image', 'career_en', 'career_es',
+              'role_en', 'role_es', 'team',
+              'is_team_leader', 'is_coleader', 'is_active', 'password_hash']
     readonly_fields = ['password_hash']
     
     # Disable admin logging to avoid the ID sequence issue
@@ -44,9 +56,9 @@ class MemberAdmin(admin.ModelAdmin):
 
 @admin.register(Publication)
 class PublicationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title_en', 'publication_date', 'team']
+    list_display = ['id', 'slug', 'name_en', 'publication_date', 'team']
     list_filter = ['team', 'publication_date']
-    search_fields = ['title_en', 'title_es']
+    search_fields = ['name_en', 'name_es', 'slug']
     date_hierarchy = 'publication_date'
 
 
@@ -55,3 +67,55 @@ class RedSocialAdmin(admin.ModelAdmin):
     list_display = ['id', 'member', 'platform', 'url']
     list_filter = ['member', 'platform']
     search_fields = ['member__name', 'url', 'platform']
+
+
+@admin.register(PaymentCheckoutSession)
+class PaymentCheckoutSessionAdmin(admin.ModelAdmin):
+    list_display = ['reference', 'user', 'member', 'provider', 'item_type', 'amount_cents', 'currency', 'status', 'created_at']
+    list_filter = ['provider', 'item_type', 'status', 'currency']
+    search_fields = ['reference', 'idempotency_key', 'provider_session_id', 'member__email', 'user__email']
+    readonly_fields = ['reference', 'created_at', 'updated_at']
+
+
+@admin.register(PaymentWebhookEvent)
+class PaymentWebhookEventAdmin(admin.ModelAdmin):
+    list_display = ['provider_event_id', 'provider', 'event_type', 'signature_verified', 'received_at', 'processed_at']
+    list_filter = ['provider', 'event_type', 'signature_verified']
+    search_fields = ['provider_event_id', 'event_type', 'payload_hash']
+    readonly_fields = ['received_at', 'processed_at', 'payload_hash']
+
+
+@admin.register(SecurityAuditEvent)
+class SecurityAuditEventAdmin(admin.ModelAdmin):
+    list_display = ['event_type', 'severity', 'actor_member', 'ip_address', 'created_at']
+    list_filter = ['severity', 'event_type']
+    search_fields = ['event_type', 'ip_address', 'actor_member__email']
+    readonly_fields = ['created_at']
+
+
+@admin.register(InternalWhitelistEntry)
+class InternalWhitelistEntryAdmin(admin.ModelAdmin):
+    list_display = ['email', 'internal_role', 'invited_by', 'created_at']
+    list_filter = ['internal_role']
+    search_fields = ['email', 'invited_by__email']
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'email', 'name', 'is_internal', 'internal_role', 'created_at']
+    list_filter = ['is_internal', 'internal_role']
+    search_fields = ['email', 'name', 'user__username']
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'plan', 'status', 'next_billing_date', 'created_at']
+    list_filter = ['status', 'plan']
+    search_fields = ['user__email', 'plan']
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'amount', 'currency', 'type', 'status', 'payu_transaction_id', 'created_at']
+    list_filter = ['status', 'type', 'currency']
+    search_fields = ['user__email', 'payu_transaction_id']

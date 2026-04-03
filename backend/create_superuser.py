@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""
-Script to create a superuser with associated Member profile
-"""
+"""Create or update the project superuser and linked Member profile."""
+
 import os
 import sys
+
 import django
 
 # Setup Django
@@ -12,103 +12,134 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'candelaria_project.settings')
 django.setup()
 
 from django.contrib.auth.models import User
+from django.db import transaction
+
+from api.email_whitelist import add_email_to_whitelist, is_email_allowed
+from api.member_catalog import get_career_pair, resolve_role_pair
 from api.models import Member, Team
 
-def create_superuser_with_member():
-    """Create superuser with member profile"""
-    
-    # Superuser data
-    username = 'juligm4'
-    email = 'j.galindom2@uniandes.edu.co'
-    password = '44$admin$44'
-    first_name = 'Julián'
-    last_name = 'Galindo'
-    
-    # Member data
-    career_en = 'Design'
-    career_es = 'Diseño'
-    role_en = 'Team Leader'
-    role_es = 'Líder de Equipo'
-    charge_en = 'Website & Prototyping'
-    charge_es = 'Sitio Web y Prototipado'
-    team_id = 7
-    
-    # Check if user already exists
-    user_exists = User.objects.filter(username=username).exists()
-    
-    if user_exists:
-        print(f"⚠️  User '{username}' already exists!")
-        user = User.objects.get(username=username)
-        print(f"   User ID: {user.id}")
-        
-        # Check if member profile exists
-        try:
-            member = user.member_profile
-            print(f"   Member profile already exists (ID: {member.id})")
-            print(f"\n✅ User and member already configured!")
-            return
-        except Member.DoesNotExist:
-            print(f"   No member profile found. Creating one...")
-    else:
-        # Create new superuser
-        print(f"\n🔨 Creating superuser '{username}'...")
-        user = User.objects.create_superuser(
-            username=username,
-            email=email,
-            password=password,
-            first_name=first_name,
-            last_name=last_name
+
+USERNAME = os.getenv('CANDELARIA_SUPERUSER_USERNAME', '').strip()
+EMAIL = os.getenv('CANDELARIA_SUPERUSER_EMAIL', '').strip().lower()
+PASSWORD = os.getenv('CANDELARIA_SUPERUSER_PASSWORD', '')
+FULL_NAME = os.getenv('CANDELARIA_SUPERUSER_FULL_NAME', 'Candelaria Admin').strip()
+CAREER_KEY = os.getenv('CANDELARIA_SUPERUSER_CAREER_KEY', 'design').strip().lower()
+ROLE_INPUT = os.getenv('CANDELARIA_SUPERUSER_ROLE', 'Team Leader').strip()
+ROLE_LANGUAGE = os.getenv('CANDELARIA_SUPERUSER_ROLE_LANGUAGE', 'en').strip().lower()
+TEAM_HINT = os.getenv('CANDELARIA_SUPERUSER_TEAM_HINT', 'design').strip().lower()
+
+
+def validate_required_credentials():
+    missing = []
+    if not USERNAME:
+        missing.append('CANDELARIA_SUPERUSER_USERNAME')
+    if not EMAIL:
+        missing.append('CANDELARIA_SUPERUSER_EMAIL')
+    if not PASSWORD:
+        missing.append('CANDELARIA_SUPERUSER_PASSWORD')
+
+    if missing:
+        raise RuntimeError(
+            f"Missing required environment variables for superuser creation: {', '.join(missing)}"
         )
-        print(f"✅ Superuser created successfully! (ID: {user.id})")
-    
-    # Get the team
-    try:
-        team = Team.objects.get(id=team_id)
-        print(f"✓ Found team: {team.name_en}")
-    except Team.DoesNotExist:
-        print(f"❌ Team with ID {team_id} does not exist!")
-        return
-    
-    # Create member profile
-    print(f"\n🔨 Creating member profile...")
-    member = Member.objects.create(
-        user=user,
-        name=f"{first_name} {last_name}",
-        email=email,
-        career_en=career_en,
-        career_es=career_es,
-        role_en=role_en,
-        role_es=role_es,
-        charge_en=charge_en,
-        charge_es=charge_es,
-        team=team,
-        is_team_leader=True,
-        is_active=True
+
+
+def resolve_team_or_raise():
+    """Resolve team robustly by id, then by English/Spanish name contains match."""
+    if TEAM_HINT.isdigit():
+        team = Team.objects.filter(id=int(TEAM_HINT)).first()
+        if team:
+            return team
+
+    team = Team.objects.filter(name_en__icontains=TEAM_HINT).first()
+    if team:
+        return team
+
+    team = Team.objects.filter(name_es__icontains=TEAM_HINT).first()
+    if team:
+        return team
+
+    raise RuntimeError(
+        f"Could not resolve team from TEAM_HINT='{TEAM_HINT}'. "
+        "Set CANDELARIA_SUPERUSER_TEAM_HINT to a team id or name fragment."
     )
-    
-    # Set password in member model (for legacy compatibility if needed)
-    member.set_password(password)
+
+
+@transaction.atomic
+def create_or_update_superuser_with_member():
+    full_name_parts = FULL_NAME.split(' ', 1)
+    first_name = full_name_parts[0]
+    last_name = full_name_parts[1] if len(full_name_parts) > 1 else ''
+
+    career_pair = get_career_pair(CAREER_KEY)
+    if not career_pair:
+        raise RuntimeError(
+            f"Invalid CAREER_KEY='{CAREER_KEY}'. "
+            "Use a valid career key from backend/api/member_catalog.py"
+        )
+
+    role_pair = resolve_role_pair(ROLE_INPUT, ROLE_LANGUAGE)
+    team = resolve_team_or_raise()
+
+    user, user_created = User.objects.get_or_create(
+        username=USERNAME,
+        defaults={
+            'email': EMAIL,
+            'first_name': first_name,
+            'last_name': last_name,
+            'is_staff': True,
+            'is_superuser': True,
+            'is_active': True,
+        },
+    )
+
+    user.email = EMAIL
+    user.first_name = first_name
+    user.last_name = last_name
+    user.is_staff = True
+    user.is_superuser = True
+    user.is_active = True
+    if PASSWORD:
+        user.set_password(PASSWORD)
+    user.save()
+
+    member = Member.objects.filter(user=user).first() or Member.objects.filter(email=EMAIL).first()
+    if not member:
+        member = Member(user=user, email=EMAIL)
+
+    member.user = user
+    member.name = FULL_NAME
+    member.email = EMAIL
+    member.team = team
+    member.career_en = career_pair['en']
+    member.career_es = career_pair['es']
+    member.role_en = role_pair['role_en']
+    member.role_es = role_pair['role_es']
+    member.is_team_leader = True
+    member.is_active = True
+    if PASSWORD:
+        member.set_password(PASSWORD)
     member.save()
-    
-    print(f"✅ Member profile created successfully! (ID: {member.id})")
-    
-    print(f"\n" + "="*60)
-    print(f"🎉 SUPERUSER CREATED SUCCESSFULLY!")
-    print(f"="*60)
-    print(f"Username:     {username}")
-    print(f"Email:        {email}")
-    print(f"Password:     {password}")
-    print(f"Name:         {first_name} {last_name}")
-    print(f"Team:         {team.name_en}")
-    print(f"Role:         {role_en}")
-    print(f"User ID:      {user.id}")
-    print(f"Member ID:    {member.id}")
-    print(f"="*60)
-    print(f"\n📝 Next steps:")
-    print(f"1. Add profile image at: backend/media/members/julian_galindo.jpg")
-    print(f"2. Login at: http://localhost:8000/admin")
-    print(f"3. Or use the login page: http://localhost:5173/login")
-    print(f"="*60)
+
+    if not is_email_allowed(EMAIL):
+        add_email_to_whitelist(EMAIL)
+
+    print('\n' + '=' * 68)
+    print('SUPERUSER + MEMBER UPSERT COMPLETE')
+    print('=' * 68)
+    print(f"User created:   {'yes' if user_created else 'no (updated)'}")
+    print(f"Username:       {user.username}")
+    print(f"Email:          {user.email}")
+    print(f"Full Name:      {member.name}")
+    print(f"Team:           {team.name_en} (id={team.id})")
+    print(f"Career:         {member.career_en} / {member.career_es}")
+    print(f"Role:           {member.role_en} / {member.role_es}")
+    print(f"User ID:        {user.id}")
+    print(f"Member ID:      {member.id}")
+    print(f"Whitelisted:    {'yes' if is_email_allowed(EMAIL) else 'no'}")
+    print('=' * 68)
+
 
 if __name__ == '__main__':
-    create_superuser_with_member()
+    validate_required_credentials()
+    create_or_update_superuser_with_member()

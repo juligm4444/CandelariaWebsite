@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from urllib.parse import parse_qs, urlparse
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 # Load environment variables
 load_dotenv()
@@ -26,10 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-@ksej5uwn@cdz6qu5#&2@mb3!y99xg0z_%v(4z8e@kimsmegrb')
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured('SECRET_KEY environment variable is required')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'True').strip().lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -54,7 +57,9 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware
+    'api.middleware.ApiContentTypeGuardMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'api.middleware.ApiSecurityHeadersMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -124,6 +129,13 @@ def build_database_settings():
 
 DATABASES = build_database_settings()
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'candelaria-security-cache',
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -173,6 +185,21 @@ CORS_ALLOWED_ORIGINS = os.getenv(
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()
+]
 
 # REST Framework Configuration
 REST_FRAMEWORK = {
@@ -182,6 +209,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  # We'll control this per-view
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': os.getenv('THROTTLE_ANON_RATE', '120/hour'),
+        'user': os.getenv('THROTTLE_USER_RATE', '1000/hour'),
+        'burst': os.getenv('THROTTLE_BURST_RATE', '60/minute'),
+        'auth': os.getenv('THROTTLE_AUTH_RATE', '10/minute'),
+    },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100,
 }
@@ -212,3 +249,61 @@ SIMPLE_JWT = {
 # Media files (for uploaded images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Frontend URL used in password reset emails
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
+# Email settings for password reset
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@candelaria.local')
+
+# Payment integration settings (secrets are read from environment only).
+PAYMENT_PROVIDER = os.getenv('PAYMENT_PROVIDER', 'stripe').strip().lower()
+PAYMENT_PUBLIC_KEY = os.getenv('PAYMENT_PUBLIC_KEY', '').strip()
+PAYMENT_SECRET_KEY = os.getenv('PAYMENT_SECRET_KEY', '').strip()
+PAYMENT_WEBHOOK_SECRET = os.getenv('PAYMENT_WEBHOOK_SECRET', '').strip()
+PAYMENT_WEBHOOK_TOLERANCE_SECONDS = int(os.getenv('PAYMENT_WEBHOOK_TOLERANCE_SECONDS', '300'))
+PAYMENT_DEFAULT_CURRENCY = os.getenv('PAYMENT_DEFAULT_CURRENCY', 'usd').strip().lower()
+PAYMENT_MIN_AMOUNT_CENTS = int(os.getenv('PAYMENT_MIN_AMOUNT_CENTS', '100'))
+PAYMENT_MAX_AMOUNT_CENTS = int(os.getenv('PAYMENT_MAX_AMOUNT_CENTS', '5000000'))
+
+if not DEBUG and PAYMENT_PROVIDER == 'stripe':
+    if not PAYMENT_PUBLIC_KEY or not PAYMENT_SECRET_KEY or not PAYMENT_WEBHOOK_SECRET:
+        raise ImproperlyConfigured(
+            'PAYMENT_PUBLIC_KEY, PAYMENT_SECRET_KEY and PAYMENT_WEBHOOK_SECRET are required in production.'
+        )
+
+# PayU integration settings (used when PAYMENT_PROVIDER='payu').
+PAYU_MERCHANT_ID = os.getenv('PAYU_MERCHANT_ID', '').strip()
+PAYU_ACCOUNT_ID = os.getenv('PAYU_ACCOUNT_ID', '').strip()
+PAYU_API_KEY = os.getenv('PAYU_API_KEY', '').strip()
+PAYU_API_LOGIN = os.getenv('PAYU_API_LOGIN', '').strip()
+PAYU_TEST_MODE = os.getenv('PAYU_TEST_MODE', 'True').strip().lower() not in ('false', '0', 'no')
+
+if not DEBUG and PAYMENT_PROVIDER == 'payu':
+    if not PAYU_MERCHANT_ID or not PAYU_API_KEY or not PAYU_API_LOGIN:
+        raise ImproperlyConfigured(
+            'PAYU_MERCHANT_ID, PAYU_API_KEY and PAYU_API_LOGIN are required in production when using PayU.'
+        )
+
+# Login brute-force controls.
+AUTH_MAX_ATTEMPTS = int(os.getenv('AUTH_MAX_ATTEMPTS', '8'))
+AUTH_ATTEMPT_WINDOW_SECONDS = int(os.getenv('AUTH_ATTEMPT_WINDOW_SECONDS', '900'))
+
+# Upload limits help mitigate payload abuse attempts.
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('DATA_UPLOAD_MAX_MEMORY_SIZE', str(2 * 1024 * 1024)))
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('FILE_UPLOAD_MAX_MEMORY_SIZE', str(5 * 1024 * 1024)))
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').strip().lower() == 'true'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_REFERRER_POLICY = 'same-origin'
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
