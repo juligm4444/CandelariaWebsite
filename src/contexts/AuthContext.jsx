@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { API_URL } from '../lib/config';
 
 const AuthContext = createContext(null);
 
@@ -15,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       if (tokens.refresh) {
-        await axios.post('http://localhost:8000/api/auth/logout/', {
+        await axios.post(`${API_URL}/auth/logout/`, {
           refresh: tokens.refresh,
         });
       }
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   const loadUser = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/auth/me/');
+      const response = await axios.get(`${API_URL}/auth/me/`);
       setUser(response.data.member);
       setLoading(false);
     } catch (error) {
@@ -53,7 +54,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshAccessToken = useCallback(async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+      const response = await axios.post(`${API_URL}/token/refresh/`, {
         refresh: tokens.refresh,
       });
 
@@ -98,7 +99,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       return;
     }
-    
+
     if (tokens.access) {
       loadUser();
     } else {
@@ -123,7 +124,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register/', userData);
+      const response = await axios.post(`${API_URL}/auth/register/`, userData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
       const { member, tokens: newTokens } = response.data;
 
@@ -133,16 +136,16 @@ export const AuthProvider = ({ children }) => {
 
       // Set user first
       setUser(member);
-      
+
       // Mark to skip loadUser on next token change
       setSkipLoadUser(true);
-      
+
       // Then update tokens
       setTokens({
         access: newTokens.access,
         refresh: newTokens.refresh,
       });
-      
+
       // Set loading to false
       setLoading(false);
 
@@ -158,7 +161,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login/', {
+      const response = await axios.post(`${API_URL}/auth/login/`, {
         email,
         password,
       });
@@ -171,16 +174,16 @@ export const AuthProvider = ({ children }) => {
 
       // Set user first
       setUser(member);
-      
+
       // Mark to skip loadUser on next token change
       setSkipLoadUser(true);
-      
+
       // Then update tokens
       setTokens({
         access: newTokens.access,
         refresh: newTokens.refresh,
       });
-      
+
       // Set loading to false
       setLoading(false);
 
@@ -197,7 +200,7 @@ export const AuthProvider = ({ children }) => {
   const checkEmailAvailability = async (email) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/auth/check-email/?email=${email}`
+        `${API_URL}/auth/check-email/?email=${encodeURIComponent(email)}`
       );
       return response.data;
     } catch (error) {
@@ -208,7 +211,7 @@ export const AuthProvider = ({ children }) => {
 
   const changePassword = async (oldPassword, newPassword) => {
     try {
-      const response = await axios.put('http://localhost:8000/api/auth/change-password/', {
+      const response = await axios.put(`${API_URL}/auth/change-password/`, {
         old_password: oldPassword,
         new_password: newPassword,
       });
@@ -222,16 +225,56 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const forgotPassword = async (email) => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/forgot-password/`, {
+        email,
+      });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      console.error('Forgot password request failed:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Could not send reset email',
+      };
+    }
+  };
+
+  const resetPassword = async (uid, token, newPassword) => {
+    try {
+      const response = await axios.post(`${API_URL}/auth/reset-password/`, {
+        uid,
+        token,
+        new_password: newPassword,
+      });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      console.error('Password reset failed:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Could not reset password',
+      };
+    }
+  };
+
   const value = {
     user,
     loading,
     isAuthenticated: !!user,
+    isInternal: !!user?.is_internal,
+    isExternal: !!user && !user?.is_internal,
+    internalRole: user?.internal_role || null,
     isTeamLeader: user?.is_team_leader || false,
+    canManageTeam: !!(user?.is_internal && (user?.is_team_leader || user?.is_coleader)),
+    canCreatePosts: !!user?.is_internal,
+    canMakePayments: !!user,
     register,
     login,
     logout,
     checkEmailAvailability,
     changePassword,
+    forgotPassword,
+    resetPassword,
     refreshAccessToken,
   };
 

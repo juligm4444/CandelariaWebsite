@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu, X } from 'lucide-react';
 import MainLogo from '../assets/images/MainLogo.png';
 import { LanguageToggle } from './LanguageToggle';
 import { useAuth } from '../contexts/AuthContext';
+import { resolveMediaUrl } from '../lib/media';
 
 export const Navbar = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
   const { isAuthenticated, user } = useAuth();
 
   const navItems = [
@@ -30,13 +34,31 @@ export const Navbar = () => {
     };
   }, [isOpen]);
 
-  const closeMenu = () => setIsOpen(false);
+  useEffect(() => {
+    const onOutsideClick = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', onOutsideClick);
+    return () => document.removeEventListener('mousedown', onOutsideClick);
+  }, []);
+
+  const closeMenu = () => {
+    setIsOpen(false);
+    setIsProfileMenuOpen(false);
+  };
 
   return (
     <header className="site-header">
       <nav className="site-nav">
         <div className="site-nav-left">
-          <Link to="/" className="brand-link" onClick={closeMenu}>
+          <Link
+            to="/"
+            className={`brand-link${location.pathname === '/' ? ' is-home-selected' : ''}`}
+            onClick={closeMenu}
+          >
             <img src={MainLogo} alt="Candelaria" className="brand-logo" />
             <span>{t('site.brand')}</span>
           </Link>
@@ -58,19 +80,37 @@ export const Navbar = () => {
         <div className="site-actions">
           <LanguageToggle />
           {isAuthenticated && user ? (
-            <Link to="/profile" className="profile-avatar-link" onClick={closeMenu}>
-              {user.image_url ? (
-                <img 
-                  src={user.image_url} 
-                  alt={user.name} 
-                  className="profile-avatar"
-                />
-              ) : (
-                <div className="profile-avatar-placeholder">
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            <div className="profile-menu" ref={profileMenuRef}>
+              <button
+                type="button"
+                className="profile-avatar-link"
+                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                aria-label="Open profile menu"
+              >
+                {user.image ? (
+                  <img
+                    src={resolveMediaUrl(user.image)}
+                    alt={user.name}
+                    className="profile-avatar"
+                  />
+                ) : (
+                  <div className="profile-avatar-placeholder">
+                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="profile-submenu">
+                  <Link to="/profile" onClick={closeMenu}>
+                    Profile
+                  </Link>
+                  <Link to="/dashboard" onClick={closeMenu}>
+                    Dashboard
+                  </Link>
                 </div>
               )}
-            </Link>
+            </div>
           ) : (
             <Link to="/login" className="nav-login-button">
               {t('site.nav.login')}

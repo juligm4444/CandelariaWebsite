@@ -513,6 +513,29 @@
     "body": "The route you requested does not exist in this release.",
     "action": "Back To Home"
   },
+  "forgotPasswordPage": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your account email and we will send reset instructions.",
+    "sendButton": "Send reset email",
+    "sending": "Sending...",
+    "backToLogin": "← Back to Login",
+    "sentMessage": "If this email is registered, a reset email has been sent.",
+    "sendError": "Could not send reset email."
+  },
+  "resetPasswordPage": {
+    "title": "Reset Password",
+    "subtitle": "Set a new password for your account.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "updateButton": "Update password",
+    "updating": "Updating...",
+    "backToLogin": "← Back to Login",
+    "invalidLink": "Invalid reset link. Please request a new one.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "successMessage": "Password reset successful. Redirecting to login...",
+    "errorMessage": "Could not reset password."
+  },
   "login": {
     "title": "Welcome Back",
     "subtitle": "Sign in to your account",
@@ -533,6 +556,11 @@
     "title": "Create Account",
     "subtitle": "Join the Candelaria community",
     "name": "Full name",
+    "team": "Team",
+    "career": "Career",
+    "role": "Role",
+    "selectTeam": "Select team",
+    "selectCareer": "Select career",
     "namePlaceholder": "Enter your full name",
     "email": "Email address",
     "emailPlaceholder": "Enter your email",
@@ -553,6 +581,11 @@
     "roleInfo": "Role Information",
     "chargeInfo": "Responsibilities",
     "name": "Full Name",
+    "team": "Team",
+    "career": "Career",
+    "role": "Role",
+    "selectTeam": "Select a team",
+    "selectCareer": "Select a career",
     "email": "Email",
     "emailHint": "Email cannot be changed",
     "careerEn": "Career (English)",
@@ -575,5 +608,66 @@
     "addSocialLink": "+ Add Link",
     "socialLinkError": "Please select a platform and enter a URL",
     "socialLinkExists": "You already have a link for this platform"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "myPublications": "My Publications",
+    "teamPublications": "Team Publications",
+    "teamManagement": "Team Management",
+    "emptyMyPublications": "No publications yet.",
+    "emptyTeamPublications": "No team publications yet.",
+    "unknownAuthor": "Unknown author",
+    "roles": {
+      "leader": "Leader",
+      "coleader": "Co-Leader",
+      "member": "Member"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "open": "Open",
+      "delete": "Delete",
+      "createPublication": "Create Publication",
+      "addToWhitelist": "Invite Member",
+      "assignColeader": "Assign co-leader",
+      "removeColeader": "Remove co-leader",
+      "transferLeadershipTitle": "Transfer leadership",
+      "transferColeadershipTitle": "Transfer co-leadership"
+    },
+    "form": {
+      "nameEn": "Name (EN)",
+      "nameEs": "Name (ES)",
+      "abstractEn": "Abstract (EN)",
+      "abstractEs": "Abstract (ES)",
+      "pdf": "PDF File",
+      "image": "Image",
+      "save": "Save Publication"
+    },
+    "confirm": {
+      "createPublication": "Create this publication?",
+      "deletePublication": "Delete this publication?",
+      "invite": "Invite this email as a member?",
+      "kickMember": "Kick this member and revoke access?",
+      "transferLeadership": "Transfer leadership to this co-leader? Your session permissions will change.",
+      "transferColeadership": "Transfer your co-leader status to this member?",
+      "assignColeaderVerb": "assign co-leader status to",
+      "removeColeaderVerb": "remove co-leader status from",
+      "confirmColeaderAction": "Confirm you want to {{verb}} this member?"
+    },
+    "messages": {
+      "publicationCreated": "Publication created successfully.",
+      "publicationCreateError": "Could not create publication.",
+      "publicationDeleted": "Publication deleted.",
+      "publicationDeleteError": "Could not delete publication.",
+      "inviteSuccess": "Email added to whitelist invitation list.",
+      "inviteError": "Could not invite this email.",
+      "kickSuccess": "Member access revoked.",
+      "kickError": "Could not kick member.",
+      "transferLeadershipSuccess": "Leadership transferred. Reloading session...",
+      "transferLeadershipError": "Could not transfer leadership.",
+      "transferColeadershipSuccess": "Co-leadership transferred. Reloading session...",
+      "transferColeadershipError": "Could not transfer co-leadership.",
+      "coleaderUpdated": "Co-leader status updated.",
+      "coleaderUpdateError": "Could not update co-leader status."
+    }
   }
 }

@@ -17,6 +17,7 @@ import IconInstagram from '../assets/icons/instagram.svg';
 import IconLinkedin from '../assets/icons/linkedin.svg';
 import IconX from '../assets/icons/x.svg';
 import MainLogo from '../assets/images/MainLogo.png';
+import { resolveMediaUrl } from '../lib/media';
 
 const LOGO_BY_KEY = {
   committee: LogoCommittee,
@@ -44,97 +45,44 @@ const normalize = (value) =>
     .toLowerCase();
 
 const TeamMemberCard = ({ member }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  const handleInteraction = () => {
-    if (window.innerWidth < 768) {
-      setIsFlipped((prev) => !prev);
-    }
-  };
-
-  const handleMouseEnter = () => {
-    if (window.innerWidth >= 768) {
-      setIsFlipped(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (window.innerWidth >= 768) {
-      setIsFlipped(false);
-    }
-  };
-
-  const imageUrl = member?.image_url
-    ? member.image_url.startsWith('http')
-      ? member.image_url
-      : `http://localhost:8000${member.image_url}`
-    : null;
+  const imageUrl = member?.image ? resolveMediaUrl(member.image) : null;
 
   const socialLinks = Array.isArray(member?.social_links) ? member.social_links : [];
 
   return (
-    <article
-      className="team-member-flip"
-      style={{ perspective: '1000px' }}
-      onClick={handleInteraction}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div
-        className="team-member-flip-inner"
-        style={{
-          transformStyle: 'preserve-3d',
-          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        }}
-      >
-        {/* Front face */}
-        <div
-          className="team-member-flip-face team-member-flip-front"
-          style={{ backfaceVisibility: 'hidden' }}
-        >
-          <div className="team-member-image-wrap">
-            {imageUrl ? (
-              <img src={imageUrl} alt={member.name} className="team-member-image" />
-            ) : (
-              <div className="team-member-fallback">{member?.name?.charAt(0) || 'C'}</div>
-            )}
-          </div>
-          <div className="team-member-body">
-            <span>{member.role}</span>
-            <h4>{member.name}</h4>
-            <p>{member.charge}</p>
-          </div>
-        </div>
+    <article className="team-member-fixed-card">
+      <div className="team-member-image-wrap">
+        {imageUrl ? (
+          <img src={imageUrl} alt={member.name} className="team-member-image" />
+        ) : (
+          <div className="team-member-fallback">{member?.name?.charAt(0) || 'C'}</div>
+        )}
+      </div>
+      <div className="team-member-body team-member-fixed-body">
+        <span>{member.role}</span>
+        <h4>{member.name}</h4>
+        <p>{member.career}</p>
 
-        {/* Back face */}
-        <div
-          className="team-member-flip-face team-member-flip-back"
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-        >
-          <h4>{member.name}</h4>
-          <p>{member.career}</p>
-          {socialLinks.length > 0 && (
-            <div className="team-member-social-row">
-              {socialLinks.map((link) => {
-                const icon = SOCIAL_ICON_BY_PLATFORM[link.platform];
-                if (!icon) return null;
-                return (
-                  <a
-                    key={link.id}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="team-member-social-link"
-                    aria-label={link.platform}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <img src={icon} alt={link.platform} />
-                  </a>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        {socialLinks.length > 0 && (
+          <div className="team-member-social-row">
+            {socialLinks.map((link) => {
+              const icon = SOCIAL_ICON_BY_PLATFORM[link.platform];
+              if (!icon) return null;
+              return (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="team-member-social-link"
+                  aria-label={link.platform}
+                >
+                  <img src={icon} alt={link.platform} />
+                </a>
+              );
+            })}
+          </div>
+        )}
       </div>
     </article>
   );
@@ -270,7 +218,7 @@ export const TeamPage = () => {
   const selectedMembers = useMemo(() => {
     if (!selectedTeam) return [];
 
-    return members.filter((member) => {
+    const filtered = members.filter((member) => {
       const byId = String(member.team_id || member.team || '') === String(selectedTeam.id);
       const byName = normalize(member.team_name).includes(normalize(selectedTeam.name));
       const byAlias = (selectedTeam.aliases || []).some((alias) =>
@@ -278,6 +226,18 @@ export const TeamPage = () => {
       );
 
       return byId || byName || byAlias;
+    });
+
+    return filtered.sort((a, b) => {
+      const aRank = a.is_team_leader ? 0 : a.is_coleader ? 1 : 2;
+      const bRank = b.is_team_leader ? 0 : b.is_coleader ? 1 : 2;
+      if (aRank !== bRank) return aRank - bRank;
+
+      const aCreated = a.created_at ? new Date(a.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+      const bCreated = b.created_at ? new Date(b.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+      if (aCreated !== bCreated) return aCreated - bCreated;
+
+      return (a.id || 0) - (b.id || 0);
     });
   }, [members, selectedTeam]);
 

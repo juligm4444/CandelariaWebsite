@@ -1,350 +1,503 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import { Navbar } from '../components/Navbar';
+import { Footer } from '../components/Footer';
+import { useAuth } from '../contexts/AuthContext';
+import { membersAPI, publicationsAPI } from '../services/api';
+import { resolveMediaUrl } from '../lib/media';
+import LeaderIcon from '../assets/icons/leader.svg';
+import ColeaderIcon from '../assets/icons/coleader.svg';
+import SkullIcon from '../assets/icons/skull.svg';
 
 const DashboardPage = () => {
-  const { t } = useTranslation();
-  const { user, isTeamLeader } = useAuth();
-  const [publications, setPublications] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [showPublicationForm, setShowPublicationForm] = useState(false);
+  const { t, i18n } = useTranslation();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteData, setInviteData] = useState({ email: '' });
+  const [members, setMembers] = useState([]);
+  const [publications, setPublications] = useState([]);
   const [formData, setFormData] = useState({
-    title_en: '',
-    title_es: '',
-    description_en: '',
-    description_es: '',
-    publication_url: '',
-    team_id: user?.team_id || '',
+    name_en: '',
+    name_es: '',
+    abstract_en: '',
+    abstract_es: '',
+    file: null,
+    image: null,
   });
-  const [formError, setFormError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+
+  const language = i18n.language === 'es' ? 'es' : 'en';
+  const canManageTeam = !!(user?.is_team_leader || user?.is_coleader);
+
+  const roleLabel = (member) => {
+    if (member.is_team_leader) return t('dashboard.roles.leader');
+    if (member.is_coleader) return t('dashboard.roles.coleader');
+    return t('dashboard.roles.member');
+  };
+
+  const sortedTeamMembers = useMemo(() => {
+    const copied = [...members];
+    return copied.sort((a, b) => {
+      const aRank = a.is_team_leader ? 0 : a.is_coleader ? 1 : 2;
+      const bRank = b.is_team_leader ? 0 : b.is_coleader ? 1 : 2;
+      if (aRank !== bRank) return aRank - bRank;
+      const aCreated = a.created_at ? new Date(a.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+      const bCreated = b.created_at ? new Date(b.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+      return aCreated - bCreated;
+    });
+  }, [members]);
+
+  const myPublications = useMemo(() => {
+    if (!user) return [];
+    return publications.filter((pub) => pub.author_id === user.id);
+  }, [publications, user]);
+
+  const teamPublications = useMemo(() => {
+    if (!user) return [];
+    return publications.filter((pub) => pub.team_id === user.team_id);
+  }, [publications, user]);
 
   const loadData = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
-    try {
-      // Load user's publications
-      const pubResponse = await axios.get(
-        `http://localhost:8000/api/publications/?team=${user.team_id}`
-      );
-      setPublications(pubResponse.data);
+    setError('');
 
-      // Load team members if user is team leader
-      if (isTeamLeader) {
-        const membersResponse = await axios.get(
-          `http://localhost:8000/api/members/?team=${user.team_id}`
-        );
-        setTeamMembers(membersResponse.data);
-      }
-    } catch (error) {
-      console.error('Failed to load data:', error);
+    try {
+      const [pubRes, memberRes] = await Promise.all([
+        publicationsAPI.getAll(language, user.team_id),
+        membersAPI.getAll(language, user.team_id, true),
+      ]);
+      setPublications(Array.isArray(pubRes.data) ? pubRes.data : []);
+      setMembers(Array.isArray(memberRes.data) ? memberRes.data : []);
+    } catch {
+      setError(t('common.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [isTeamLeader, user?.team_id]);
+  }, [language, t, user]);
 
   useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [loadData, user]);
+    loadData();
+  }, [loadData]);
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setFormError('');
+  const resetMessageSoon = () => {
+    setTimeout(() => {
+      setSuccess('');
+      setError('');
+    }, 2200);
   };
 
-  const handleSubmitPublication = async (e) => {
-    e.preventDefault();
-    setFormError('');
+  const confirmAction = (msg) => window.confirm(msg);
+
+  const onCreatePublication = async (event) => {
+    event.preventDefault();
+    if (!user) return;
+
+    if (!confirmAction(t('dashboard.confirm.createPublication'))) return;
+
+    const payload = new FormData();
+    payload.append('name_en', formData.name_en);
+    payload.append('name_es', formData.name_es);
+    payload.append('abstract_en', formData.abstract_en);
+    payload.append('abstract_es', formData.abstract_es);
+    payload.append('team', String(user.team_id));
+    if (formData.file) payload.append('file', formData.file);
+    if (formData.image) payload.append('image', formData.image);
 
     try {
-      await axios.post('http://localhost:8000/api/publications/', {
-        ...formData,
-        team_id: user.team_id,
-      });
-
-      setSuccessMessage('Publication created successfully!');
-      setShowPublicationForm(false);
+      await publicationsAPI.create(payload);
+      setShowCreateForm(false);
       setFormData({
-        title_en: '',
-        title_es: '',
-        description_en: '',
-        description_es: '',
-        publication_url: '',
-        team_id: user.team_id,
+        name_en: '',
+        name_es: '',
+        abstract_en: '',
+        abstract_es: '',
+        file: null,
+        image: null,
       });
-      loadData(); // Reload publications
-
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      setFormError(error.response?.data?.error || 'Failed to create publication');
+      setSuccess(t('dashboard.messages.publicationCreated'));
+      resetMessageSoon();
+      loadData();
+    } catch (err) {
+      setError(err?.response?.data?.file?.[0] || t('dashboard.messages.publicationCreateError'));
+      resetMessageSoon();
     }
   };
 
-  const handleDeletePublication = async (pubId) => {
-    if (!confirm('Are you sure you want to delete this publication?')) return;
+  const onDeletePublication = async (slug) => {
+    if (!confirmAction(t('dashboard.confirm.deletePublication'))) return;
+    try {
+      await publicationsAPI.delete(slug);
+      setSuccess(t('dashboard.messages.publicationDeleted'));
+      resetMessageSoon();
+      loadData();
+    } catch {
+      setError(t('dashboard.messages.publicationDeleteError'));
+      resetMessageSoon();
+    }
+  };
+
+  const onInvite = async () => {
+    if (!inviteData.email.trim()) return;
+    if (!confirmAction(t('dashboard.confirm.invite'))) return;
 
     try {
-      await axios.delete(`http://localhost:8000/api/publications/${pubId}/`);
-      setSuccessMessage('Publication deleted successfully!');
-      loadData();
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      console.error('Failed to delete publication:', error);
-      alert('Failed to delete publication. You may not have permission.');
+      await membersAPI.invite(inviteData.email.trim(), 'members', true);
+      setSuccess(t('dashboard.messages.inviteSuccess'));
+      setInviteData({ email: '' });
+      setShowInvite(false);
+      resetMessageSoon();
+    } catch (err) {
+      setError(err?.response?.data?.error || t('dashboard.messages.inviteError'));
+      resetMessageSoon();
     }
   };
 
-  const handleToggleMemberStatus = async (memberId, currentStatus) => {
+  const onKickMember = async (memberId) => {
+    if (!confirmAction(t('dashboard.confirm.kickMember'))) return;
     try {
-      await axios.patch(`http://localhost:8000/api/members/${memberId}/`, {
-        is_active: !currentStatus,
-      });
-      setSuccessMessage('Member status updated!');
+      await membersAPI.kick(memberId, true);
+      setSuccess(t('dashboard.messages.kickSuccess'));
+      resetMessageSoon();
       loadData();
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      console.error('Failed to update member:', error);
-      alert('Failed to update member status.');
+    } catch (err) {
+      setError(err?.response?.data?.error || t('dashboard.messages.kickError'));
+      resetMessageSoon();
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  const onTransferLeadership = async (memberId) => {
+    if (!confirmAction(t('dashboard.confirm.transferLeadership'))) return;
+    try {
+      await membersAPI.transferLeadership(memberId, true);
+      setSuccess(t('dashboard.messages.transferLeadershipSuccess'));
+      setTimeout(() => window.location.reload(), 900);
+    } catch (err) {
+      setError(err?.response?.data?.error || t('dashboard.messages.transferLeadershipError'));
+      resetMessageSoon();
+    }
+  };
+
+  const onTransferColeadership = async (memberId) => {
+    if (!confirmAction(t('dashboard.confirm.transferColeadership'))) return;
+    try {
+      await membersAPI.transferColeadership(memberId, true);
+      setSuccess(t('dashboard.messages.transferColeadershipSuccess'));
+      setTimeout(() => window.location.reload(), 900);
+    } catch (err) {
+      setError(err?.response?.data?.error || t('dashboard.messages.transferColeadershipError'));
+      resetMessageSoon();
+    }
+  };
+
+  const onAssignOrRemoveColeader = async (memberId, isColeaderNow) => {
+    const verb = isColeaderNow
+      ? t('dashboard.confirm.removeColeaderVerb')
+      : t('dashboard.confirm.assignColeaderVerb');
+    if (!confirmAction(t('dashboard.confirm.confirmColeaderAction', { verb }))) return;
+
+    try {
+      await membersAPI.setColeader(memberId, !isColeaderNow, true);
+      setSuccess(t('dashboard.messages.coleaderUpdated'));
+      resetMessageSoon();
+      loadData();
+    } catch (err) {
+      setError(err?.response?.data?.error || t('dashboard.messages.coleaderUpdateError'));
+      resetMessageSoon();
+    }
+  };
+
+  const canKick = (target) => {
+    if (!user || target.id === user.id) return false;
+    if (user.is_team_leader) return true;
+    if (user.is_coleader) return !target.is_team_leader && !target.is_coleader;
+    return false;
+  };
+
+  const canShowLeaderTransfer = (target) => !!(user?.is_team_leader && target.is_coleader);
+  const canShowColeaderTransfer = (target) =>
+    !!(user?.is_coleader && !target.is_team_leader && target.id !== user.id);
+  const canShowColeaderSet = (target) =>
+    !!(user?.is_team_leader && !target.is_team_leader && target.id !== user.id);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t('dashboard.welcome', 'Welcome')}, {user?.name_en}!
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {isTeamLeader && (
-              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                Team Leader
-              </span>
-            )}
-          </p>
-        </div>
-
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 rounded-md bg-green-50 dark:bg-green-900/20 p-4">
-            <p className="text-sm text-green-800 dark:text-green-400">{successMessage}</p>
+    <div className="app-shell">
+      <Navbar />
+      <main className="profile-main">
+        <div className="profile-container dashboard-container">
+          <div className="profile-header">
+            <h1>{t('dashboard.title')}</h1>
+            <p>{user?.name}</p>
           </div>
-        )}
 
-        {/* Publications Section */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('dashboard.publications', 'Team Publications')}
-            </h2>
+          {loading && <p className="state-msg">{t('common.loading')}</p>}
+          {error && <p className="state-msg error">{error}</p>}
+          {success && <p className="state-msg">{success}</p>}
+
+          <section className="dashboard-toolbar">
             <button
-              onClick={() => setShowPublicationForm(!showPublicationForm)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              type="button"
+              className="login-button"
+              onClick={() => setShowCreateForm((prev) => !prev)}
             >
-              {showPublicationForm ? 'Cancel' : '+ New Publication'}
+              {showCreateForm
+                ? t('dashboard.actions.cancel')
+                : t('dashboard.actions.createPublication')}
             </button>
-          </div>
+          </section>
 
-          {/* Publication Form */}
-          {showPublicationForm && (
-            <form
-              onSubmit={handleSubmitPublication}
-              className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg"
-            >
-              {formError && (
-                <div className="mb-4 rounded-md bg-red-50 dark:bg-red-900/20 p-4">
-                  <p className="text-sm text-red-800 dark:text-red-400">{formError}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Title (English) *
-                  </label>
+          {showCreateForm && (
+            <form className="dashboard-create-form" onSubmit={onCreatePublication}>
+              <div className="register-two-col">
+                <div className="form-group">
+                  <label>{t('dashboard.form.nameEn')}</label>
                   <input
-                    type="text"
-                    name="title_en"
+                    className="form-input"
+                    value={formData.name_en}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name_en: e.target.value }))}
                     required
-                    value={formData.title_en}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white sm:text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Title (Spanish) *
-                  </label>
+                <div className="form-group">
+                  <label>{t('dashboard.form.nameEs')}</label>
                   <input
-                    type="text"
-                    name="title_es"
+                    className="form-input"
+                    value={formData.name_es}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, name_es: e.target.value }))}
                     required
-                    value={formData.title_es}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Description (English) *
-                  </label>
-                  <textarea
-                    name="description_en"
-                    required
-                    rows="3"
-                    value={formData.description_en}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Description (Spanish) *
-                  </label>
-                  <textarea
-                    name="description_es"
-                    required
-                    rows="3"
-                    value={formData.description_es}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white sm:text-sm"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Publication URL *
-                  </label>
-                  <input
-                    type="url"
-                    name="publication_url"
-                    required
-                    value={formData.publication_url}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white sm:text-sm"
                   />
                 </div>
               </div>
 
-              <div className="mt-4">
-                <button
-                  type="submit"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Create Publication
-                </button>
+              <div className="register-two-col">
+                <div className="form-group">
+                  <label>{t('dashboard.form.abstractEn')}</label>
+                  <textarea
+                    className="form-input"
+                    value={formData.abstract_en}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, abstract_en: e.target.value }))
+                    }
+                    rows={4}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('dashboard.form.abstractEs')}</label>
+                  <textarea
+                    className="form-input"
+                    value={formData.abstract_es}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, abstract_es: e.target.value }))
+                    }
+                    rows={4}
+                    required
+                  />
+                </div>
               </div>
+
+              <div className="register-two-col">
+                <div className="form-group">
+                  <label>{t('dashboard.form.pdf')}</label>
+                  <input
+                    type="file"
+                    className="form-input"
+                    accept="application/pdf"
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, file: e.target.files?.[0] || null }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('dashboard.form.image')}</label>
+                  <input
+                    type="file"
+                    className="form-input"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, image: e.target.files?.[0] || null }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="login-button">
+                {t('dashboard.form.save')}
+              </button>
             </form>
           )}
 
-          {/* Publications List */}
-          <div className="space-y-4">
-            {publications.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400">No publications yet.</p>
-            ) : (
-              publications.map((pub) => (
-                <div key={pub.id} className="border dark:border-gray-700 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {pub.title_en}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {pub.description_en}
-                      </p>
-                      <a
-                        href={pub.publication_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-500 text-sm mt-2 inline-block"
-                      >
-                        View Publication →
-                      </a>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        Author: {pub.author_name || 'Unknown'}
-                      </p>
-                    </div>
-                    {(isTeamLeader || pub.author_id === user?.id) && (
-                      <button
-                        onClick={() => handleDeletePublication(pub.id)}
-                        className="ml-4 text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Team Members Section (Team Leaders Only) */}
-        {isTeamLeader && (
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Team Members Management
-            </h2>
-
-            <div className="space-y-4">
-              {teamMembers.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-400">No team members found.</p>
+          <section className="dashboard-publications-grid">
+            <article className="dashboard-panel">
+              <h2>{t('dashboard.myPublications')}</h2>
+              {myPublications.length === 0 ? (
+                <p className="muted">{t('dashboard.emptyMyPublications')}</p>
               ) : (
-                teamMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="border dark:border-gray-700 rounded-lg p-4 flex justify-between items-center"
-                  >
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {member.name_en}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{member.email}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {member.role} • {member.career}
-                      </p>
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          member.is_active
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                        }`}
-                      >
-                        {member.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                <div className="dashboard-pub-list">
+                  {myPublications.map((pub) => (
+                    <div key={pub.id} className="dashboard-pub-item">
+                      <div>
+                        <strong>{pub.name}</strong>
+                        <p className="muted">{pub.abstract?.slice(0, 120) || ''}</p>
+                      </div>
+                      <div className="dashboard-pub-actions">
+                        <Link className="publication-read-link" to={`/publications/${pub.slug}`}>
+                          {t('dashboard.actions.open')}
+                        </Link>
+                        <button
+                          type="button"
+                          className="ghost-button"
+                          onClick={() => onDeletePublication(pub.slug)}
+                        >
+                          {t('dashboard.actions.delete')}
+                        </button>
+                      </div>
                     </div>
-                    {member.id !== user.id && (
-                      <button
-                        onClick={() => handleToggleMemberStatus(member.id, member.is_active)}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
-                      >
-                        {member.is_active ? 'Deactivate' : 'Activate'}
-                      </button>
-                    )}
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
-            </div>
-          </div>
-        )}
-      </div>
+            </article>
+
+            <article className="dashboard-panel">
+              <h2>{t('dashboard.teamPublications')}</h2>
+              {teamPublications.length === 0 ? (
+                <p className="muted">{t('dashboard.emptyTeamPublications')}</p>
+              ) : (
+                <div className="dashboard-pub-list">
+                  {teamPublications.map((pub) => (
+                    <div key={pub.id} className="dashboard-pub-item">
+                      <div>
+                        <strong>{pub.name}</strong>
+                        <p className="muted">{pub.author_name || t('dashboard.unknownAuthor')}</p>
+                      </div>
+                      <Link className="publication-read-link" to={`/publications/${pub.slug}`}>
+                        {t('dashboard.actions.open')}
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+          </section>
+
+          {canManageTeam && (
+            <section className="dashboard-panel">
+              <h2>{t('dashboard.teamManagement')}</h2>
+              <div className="team-management-grid">
+                {sortedTeamMembers.map((member) => {
+                  const imageUrl = member.image ? resolveMediaUrl(member.image) : null;
+                  return (
+                    <article key={member.id} className="team-member-bubble">
+                      <div className="team-member-bubble-main">
+                        <div className="team-member-image-wrap team-member-manage-image-wrap">
+                          {imageUrl ? (
+                            <img src={imageUrl} alt={member.name} className="team-member-image" />
+                          ) : (
+                            <div className="team-member-fallback">{member.name?.charAt(0) || 'M'}</div>
+                          )}
+                        </div>
+                        <div className="team-member-body team-member-manage-body">
+                          <span>{roleLabel(member)}</span>
+                          <h4>{member.name}</h4>
+                          <p>{member.career || roleLabel(member)}</p>
+                        </div>
+                      </div>
+
+                      <div className="team-member-bubble-actions">
+                        {canShowLeaderTransfer(member) && (
+                          <button
+                            type="button"
+                            title={t('dashboard.actions.transferLeadershipTitle')}
+                            onClick={() => onTransferLeadership(member.id)}
+                          >
+                            <img
+                              src={LeaderIcon}
+                              alt={t('dashboard.actions.transferLeadershipTitle')}
+                            />
+                          </button>
+                        )}
+
+                        {canShowColeaderTransfer(member) && (
+                          <button
+                            type="button"
+                            title={t('dashboard.actions.transferColeadershipTitle')}
+                            onClick={() => onTransferColeadership(member.id)}
+                          >
+                            <img
+                              src={ColeaderIcon}
+                              alt={t('dashboard.actions.transferColeadershipTitle')}
+                            />
+                          </button>
+                        )}
+
+                        {canShowColeaderSet(member) && (
+                          <button
+                            type="button"
+                            title={
+                              member.is_coleader
+                                ? t('dashboard.actions.removeColeader')
+                                : t('dashboard.actions.assignColeader')
+                            }
+                            onClick={() => onAssignOrRemoveColeader(member.id, member.is_coleader)}
+                          >
+                            <img
+                              src={ColeaderIcon}
+                              alt={
+                                member.is_coleader
+                                  ? t('dashboard.actions.removeColeader')
+                                  : t('dashboard.actions.assignColeader')
+                              }
+                            />
+                          </button>
+                        )}
+
+                        {canKick(member) && (
+                          <button
+                            type="button"
+                            title={t('dashboard.actions.delete')}
+                            onClick={() => onKickMember(member.id)}
+                          >
+                            <img src={SkullIcon} alt={t('dashboard.actions.delete')} />
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  className="team-member-bubble invite-bubble"
+                  onClick={() => setShowInvite((prev) => !prev)}
+                >
+                  +
+                </button>
+              </div>
+
+              {showInvite && (
+                <div className="dashboard-invite-box">
+                  <input
+                    className="form-input"
+                    type="email"
+                    placeholder="member@uniandes.edu.co"
+                    value={inviteData.email}
+                    onChange={(e) => setInviteData({ email: e.target.value })}
+                  />
+                  <button type="button" className="login-button" onClick={onInvite}>
+                    {t('dashboard.actions.addToWhitelist')}
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

@@ -513,6 +513,29 @@
     "body": "La ruta solicitada no existe en esta version.",
     "action": "Volver al inicio"
   },
+  "forgotPasswordPage": {
+    "title": "Olvidé mi Contraseña",
+    "subtitle": "Ingresa el correo de tu cuenta y te enviaremos instrucciones para restablecerla.",
+    "sendButton": "Enviar correo de restablecimiento",
+    "sending": "Enviando...",
+    "backToLogin": "← Volver al inicio de sesión",
+    "sentMessage": "Si este correo está registrado, se ha enviado un mensaje de restablecimiento.",
+    "sendError": "No se pudo enviar el correo de restablecimiento."
+  },
+  "resetPasswordPage": {
+    "title": "Restablecer Contraseña",
+    "subtitle": "Establece una nueva contraseña para tu cuenta.",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "updateButton": "Actualizar contraseña",
+    "updating": "Actualizando...",
+    "backToLogin": "← Volver al inicio de sesión",
+    "invalidLink": "Enlace de restablecimiento inválido. Por favor solicita uno nuevo.",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "successMessage": "Contraseña restablecida exitosamente. Redirigiendo al inicio de sesión...",
+    "errorMessage": "No se pudo restablecer la contraseña."
+  },
   "login": {
     "title": "Bienvenido de Vuelta",
     "subtitle": "Inicia sesión en tu cuenta",
@@ -533,6 +556,11 @@
     "title": "Crear Cuenta",
     "subtitle": "Únete a la comunidad Candelaria",
     "name": "Nombre completo",
+    "team": "Equipo",
+    "career": "Carrera",
+    "role": "Rol",
+    "selectTeam": "Selecciona equipo",
+    "selectCareer": "Selecciona carrera",
     "namePlaceholder": "Ingresa tu nombre completo",
     "email": "Correo electrónico",
     "emailPlaceholder": "Ingresa tu correo",
@@ -553,6 +581,11 @@
     "roleInfo": "Información de Rol",
     "chargeInfo": "Responsabilidades",
     "name": "Nombre Completo",
+    "team": "Equipo",
+    "career": "Carrera",
+    "role": "Rol",
+    "selectTeam": "Selecciona un equipo",
+    "selectCareer": "Selecciona una carrera",
     "email": "Correo Electrónico",
     "emailHint": "El correo no puede ser modificado",
     "careerEn": "Carrera (Inglés)",
@@ -575,5 +608,66 @@
     "addSocialLink": "+ Agregar Enlace",
     "socialLinkError": "Por favor selecciona una plataforma e ingresa una URL",
     "socialLinkExists": "Ya tienes un enlace para esta plataforma"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "myPublications": "Mis Publicaciones",
+    "teamPublications": "Publicaciones del Equipo",
+    "teamManagement": "Gestión del Equipo",
+    "emptyMyPublications": "Aún no hay publicaciones.",
+    "emptyTeamPublications": "Aún no hay publicaciones del equipo.",
+    "unknownAuthor": "Autor desconocido",
+    "roles": {
+      "leader": "Líder",
+      "coleader": "Co-Líder",
+      "member": "Miembro"
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "open": "Abrir",
+      "delete": "Eliminar",
+      "createPublication": "Crear Publicación",
+      "addToWhitelist": "Invitar Miembro",
+      "assignColeader": "Asignar co-líder",
+      "removeColeader": "Quitar co-líder",
+      "transferLeadershipTitle": "Transferir liderazgo",
+      "transferColeadershipTitle": "Transferir co-liderazgo"
+    },
+    "form": {
+      "nameEn": "Nombre (EN)",
+      "nameEs": "Nombre (ES)",
+      "abstractEn": "Resumen (EN)",
+      "abstractEs": "Resumen (ES)",
+      "pdf": "Archivo PDF",
+      "image": "Imagen",
+      "save": "Guardar Publicación"
+    },
+    "confirm": {
+      "createPublication": "¿Crear esta publicación?",
+      "deletePublication": "¿Eliminar esta publicación?",
+      "invite": "¿Invitar este correo como miembro?",
+      "kickMember": "¿Expulsar este miembro y revocar su acceso?",
+      "transferLeadership": "¿Transferir el liderazgo a este co-líder? Los permisos de tu sesión cambiarán.",
+      "transferColeadership": "¿Transferir tu estado de co-líder a este miembro?",
+      "assignColeaderVerb": "asignar estado de co-líder a",
+      "removeColeaderVerb": "quitar estado de co-líder a",
+      "confirmColeaderAction": "¿Confirmas que deseas {{verb}} este miembro?"
+    },
+    "messages": {
+      "publicationCreated": "Publicación creada correctamente.",
+      "publicationCreateError": "No se pudo crear la publicación.",
+      "publicationDeleted": "Publicación eliminada.",
+      "publicationDeleteError": "No se pudo eliminar la publicación.",
+      "inviteSuccess": "Correo agregado a la lista de invitación en whitelist.",
+      "inviteError": "No se pudo invitar este correo.",
+      "kickSuccess": "Acceso del miembro revocado.",
+      "kickError": "No se pudo expulsar al miembro.",
+      "transferLeadershipSuccess": "Liderazgo transferido. Recargando sesión...",
+      "transferLeadershipError": "No se pudo transferir el liderazgo.",
+      "transferColeadershipSuccess": "Co-liderazgo transferido. Recargando sesión...",
+      "transferColeadershipError": "No se pudo transferir el co-liderazgo.",
+      "coleaderUpdated": "Estado de co-líder actualizado.",
+      "coleaderUpdateError": "No se pudo actualizar el estado de co-líder."
+    }
   }
 }

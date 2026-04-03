@@ -48,15 +48,15 @@ export const HomePage = () => {
         : '';
 
       return {
-        id: publication.id,
+        slug: publication.slug,
         date: formattedDate,
-        title: publication.title,
+        title: publication.name,
         body:
-          publication.content && publication.content.length > 220
-            ? `${publication.content.slice(0, 220)}...`
-            : publication.content,
-        image: resolveMediaUrl(publication.image_url),
-        alt: publication.title,
+          publication.abstract && publication.abstract.length > 220
+            ? `${publication.abstract.slice(0, 220)}...`
+            : publication.abstract,
+        image: resolveMediaUrl(publication.image),
+        alt: publication.name,
       };
     });
 
@@ -131,7 +131,7 @@ export const HomePage = () => {
                   <h3 className="update-title">{item.title}</h3>
                   <p className="update-description">{item.body}</p>
                   <div className="update-link-wrap">
-                    <Link to={`/publications/${item.id}`} className="update-link">
+                    <Link to={`/publications/${item.slug}`} className="update-link">
                       {t('home.updates.readMore')}
                     </Link>
                   </div>

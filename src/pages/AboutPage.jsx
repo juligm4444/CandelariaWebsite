@@ -8,8 +8,6 @@ import DonateIcon from '../assets/icons/donate.svg';
 export const AboutPage = () => {
   const { t } = useTranslation();
 
-  const roadmapItems = useMemo(() => t('about.roadmap.items', { returnObjects: true }) || [], [t]);
-
   const valueItems = useMemo(() => t('about.values.items', { returnObjects: true }) || [], [t]);
 
   const historyItems = useMemo(() => t('about.history.items', { returnObjects: true }) || [], [t]);
@@ -66,28 +64,6 @@ export const AboutPage = () => {
               <h2>{t('about.vision.title')}</h2>
               <p>{t('about.vision.body')}</p>
             </article>
-          </div>
-        </section>
-
-        <section className="about-roadmap section-shell">
-          <div className="about-roadmap-head">
-            <h2>
-              {t('about.roadmap.titleA')} <span>{t('about.roadmap.titleB')}</span>
-            </h2>
-            <p>{t('about.roadmap.subtitle')}</p>
-          </div>
-
-          <div className="about-roadmap-grid">
-            {roadmapItems.map((item, index) => (
-              <article
-                className={`about-roadmap-card${index === 1 ? ' is-featured' : ''}`}
-                key={`${item.badge}-${index}`}
-              >
-                <span>{item.badge}</span>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </article>
-            ))}
           </div>
         </section>
 

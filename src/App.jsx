@@ -11,6 +11,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -21,11 +23,13 @@ function App() {
         <Route path="/vehicle" element={<VehiclePage />} />
         <Route path="/team" element={<TeamPage />} />
         <Route path="/publications" element={<PublicationsPage />} />
-        <Route path="/publications/:id" element={<PublicationDetailPage />} />
+        <Route path="/publications/:slug" element={<PublicationDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/support" element={<SupportPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route
           path="/profile"
           element={
@@ -37,7 +41,7 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute>
+            <PrivateRoute internalOnly>
               <DashboardPage />
             </PrivateRoute>
           }

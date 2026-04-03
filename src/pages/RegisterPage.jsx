@@ -4,76 +4,92 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from '../components/Navbar';
 import axios from 'axios';
+import { CAREER_OPTIONS, getLocalizedCareerLabel } from '../lib/memberOptions';
+import { API_URL } from '../lib/config';
 
 const RegisterPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { register, isAuthenticated, checkEmailAvailability } = useAuth();
 
   const [teams, setTeams] = useState([]);
   const [formData, setFormData] = useState({
+    full_name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    name_en: '',
-    name_es: '',
     team_id: '',
-    career: '',
+    career_key: '',
     role: '',
-    charge: '',
-    image_url: '',
   });
+  const [profileImage, setProfileImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [errors, setErrors] = useState({});
   const [emailStatus, setEmailStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [isAuthenticated, navigate]);
 
-  // Load teams on mount
   useEffect(() => {
+    const loadTeams = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/teams/`);
+        setTeams(response.data);
+      } catch (error) {
+        console.error('Failed to load teams:', error);
+      }
+    };
+
     loadTeams();
   }, []);
 
-  const loadTeams = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/teams/');
-      setTeams(response.data);
-    } catch (error) {
-      console.error('Failed to load teams:', error);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setProfileImage(file || null);
 
-    // Clear specific field error
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+    if (!file) {
+      setImagePreview('');
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result?.toString() || '');
+    reader.readAsDataURL(file);
+
+    setErrors((prev) => ({ ...prev, image: '' }));
   };
 
   const handleEmailBlur = async () => {
-    if (formData.email && formData.email.includes('@')) {
-      setCheckingEmail(true);
-      const status = await checkEmailAvailability(formData.email);
-      setEmailStatus(status);
-      setCheckingEmail(false);
+    if (!formData.email || !formData.email.includes('@')) {
+      return;
+    }
 
-      if (!status.is_allowed) {
-        setErrors({ ...errors, email: 'This email is not authorized to register.' });
-      } else if (status.is_taken) {
-        setErrors({ ...errors, email: 'This email is already registered.' });
-      }
+    setCheckingEmail(true);
+    const status = await checkEmailAvailability(formData.email);
+    setEmailStatus(status);
+    setCheckingEmail(false);
+
+    if (status?.can_edit_role === false) {
+      const fixedRole = status.whitelist_role === 'leaders' ? 'Team Leader' : 'Co-Leader';
+      setFormData((prev) => ({ ...prev, role: fixedRole }));
+    }
+
+    if (status.is_taken) {
+      setErrors((prev) => ({ ...prev, email: 'This email is already registered.' }));
     }
   };
 
@@ -96,20 +112,32 @@ const RegisterPage = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (!formData.name_en) {
-      newErrors.name_en = 'Name (English) is required';
+    if (!formData.full_name) {
+      newErrors.full_name = 'Full name is required';
     }
 
-    if (!formData.name_es) {
-      newErrors.name_es = 'Name (Spanish) is required';
+    const isWhitelistedInternal = !!emailStatus?.is_whitelisted;
+
+    if (isWhitelistedInternal) {
+      if (!formData.team_id) {
+        newErrors.team_id = 'Team is required';
+      }
+
+      if (!formData.career_key) {
+        newErrors.career_key = 'Career is required';
+      }
+
+      if (!formData.role.trim()) {
+        newErrors.role = 'Role is required';
+      }
+
+      if (!profileImage) {
+        newErrors.image = 'Profile picture is required';
+      }
     }
 
-    if (!formData.team_id) {
-      newErrors.team_id = 'Team is required';
-    }
-
-    if (emailStatus && !emailStatus.can_register) {
-      newErrors.email = 'Email is not authorized or already taken';
+    if (emailStatus && emailStatus.is_taken) {
+      newErrors.email = 'This email is already registered';
     }
 
     setErrors(newErrors);
@@ -125,16 +153,25 @@ const RegisterPage = () => {
 
     setLoading(true);
 
-    // Prepare data (remove confirmPassword)
-    const { confirmPassword: _confirmPassword, ...registrationData } = formData;
+    const payload = new FormData();
+    payload.append('full_name', formData.full_name);
+    payload.append('email', formData.email);
+    payload.append('password', formData.password);
+    const isWhitelistedInternal = !!emailStatus?.is_whitelisted;
+    if (isWhitelistedInternal) {
+      payload.append('team_id', String(parseInt(formData.team_id, 10)));
+      payload.append('career_key', formData.career_key);
+      payload.append('role', formData.role);
+      payload.append('language', i18n.language === 'es' ? 'es' : 'en');
+      if (profileImage) {
+        payload.append('image', profileImage);
+      }
+    }
 
-    // Convert team_id to number
-    registrationData.team_id = parseInt(registrationData.team_id);
-
-    const result = await register(registrationData);
+    const result = await register(payload);
 
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/');
     } else {
       setErrors({ general: result.error });
       setLoading(false);
@@ -142,29 +179,19 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="app-shell">
       <Navbar />
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-              {t('register.title')}
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              {t('register.haveAccount')}{' '}
-              <Link
-                to="/login"
-                className="font-medium text-[#FFB800] hover:text-[#FFA500] dark:text-[#FFB800] dark:hover:text-[#FFA500]"
-              >
-                {t('register.loginLink')}
-              </Link>
-            </p>
-          </div>
+      <main className="login-main">
+        <div className="login-container">
+          <div className="login-card">
+            <div className="login-header">
+              <h1>{t('register.title')}</h1>
+              <p>{t('register.subtitle')}</p>
+            </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {errors.general && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
-                <p className="text-sm text-red-800 dark:text-red-400">
+              <div className="login-error">
+                <p>
                   {typeof errors.general === 'object'
                     ? JSON.stringify(errors.general)
                     : errors.general}
@@ -172,15 +199,9 @@ const RegisterPage = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {/* Email */}
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.email')} *
-                </label>
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="email">{t('register.email')} *</label>
                 <input
                   id="email"
                   name="email"
@@ -189,29 +210,17 @@ const RegisterPage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   onBlur={handleEmailBlur}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
+                  className="form-input"
                 />
-                {checkingEmail && (
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Checking email...</p>
-                )}
+                {checkingEmail && <p className="field-hint">Checking email...</p>}
                 {emailStatus && emailStatus.can_register && (
-                  <p className="mt-1 text-sm text-green-600 dark:text-green-400">
-                    ✓ Email is available
-                  </p>
+                  <p className="field-hint">Email is available</p>
                 )}
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
-                )}
+                {errors.email && <p className="login-inline-error">{errors.email}</p>}
               </div>
 
-              {/* Password */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.password')} *
-                </label>
+              <div className="form-group">
+                <label htmlFor="password">{t('register.password')} *</label>
                 <input
                   id="password"
                   name="password"
@@ -219,21 +228,13 @@ const RegisterPage = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
+                  className="form-input"
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>
-                )}
+                {errors.password && <p className="login-inline-error">{errors.password}</p>}
               </div>
 
-              {/* Confirm Password */}
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.confirmPassword')} *
-                </label>
+              <div className="form-group">
+                <label htmlFor="confirmPassword">{t('register.confirmPassword')} *</label>
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -241,172 +242,136 @@ const RegisterPage = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
+                  className="form-input"
                 />
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.confirmPassword}
-                  </p>
+                  <p className="login-inline-error">{errors.confirmPassword}</p>
                 )}
               </div>
 
-              {/* Name English */}
-              <div>
-                <label
-                  htmlFor="name_en"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.nameEn')} *
-                </label>
+              <div className="form-group">
+                <label htmlFor="full_name">{t('register.name')} *</label>
                 <input
-                  id="name_en"
-                  name="name_en"
+                  id="full_name"
+                  name="full_name"
                   type="text"
                   required
-                  value={formData.name_en}
+                  value={formData.full_name}
                   onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
+                  className="form-input"
                 />
-                {errors.name_en && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name_en}</p>
-                )}
+                {errors.full_name && <p className="login-inline-error">{errors.full_name}</p>}
               </div>
 
-              {/* Name Spanish */}
-              <div>
-                <label
-                  htmlFor="name_es"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.nameEs')} *
-                </label>
-                <input
-                  id="name_es"
-                  name="name_es"
-                  type="text"
-                  required
-                  value={formData.name_es}
-                  onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
-                />
-                {errors.name_es && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name_es}</p>
-                )}
-              </div>
+              {emailStatus?.is_whitelisted ? (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="team_id">{t('register.team')} *</label>
+                    <select
+                      id="team_id"
+                      name="team_id"
+                      required
+                      value={formData.team_id}
+                      onChange={handleChange}
+                      className="form-input"
+                    >
+                      <option value="">{t('register.selectTeam')}</option>
+                      {teams.map((team) => (
+                        <option key={team.id} value={team.id}>
+                          {i18n.language === 'es' ? team.name_es : team.name_en}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.team_id && <p className="login-inline-error">{errors.team_id}</p>}
+                  </div>
 
-              {/* Team */}
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="team_id"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.team')} *
-                </label>
-                <select
-                  id="team_id"
-                  name="team_id"
-                  required
-                  value={formData.team_id}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
-                >
-                  <option value="">{t('register.selectTeam')}</option>
-                  {teams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name_en}
-                    </option>
-                  ))}
-                </select>
-                {errors.team_id && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.team_id}</p>
-                )}
-              </div>
+                  <div className="form-group">
+                    <label htmlFor="career_key">{t('register.career')} *</label>
+                    <select
+                      id="career_key"
+                      name="career_key"
+                      required
+                      value={formData.career_key}
+                      onChange={handleChange}
+                      className="form-input"
+                    >
+                      <option value="">{t('register.selectCareer')}</option>
+                      {CAREER_OPTIONS.map((career) => (
+                        <option key={career.key} value={career.key}>
+                          {getLocalizedCareerLabel(career, i18n.language)}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.career_key && <p className="login-inline-error">{errors.career_key}</p>}
+                  </div>
 
-              {/* Career */}
-              <div>
-                <label
-                  htmlFor="career"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.career')}
-                </label>
-                <input
-                  id="career"
-                  name="career"
-                  type="text"
-                  value={formData.career}
-                  onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
-                />
-              </div>
+                  <div className="form-group">
+                    <label htmlFor="role">{t('register.role')} *</label>
+                    <input
+                      id="role"
+                      name="role"
+                      type="text"
+                      required
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="form-input"
+                      disabled={emailStatus?.can_edit_role === false}
+                    />
+                    {emailStatus?.can_edit_role === false && (
+                      <p className="field-hint">Role is fixed by whitelist for this email.</p>
+                    )}
+                    {errors.role && <p className="login-inline-error">{errors.role}</p>}
+                  </div>
 
-              {/* Role */}
-              <div>
-                <label
-                  htmlFor="role"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.role')}
-                </label>
-                <input
-                  id="role"
-                  name="role"
-                  type="text"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
-                />
-              </div>
+                  <div className="form-group">
+                    <label htmlFor="profile-image">Profile picture *</label>
+                    <input
+                      id="profile-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      required
+                      className="form-input"
+                    />
+                    {imagePreview && (
+                      <img
+                        src={imagePreview}
+                        alt="Profile preview"
+                        className="register-image-preview"
+                      />
+                    )}
+                    {errors.image && <p className="login-inline-error">{errors.image}</p>}
+                  </div>
+                </>
+              ) : (
+                <p className="field-hint">
+                  This email is not in the internal whitelist. Your account will be created as an external supporter.
+                </p>
+              )}
 
-              {/* Charge */}
-              <div>
-                <label
-                  htmlFor="charge"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.charge')}
-                </label>
-                <input
-                  id="charge"
-                  name="charge"
-                  type="text"
-                  value={formData.charge}
-                  onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
-                />
-              </div>
-
-              {/* Image URL */}
-              <div>
-                <label
-                  htmlFor="image_url"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  {t('register.imageUrl')}
-                </label>
-                <input
-                  id="image_url"
-                  name="image_url"
-                  type="url"
-                  value={formData.image_url}
-                  onChange={handleChange}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-[#FFB800] focus:border-[#FFB800] bg-white dark:bg-gray-800 text-gray-900 dark:text-white sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
               <button
                 type="submit"
-                disabled={loading || (emailStatus && !emailStatus.can_register)}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FFB800] hover:bg-[#FFA500] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFB800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                disabled={loading || (emailStatus && emailStatus.is_taken)}
+                className="login-button"
               >
-                {loading ? t('register.creating') : t('register.create')}
+                {loading ? t('register.signingUp') : t('register.signUp')}
               </button>
+            </form>
+
+            <div className="login-footer">
+              <p>
+                {t('register.hasAccount')}{' '}
+                <Link to="/login" className="register-link">
+                  {t('register.loginLink')}
+                </Link>
+              </p>
+              <Link to="/" className="back-home-link">
+                ← {t('login.backToHome')}
+              </Link>
             </div>
-          </form>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

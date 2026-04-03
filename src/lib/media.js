@@ -1,4 +1,4 @@
-const API_ORIGIN = 'http://localhost:8000';
+import { API_ORIGIN } from './config';
 
 export const resolveMediaUrl = (url) => {
   if (!url) return '';

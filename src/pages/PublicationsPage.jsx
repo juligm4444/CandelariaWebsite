@@ -155,17 +155,17 @@ export const PublicationsPage = () => {
               key={publication.id}
               role="button"
               tabIndex={0}
-              onClick={() => navigate(`/publications/${publication.id}`)}
+              onClick={() => navigate(`/publications/${publication.slug}`)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
-                  navigate(`/publications/${publication.id}`);
+                  navigate(`/publications/${publication.slug}`);
                 }
               }}
             >
               <div className="publication-row-image">
-                {publication.image_url ? (
-                  <img src={resolveMediaUrl(publication.image_url)} alt={publication.title} />
+                {publication.image ? (
+                  <img src={resolveMediaUrl(publication.image)} alt={publication.name} />
                 ) : (
                   <div className="publication-image-fallback">SOLAR</div>
                 )}
@@ -179,8 +179,8 @@ export const PublicationsPage = () => {
                   {publication.team_name && <span>{publication.team_name}</span>}
                 </div>
 
-                <h2>{publication.title}</h2>
-                <p>{publication.content?.slice(0, 260) || ''}</p>
+                <h2>{publication.name}</h2>
+                <p>{publication.abstract?.slice(0, 260) || ''}</p>
 
                 {publication.author_name && (
                   <small>
@@ -188,7 +188,7 @@ export const PublicationsPage = () => {
                   </small>
                 )}
 
-                <Link to={`/publications/${publication.id}`} className="publication-read-link">
+                <Link to={`/publications/${publication.slug}`} className="publication-read-link">
                   {t('publications.readPost')}
                 </Link>
               </div>

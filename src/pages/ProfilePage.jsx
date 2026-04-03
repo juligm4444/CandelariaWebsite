@@ -1,40 +1,57 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import { CAREER_OPTIONS, getLocalizedCareerLabel } from '../lib/memberOptions';
+import { API_URL } from '../lib/config';
+import { resolveMediaUrl } from '../lib/media';
 
 export const ProfilePage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
-  
+  const { user, isAuthenticated, logout, isInternal } = useAuth();
+
+  const [teams, setTeams] = useState([]);
   const [formData, setFormData] = useState({
-    name: '',
-    career_en: '',
-    career_es: '',
-    role_en: '',
-    role_es: '',
-    charge_en: '',
-    charge_es: '',
+    full_name: '',
+    team_id: '',
+    career_key: '',
+    role: '',
   });
-  
-  const [socialLinks, setSocialLinks] = useState([]);
-  const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [socialLinks, setSocialLinks] = useState([]);
+  const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const socialPlatforms = [
-    { value: 'behance', label: 'Behance', icon: 'behance.svg' },
-    { value: 'portfolio', label: 'Portfolio', icon: 'portfolio.svg' },
-    { value: 'github', label: 'GitHub', icon: 'github.svg' },
-    { value: 'instagram', label: 'Instagram', icon: 'instagram.svg' },
-    { value: 'linkedin', label: 'LinkedIn', icon: 'linkedin.svg' },
-    { value: 'x', label: 'X (Twitter)', icon: 'x.svg' },
+    { value: 'behance', label: 'Behance' },
+    { value: 'portfolio', label: 'Portfolio' },
+    { value: 'github', label: 'GitHub' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'x', label: 'X (Twitter)' },
   ];
+
+  const language = i18n.language === 'es' ? 'es' : 'en';
+
+  const inferredCareerKey = useMemo(() => {
+    if (!user) return '';
+    if (user.career_key) return user.career_key;
+
+    const currentCareer =
+      (language === 'es' ? user.career_es : user.career_en) || user.career || '';
+    const match = CAREER_OPTIONS.find(
+      (item) =>
+        item.en.toLowerCase() === currentCareer.toLowerCase() ||
+        item.es.toLowerCase() === currentCareer.toLowerCase()
+    );
+    return match?.key || '';
+  }, [language, user]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -42,68 +59,83 @@ export const ProfilePage = () => {
       return;
     }
 
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        career_en: user.career_en || user.career || '',
-        career_es: user.career_es || user.career || '',
-        role_en: user.role_en || user.role || '',
-        role_es: user.role_es || user.role || '',
-        charge_en: user.charge_en || user.charge || '',
-        charge_es: user.charge_es || user.charge || '',
-      });
-      
-      if (user.image_url) {
-        const imageUrl = user.image_url.startsWith('http') 
-          ? user.image_url 
-          : `http://localhost:8000${user.image_url}`;
-        setImagePreview(imageUrl);
+    const loadTeams = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/teams/`);
+        setTeams(response.data);
+      } catch (error) {
+        console.error('Failed to load teams:', error);
       }
-      
-      if (user.social_links && Array.isArray(user.social_links)) {
-        setSocialLinks(user.social_links);
-      }
+    };
+
+    loadTeams();
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
     }
-  }, [isAuthenticated, user, navigate]);
+
+    setFormData({
+      full_name: user.name || '',
+      team_id: user.team_id ? String(user.team_id) : '',
+      career_key: inferredCareerKey,
+      role: language === 'es' ? user.role_es || user.role || '' : user.role_en || user.role || '',
+    });
+
+    if (user.image) {
+      const imageUrl = resolveMediaUrl(user.image);
+      setImagePreview(imageUrl);
+    }
+
+    if (Array.isArray(user.social_links)) {
+      setSocialLinks(user.social_links);
+    }
+  }, [inferredCareerKey, language, user]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleAddSocialLink = () => {
     if (!newSocialLink.platform || !newSocialLink.url) {
-      setMessage({ type: 'error', text: t('profile.socialLinkError') || 'Please select a platform and enter a URL' });
+      setMessage({
+        type: 'error',
+        text: t('profile.socialLinkError') || 'Please select a platform and enter a URL',
+      });
       return;
     }
 
-    if (socialLinks.some(link => link.platform === newSocialLink.platform)) {
-      setMessage({ type: 'error', text: t('profile.socialLinkExists') || 'You already have a link for this platform' });
+    if (socialLinks.some((link) => link.platform === newSocialLink.platform)) {
+      setMessage({
+        type: 'error',
+        text: t('profile.socialLinkExists') || 'You already have a link for this platform',
+      });
       return;
     }
 
-    setSocialLinks([...socialLinks, { ...newSocialLink, id: `temp-${Date.now()}` }]);
+    setSocialLinks((prev) => [...prev, { ...newSocialLink, id: `temp-${Date.now()}` }]);
     setNewSocialLink({ platform: '', url: '' });
     setMessage({ type: '', text: '' });
   };
 
   const handleRemoveSocialLink = (linkId) => {
-    setSocialLinks(socialLinks.filter(link => link.id !== linkId));
+    setSocialLinks((prev) => prev.filter((link) => link.id !== linkId));
   };
 
   const handleSubmit = async (e) => {
@@ -113,38 +145,72 @@ export const ProfilePage = () => {
 
     try {
       const token = localStorage.getItem('access_token');
+
+      if (!isInternal) {
+        // External users only update name via UserProfile endpoint
+        const response = await fetch(`${API_URL}/auth/me/update/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ name: formData.full_name }),
+        });
+        if (response.ok) {
+          setMessage({
+            type: 'success',
+            text: t('profile.updateSuccess') || 'Profile updated successfully!',
+          });
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          const error = await response.json();
+          setMessage({ type: 'error', text: error.error || t('profile.updateError') || 'Failed to update profile' });
+        }
+        return;
+      }
+
       const formDataToSend = new FormData();
-      
-      Object.keys(formData).forEach(key => {
-        formDataToSend.append(key, formData[key]);
-      });
-      
+
+      formDataToSend.append('full_name', formData.full_name);
+      formDataToSend.append('team', formData.team_id);
+      formDataToSend.append('career_key', formData.career_key);
+      formDataToSend.append('role', formData.role);
+      formDataToSend.append('language', language);
+
       if (selectedImage) {
         formDataToSend.append('image', selectedImage);
       }
-      
+
       formDataToSend.append('social_links', JSON.stringify(socialLinks));
 
-      const response = await fetch(`http://localhost:8000/api/members/${user.id}/`, {
+      const response = await fetch(`${API_URL}/members/${user.id}/`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formDataToSend,
       });
 
       if (response.ok) {
-        setMessage({ type: 'success', text: t('profile.updateSuccess') || 'Profile updated successfully!' });
-        
+        setMessage({
+          type: 'success',
+          text: t('profile.updateSuccess') || 'Profile updated successfully!',
+        });
         setTimeout(() => {
           window.location.reload();
-        }, 1500);
+        }, 1200);
       } else {
         const error = await response.json();
-        setMessage({ type: 'error', text: error.message || t('profile.updateError') || 'Failed to update profile' });
+        setMessage({
+          type: 'error',
+          text: error.error || t('profile.updateError') || 'Failed to update profile',
+        });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: t('profile.updateError') || 'An error occurred while updating profile' });
+      setMessage({
+        type: 'error',
+        text: t('profile.updateError') || 'An error occurred while updating profile',
+      });
     } finally {
       setLoading(false);
     }
@@ -169,13 +235,10 @@ export const ProfilePage = () => {
             <p>{t('profile.subtitle') || 'Manage your profile information'}</p>
           </div>
 
-          {message.text && (
-            <div className={`profile-message ${message.type}`}>
-              {message.text}
-            </div>
-          )}
+          {message.text && <div className={`profile-message ${message.type}`}>{message.text}</div>}
 
           <form className="profile-form" onSubmit={handleSubmit}>
+            {isInternal && (
             <div className="profile-image-section">
               <div className="profile-image-preview">
                 {imagePreview ? (
@@ -202,139 +265,104 @@ export const ProfilePage = () => {
                 </p>
               </div>
             </div>
+            )}
 
-            <div className="profile-section">
-              <h2>{t('profile.personalInfo') || 'Personal Information'}</h2>
-              
-              <div className="form-single-column">
-                <div className="form-group">
-                  <label htmlFor="name">{t('profile.name') || 'Full Name'}</label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>{t('profile.email') || 'Email'}</label>
-                  <input
-                    type="email"
-                    value={user.email}
-                    disabled
-                    className="form-input disabled"
-                  />
-                  <span className="field-hint">{t('profile.emailHint') || 'Email cannot be changed'}</span>
+            {!isInternal && (
+            <div className="profile-image-section">
+              <div className="profile-image-preview">
+                <div className="profile-image-placeholder">
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               </div>
-            </div>
-
-            <div className="profile-section">
-              <h2>{t('profile.careerInfo') || 'Career Information'}</h2>
-              
-              <div className="form-single-column">
-                <div className="form-group">
-                  <label htmlFor="career_en">{t('profile.careerEn') || 'Career (English)'}</label>
-                  <input
-                    id="career_en"
-                    name="career_en"
-                    type="text"
-                    value={formData.career_en}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="career_es">{t('profile.careerEs') || 'Career (Spanish)'}</label>
-                  <input
-                    id="career_es"
-                    name="career_es"
-                    type="text"
-                    value={formData.career_es}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
+              <div className="profile-external-badge">
+                <span>{t('profile.externalSupporter') || 'External Supporter'}</span>
               </div>
             </div>
+            )}
 
-            <div className="profile-section">
-              <h2>{t('profile.roleInfo') || 'Role Information'}</h2>
-              
-              <div className="form-single-column">
-                <div className="form-group">
-                  <label htmlFor="role_en">{t('profile.roleEn') || 'Role (English)'}</label>
-                  <input
-                    id="role_en"
-                    name="role_en"
-                    type="text"
-                    value={formData.role_en}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="role_es">{t('profile.roleEs') || 'Role (Spanish)'}</label>
-                  <input
-                    id="role_es"
-                    name="role_es"
-                    type="text"
-                    value={formData.role_es}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
+            <div className="form-single-column">
+              <div className="form-group">
+                <label htmlFor="full_name">{t('profile.name') || 'Full Name'}</label>
+                <input
+                  id="full_name"
+                  name="full_name"
+                  type="text"
+                  value={formData.full_name}
+                  onChange={handleChange}
+                  className="form-input"
+                  required
+                />
               </div>
-            </div>
 
-            <div className="profile-section">
-              <h2>{t('profile.chargeInfo') || 'Responsibilities'}</h2>
-              
-              <div className="form-single-column">
-                <div className="form-group">
-                  <label htmlFor="charge_en">{t('profile.chargeEn') || 'Charge (English)'}</label>
-                  <input
-                    id="charge_en"
-                    name="charge_en"
-                    type="text"
-                    value={formData.charge_en}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="charge_es">{t('profile.chargeEs') || 'Charge (Spanish)'}</label>
-                  <input
-                    id="charge_es"
-                    name="charge_es"
-                    type="text"
-                    value={formData.charge_es}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </div>
+              <div className="form-group">
+                <label>{t('profile.email') || 'Email'}</label>
+                <input type="email" value={user.email} disabled className="form-input disabled" />
+                <span className="field-hint">
+                  {t('profile.emailHint') || 'Email cannot be changed'}
+                </span>
               </div>
-            </div>
 
-            <div className="profile-section">
-              <h2>{t('profile.socialLinks') || 'Social Media Links'}</h2>
-              
-              <div className="social-links-list">
-                {socialLinks.map((link) => {
-                  const platform = socialPlatforms.find(p => p.value === link.platform);
-                  return (
+              {isInternal && (
+              <>
+              <div className="form-group">
+                <label htmlFor="team_id">{t('profile.team') || 'Team'}</label>
+                <select
+                  id="team_id"
+                  name="team_id"
+                  value={formData.team_id}
+                  onChange={handleChange}
+                  className="form-input"
+                  required
+                >
+                  <option value="">{t('profile.selectTeam') || 'Select a team'}</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {language === 'es' ? team.name_es : team.name_en}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="career_key">{t('profile.career') || 'Career'}</label>
+                <select
+                  id="career_key"
+                  name="career_key"
+                  value={formData.career_key}
+                  onChange={handleChange}
+                  className="form-input"
+                  required
+                >
+                  <option value="">{t('profile.selectCareer') || 'Select a career'}</option>
+                  {CAREER_OPTIONS.map((career) => (
+                    <option key={career.key} value={career.key}>
+                      {getLocalizedCareerLabel(career, language)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="role">{t('profile.role') || 'Role'}</label>
+                <input
+                  id="role"
+                  name="role"
+                  type="text"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="profile-section">
+                <h2>{t('profile.socialLinks') || 'Social Media Links'}</h2>
+
+                <div className="social-links-list">
+                  {socialLinks.map((link) => (
                     <div key={link.id} className="social-link-item">
-                      <div className="social-link-icon">
-                        <img src={`/src/assets/icons/${platform?.icon}`} alt={platform?.label} />
-                      </div>
                       <div className="social-link-info">
-                        <span className="social-link-platform">{platform?.label}</span>
+                        <span className="social-link-platform">{link.platform}</span>
                         <span className="social-link-url">{link.url}</span>
                       </div>
                       <button
@@ -345,67 +373,64 @@ export const ProfilePage = () => {
                         ×
                       </button>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
 
-              <div className="social-link-add-form">
-                <div className="form-group">
-                  <label htmlFor="platform">{t('profile.platform') || 'Platform'}</label>
-                  <select
-                    id="platform"
-                    value={newSocialLink.platform}
-                    onChange={(e) => setNewSocialLink({ ...newSocialLink, platform: e.target.value })}
-                    className="form-input"
+                <div className="social-link-add-form">
+                  <div className="form-group">
+                    <label htmlFor="platform">{t('profile.platform') || 'Platform'}</label>
+                    <select
+                      id="platform"
+                      value={newSocialLink.platform}
+                      onChange={(e) =>
+                        setNewSocialLink((prev) => ({ ...prev, platform: e.target.value }))
+                      }
+                      className="form-input"
+                    >
+                      <option value="">{t('profile.selectPlatform') || 'Select a platform'}</option>
+                      {socialPlatforms.map((platform) => (
+                        <option
+                          key={platform.value}
+                          value={platform.value}
+                          disabled={socialLinks.some((link) => link.platform === platform.value)}
+                        >
+                          {platform.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="url">{t('profile.url') || 'URL'}</label>
+                    <input
+                      id="url"
+                      type="url"
+                      placeholder="https://..."
+                      value={newSocialLink.url}
+                      onChange={(e) =>
+                        setNewSocialLink((prev) => ({ ...prev, url: e.target.value }))
+                      }
+                      className="form-input"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddSocialLink}
+                    className="social-link-add-button"
                   >
-                    <option value="">{t('profile.selectPlatform') || 'Select a platform'}</option>
-                    {socialPlatforms.map(platform => (
-                      <option 
-                        key={platform.value} 
-                        value={platform.value}
-                        disabled={socialLinks.some(link => link.platform === platform.value)}
-                      >
-                        {platform.label}
-                      </option>
-                    ))}
-                  </select>
+                    {t('profile.addSocialLink') || '+ Add Link'}
+                  </button>
                 </div>
-
-                <div className="form-group">
-                  <label htmlFor="url">{t('profile.url') || 'URL'}</label>
-                  <input
-                    id="url"
-                    type="url"
-                    placeholder="https://..."
-                    value={newSocialLink.url}
-                    onChange={(e) => setNewSocialLink({ ...newSocialLink, url: e.target.value })}
-                    className="form-input"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleAddSocialLink}
-                  className="social-link-add-button"
-                >
-                  {t('profile.addSocialLink') || '+ Add Link'}
-                </button>
               </div>
+              </>)}
             </div>
 
             <div className="profile-actions">
-              <button
-                type="submit"
-                disabled={loading}
-                className="profile-save-button"
-              >
-                {loading ? (t('profile.saving') || 'Saving...') : (t('profile.save') || 'Save Changes')}
+              <button type="submit" disabled={loading} className="profile-save-button">
+                {loading ? t('profile.saving') || 'Saving...' : t('profile.save') || 'Save Changes'}
               </button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="profile-logout-button"
-              >
+              <button type="button" onClick={handleLogout} className="profile-logout-button">
                 {t('profile.logout') || 'Logout'}
               </button>
             </div>
