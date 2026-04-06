@@ -10,13 +10,27 @@ import { resolveMediaUrl } from '../lib/media';
 export const HomePage = () => {
   const { t, i18n } = useTranslation();
   const [publications, setPublications] = useState([]);
+  const [activeHighlight, setActiveHighlight] = useState(0);
 
   const heroHighlights = useMemo(
     () => t('home.hero.highlights', { returnObjects: true }) || [],
     [t]
   );
 
+  useEffect(() => {
+    if (heroHighlights.length <= 1) return undefined;
+    const id = setInterval(() => {
+      setActiveHighlight((prev) => (prev + 1) % heroHighlights.length);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [heroHighlights.length]);
+
   const tickerItems = useMemo(() => t('home.ticker.items', { returnObjects: true }) || [], [t]);
+
+  const tickerLoopItems = useMemo(
+    () => [...tickerItems, ...tickerItems, ...tickerItems],
+    [tickerItems]
+  );
 
   const sponsorItems = useMemo(() => t('home.sponsors.items', { returnObjects: true }) || [], [t]);
 
@@ -88,13 +102,40 @@ export const HomePage = () => {
                 {t('home.hero.secondaryAction')}
               </Link>
             </div>
+
+            {heroHighlights.length > 0 && (
+              <div className="hero-highlights-carousel">
+                <div className="hero-highlight-track">
+                  {heroHighlights.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`hero-highlight-card${index === activeHighlight ? ' is-active' : ''}`}
+                    >
+                      <span className="hero-highlight-title">{item.title}</span>
+                      <p className="hero-highlight-body">{item.body}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="hero-highlight-dots">
+                  {heroHighlights.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className={`hero-highlight-dot${index === activeHighlight ? ' is-active' : ''}`}
+                      onClick={() => setActiveHighlight(index)}
+                      aria-label={`Highlight ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
         <section className="telemetry-strip">
           <div className="telemetry-ticker">
             <div className="telemetry-track">
-              {[...tickerItems, ...tickerItems].map((item, index) => (
+              {tickerLoopItems.map((item, index) => (
                 <div className="telemetry-item" key={`${item.label}-${index}`}>
                   <span className="telemetry-label">{item.label}</span>
                   <span className="telemetry-value">
@@ -110,7 +151,9 @@ export const HomePage = () => {
           <div className="section-heading-row">
             <div>
               <span className="section-label">{t('home.updates.eyebrow')}</span>
-              <h2 className="section-title">{t('home.updates.title')}</h2>
+              <h2 className="section-title">
+                {t('home.updates.titleA')} <span>{t('home.updates.titleB')}</span>
+              </h2>
             </div>
             <div className="section-line" />
           </div>

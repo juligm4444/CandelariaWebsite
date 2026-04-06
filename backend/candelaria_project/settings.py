@@ -34,7 +34,15 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').strip().lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+def _parse_csv_env(var_name, default=''):
+    return [
+        item.strip()
+        for item in os.getenv(var_name, default).split(',')
+        if item.strip()
+    ]
+
+
+ALLOWED_HOSTS = _parse_csv_env('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app')
 
 
 # Application definition
@@ -179,10 +187,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = os.getenv(
+CORS_ALLOWED_ORIGINS = _parse_csv_env(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174'
-).split(',')
+)
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -197,9 +205,7 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip() for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()
-]
+CSRF_TRUSTED_ORIGINS = _parse_csv_env('CSRF_TRUSTED_ORIGINS')
 
 # REST Framework Configuration
 REST_FRAMEWORK = {
@@ -207,7 +213,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # We'll control this per-view
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
@@ -271,6 +277,10 @@ PAYMENT_WEBHOOK_TOLERANCE_SECONDS = int(os.getenv('PAYMENT_WEBHOOK_TOLERANCE_SEC
 PAYMENT_DEFAULT_CURRENCY = os.getenv('PAYMENT_DEFAULT_CURRENCY', 'usd').strip().lower()
 PAYMENT_MIN_AMOUNT_CENTS = int(os.getenv('PAYMENT_MIN_AMOUNT_CENTS', '100'))
 PAYMENT_MAX_AMOUNT_CENTS = int(os.getenv('PAYMENT_MAX_AMOUNT_CENTS', '5000000'))
+PURCHASES_ENABLED = os.getenv(
+    'PURCHASES_ENABLED',
+    'True' if DEBUG else 'False'
+).strip().lower() in ('true', '1', 'yes')
 
 if not DEBUG and PAYMENT_PROVIDER == 'stripe':
     if not PAYMENT_PUBLIC_KEY or not PAYMENT_SECRET_KEY or not PAYMENT_WEBHOOK_SECRET:
@@ -307,3 +317,6 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
     SECURE_REFERRER_POLICY = 'same-origin'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

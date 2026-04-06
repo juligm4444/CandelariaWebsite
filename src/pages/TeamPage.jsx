@@ -45,44 +45,80 @@ const normalize = (value) =>
     .toLowerCase();
 
 const TeamMemberCard = ({ member }) => {
+  const { t } = useTranslation();
+  const [isFlipped, setIsFlipped] = useState(false);
   const imageUrl = member?.image ? resolveMediaUrl(member.image) : null;
-
   const socialLinks = Array.isArray(member?.social_links) ? member.social_links : [];
 
-  return (
-    <article className="team-member-fixed-card">
-      <div className="team-member-image-wrap">
-        {imageUrl ? (
-          <img src={imageUrl} alt={member.name} className="team-member-image" />
-        ) : (
-          <div className="team-member-fallback">{member?.name?.charAt(0) || 'C'}</div>
-        )}
-      </div>
-      <div className="team-member-body team-member-fixed-body">
-        <span>{member.role}</span>
-        <h4>{member.name}</h4>
-        <p>{member.career}</p>
+  const handleEnter = () => {
+    if (window.innerWidth >= 768) setIsFlipped(true);
+  };
+  const handleLeave = () => {
+    if (window.innerWidth >= 768) setIsFlipped(false);
+  };
+  const handleClick = () => {
+    if (window.innerWidth < 768) setIsFlipped((f) => !f);
+  };
 
-        {socialLinks.length > 0 && (
-          <div className="team-member-social-row">
-            {socialLinks.map((link) => {
-              const icon = SOCIAL_ICON_BY_PLATFORM[link.platform];
-              if (!icon) return null;
-              return (
-                <a
-                  key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="team-member-social-link"
-                  aria-label={link.platform}
-                >
-                  <img src={icon} alt={link.platform} />
-                </a>
-              );
-            })}
+  return (
+    <article
+      className="team-member-flip"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      onClick={handleClick}
+    >
+      <div
+        className="team-member-flip-inner"
+        style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+      >
+        {/* Front */}
+        <div className="team-member-flip-face team-member-flip-front">
+          <div className="team-member-image-wrap">
+            {imageUrl ? (
+              <img src={imageUrl} alt={member.name} className="team-member-image" />
+            ) : (
+              <div className="team-member-fallback">{member?.name?.charAt(0) || 'C'}</div>
+            )}
           </div>
-        )}
+          <div className="team-member-body">
+            <span>{member.role}</span>
+            <h4>{member.name}</h4>
+            <p>{member.career}</p>
+          </div>
+        </div>
+
+        {/* Back */}
+        <div
+          className="team-member-flip-face team-member-flip-back"
+          style={{ transform: 'rotateY(180deg)' }}
+        >
+          <div className="team-member-body">
+            <h4>{member.name}</h4>
+            <p>{member.career}</p>
+            <span className="team-member-social-label">{t('team.members.socialMedia')}</span>
+            {socialLinks.length > 0 && (
+              <div className="team-member-social-row">
+                {socialLinks.map((link) => {
+                  const icon = SOCIAL_ICON_BY_PLATFORM[link.platform];
+                  if (!icon) return null;
+                  return (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="team-member-social-link"
+                      aria-label={link.platform}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <img src={icon} alt={link.platform} />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </article>
   );
@@ -288,7 +324,6 @@ export const TeamPage = () => {
               <article className="team-selected-card">
                 <div className="team-selected-layout">
                   <div className="team-selected-content">
-                    <span>{t('team.detailKicker')}</span>
                     <div className="team-selected-header">
                       <img
                         src={selectedTeam.logo}

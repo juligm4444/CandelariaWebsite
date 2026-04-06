@@ -73,7 +73,6 @@ export const AboutPage = () => {
               <h2>
                 {t('about.values.titleA')} <span>{t('about.values.titleB')}</span>
               </h2>
-              <p>{t('about.values.side')}</p>
             </div>
 
             <div className="about-values-grid">

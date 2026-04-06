@@ -1,6 +1,6 @@
 {
   "site": {
-    "brand": "Candelaria",
+    "brand": "Candelaria Solar Car",
     "nav": {
       "home": "Inicio",
       "vehicle": "Vehículo",
@@ -9,6 +9,8 @@
       "about": "Nosotros",
       "support": "Apoyo",
       "login": "Login",
+      "profile": "Perfil",
+      "purchases": "Compras",
       "openMenu": "Abrir menú",
       "closeMenu": "Cerrar menú"
     }
@@ -77,6 +79,8 @@
     "updates": {
       "eyebrow": "Actualidad",
       "title": "Últimas Actualizaciones",
+      "titleA": "Últimas",
+      "titleB": "Actualizaciones",
       "readMore": "Leer más",
       "fallbackItems": [
         {
@@ -215,7 +219,8 @@
     "membersTitle": "Miembros",
     "photoPlaceholder": "Espacio para foto del equipo",
     "members": {
-      "flipHint": "Pasa el cursor o toca para girar"
+      "flipHint": "Pasa el cursor o toca para girar",
+      "socialMedia": "Redes Sociales"
     },
     "carousel": {
       "prev": "Anterior",
@@ -368,7 +373,7 @@
     "values": {
       "titleA": "Nuestros",
       "titleB": "Valores",
-      "side": "01 // PROPÓSITO  02 // IMPACTO  03 // LIDERAZGO",
+      "side": "",
       "items": [
         {
           "title": "Innovación responsable",
@@ -432,7 +437,7 @@
     "support": {
       "title": "¿Quieres apoyar a",
       "highlight": "Candelaria?",
-      "body": "En este momento, el proyecto Candelaria solo ha sido patrocinado por la Universidad de los Andes y el esfuerzo de sus integrantes. Pero, si te interesa patrocinar o apoyar el proyecto con cualquier ayuda, estaremos profundamente agradecidos contigo.",
+      "body": "En este momento, el proyecto Candelaria Solar Car solo ha sido patrocinado por la Universidad de los Andes y el esfuerzo de sus integrantes. Pero, si te interesa patrocinar o apoyar el proyecto con cualquier ayuda, estaremos profundamente agradecidos contigo.",
       "cta": "Apóyanos",
       "imageAlt": "Colaboración del equipo solar"
     }
@@ -451,20 +456,20 @@
       "items": [
         {
           "name": "Orbital",
-          "price": "$500 /mes",
+          "price": "$5 /mes",
           "features": ["Insignia digital", "Newsletter VIP"],
           "action": "Suscribirse"
         },
         {
           "name": "Kinetic",
-          "price": "$2,500 /mes",
+          "price": "$10 /mes",
           "features": ["Merch exclusiva", "Acceso a telemetria real", "Mencion en publicaciones"],
           "action": "Elegir plan",
           "recommended": true
         },
         {
           "name": "Nebula",
-          "price": "$10,000 /mes",
+          "price": "$25 /mes",
           "features": ["Todo lo anterior", "Visita a instalaciones", "Cena con el equipo"],
           "action": "Suscribirse"
         }
@@ -607,7 +612,42 @@
     "selectPlatform": "Selecciona una plataforma",
     "addSocialLink": "+ Agregar Enlace",
     "socialLinkError": "Por favor selecciona una plataforma e ingresa una URL",
-    "socialLinkExists": "Ya tienes un enlace para esta plataforma"
+    "socialLinkExists": "Ya tienes un enlace para esta plataforma",
+    "supporter": {
+      "title": "Progreso de apoyo",
+      "badge": "{{tier}} Supporter",
+      "internalBadge": "{{role}} • {{tier}} Supporter",
+      "statsTitle": "Estadísticas de apoyo",
+      "totalDonated": "Total donado",
+      "monthsSubscribed": "Meses suscrito",
+      "currentTier": "Nivel actual",
+      "progressTo": "{{percent}}% para {{tier}}",
+      "maxTier": "Nivel máximo alcanzado",
+      "remaining": "Faltan {{amount}}",
+      "subscriptionBonus": "Bono de suscripción: {{amount}} por mes",
+      "levelUpTitle": "Nivel mejorado",
+      "levelUpBody": "Alcanzaste el nivel {{tier}}. Gracias por tu apoyo.",
+      "tiers": {
+        "visitor": "Visitante",
+        "supporter": "Supporter",
+        "bronze": "Bronce",
+        "silver": "Plata",
+        "gold": "Oro",
+        "core": "Core"
+      },
+      "roles": {
+        "leader": "Líder",
+        "coleader": "Co-Líder",
+        "member": "Miembro"
+      }
+    }
+  },
+  "cart": {
+    "proceedToCheckout": "Proceder al checkout",
+    "processing": "Procesando...",
+    "loginRequiredTitle": "Inicio de sesión requerido",
+    "loginRequiredBody": "Por favor inicia sesión antes de continuar con el checkout.",
+    "purchasesUnavailable": "Las compras no están disponibles en este momento, nuestro equipo está trabajando para solucionarlo."
   },
   "dashboard": {
     "title": "Panel",

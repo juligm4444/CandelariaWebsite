@@ -98,7 +98,8 @@ alter table public.subscriptions enable row level security;
 alter table public.payments enable row level security;
 
 -- whitelist: only internal leaders/coleaders can manage
-create policy if not exists whitelist_select_internal
+drop policy if exists whitelist_select_internal on public.whitelist;
+create policy whitelist_select_internal
 on public.whitelist
 for select
 using (
@@ -110,7 +111,8 @@ using (
   )
 );
 
-create policy if not exists whitelist_insert_internal
+drop policy if exists whitelist_insert_internal on public.whitelist;
+create policy whitelist_insert_internal
 on public.whitelist
 for insert
 with check (
@@ -122,7 +124,8 @@ with check (
   )
 );
 
-create policy if not exists whitelist_update_internal
+drop policy if exists whitelist_update_internal on public.whitelist;
+create policy whitelist_update_internal
 on public.whitelist
 for update
 using (
@@ -143,26 +146,30 @@ with check (
 );
 
 -- profiles: each user can read/update their own profile
-create policy if not exists profiles_self_select
+drop policy if exists profiles_self_select on public.profiles;
+create policy profiles_self_select
 on public.profiles
 for select
 using (id = auth.uid());
 
-create policy if not exists profiles_self_update
+drop policy if exists profiles_self_update on public.profiles;
+create policy profiles_self_update
 on public.profiles
 for update
 using (id = auth.uid())
 with check (id = auth.uid());
 
 -- subscriptions: user-owned access
-create policy if not exists subscriptions_owner_all
+drop policy if exists subscriptions_owner_all on public.subscriptions;
+create policy subscriptions_owner_all
 on public.subscriptions
 for all
 using (user_id = auth.uid())
 with check (user_id = auth.uid());
 
 -- payments: user-owned access
-create policy if not exists payments_owner_all
+drop policy if exists payments_owner_all on public.payments;
+create policy payments_owner_all
 on public.payments
 for all
 using (user_id = auth.uid())

@@ -1,11 +1,14 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useMemo, useState } from 'react';
 import { Sun, Zap, Rocket } from 'lucide-react';
-import { usePayments } from '../hooks/usePayments';
+import { useToast } from '../hooks/use-toast';
+import { useCart } from '../contexts/CartContext';
 
 const PLAN_ICONS = [Sun, Zap, Rocket];
+const MEMBERSHIP_USD_AMOUNTS = [5, 10, 25];
 
 export const SupportPage = () => {
   const { t } = useTranslation();
@@ -13,16 +16,26 @@ export const SupportPage = () => {
   const plans = useMemo(() => t('support.plans.items', { returnObjects: true }) || [], [t]);
   const merch = useMemo(() => t('support.merch.items', { returnObjects: true }) || [], [t]);
   const [customAmount, setCustomAmount] = useState('');
-  const { createPayment, loading: paying } = usePayments();
+  const { toast } = useToast();
+  const { addItem } = useCart();
 
-  const onCreatePayment = async (type, amount) => {
-    const result = await createPayment({ type, amount, currency: 'cop' });
-    if (!result.success) {
-      window.alert(result.error);
-      return;
-    }
+  const onAddPlanToCart = (plan, index) => {
+    const amount = MEMBERSHIP_USD_AMOUNTS[index] || 5;
+    addItem({
+      kind: 'membership',
+      productId: `membership-${index + 1}`,
+      name: `${plan.name} Membership`,
+      price: amount,
+      currency: 'usd',
+      meta: {
+        features: plan.features || [],
+      },
+    });
 
-    window.alert('Payment initialized. Continue in the provider checkout flow.');
+    toast({
+      title: 'Added to cart',
+      description: `${plan.name} membership was added to your cart.`,
+    });
   };
 
   return (
@@ -31,18 +44,25 @@ export const SupportPage = () => {
       <main className="support-main section-shell">
         <section className="support-hero">
           <div className="support-hero-glow" aria-hidden="true" />
-          <h1>
-            {t('support.hero.titleA')} <span>{t('support.hero.titleB')}</span>
-          </h1>
-          <p className="page-intro">{t('support.hero.subtitle')}</p>
+          <div className="support-hero-grid">
+            <div className="support-hero-image-wrap">
+              <img src={t('about.hero.image')} alt={t('about.support.imageAlt')} />
+            </div>
+            <div className="support-hero-copy">
+              <h1>
+                {t('support.hero.titleA')} <span>{t('support.hero.titleB')}</span>
+              </h1>
+              <p className="page-intro">{t('support.hero.subtitle')}</p>
+            </div>
+          </div>
         </section>
 
         <section className="support-plans">
           <div className="support-plans-head">
-            <div>
-              <span>{t('support.plans.kicker')}</span>
-              <h2>{t('support.plans.title')}</h2>
-            </div>
+            <span>{t('support.plans.kicker')}</span>
+            <h2>
+              Choose a <span>Plan</span>
+            </h2>
             <p className="page-intro">{t('support.plans.subtitle')}</p>
           </div>
 
@@ -52,7 +72,7 @@ export const SupportPage = () => {
                 <div className="support-plan-icon-wrap" aria-hidden="true">
                   {(() => {
                     const Icon = PLAN_ICONS[index % PLAN_ICONS.length];
-                    return <Icon size={26} strokeWidth={2.2} />;
+                    return <Icon size={78} strokeWidth={6.6} />;
                   })()}
                 </div>
                 <h3>{plan.name}</h3>
@@ -62,12 +82,8 @@ export const SupportPage = () => {
                     <li key={`${feature}-${i}`}>{feature}</li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  disabled={paying}
-                  onClick={() => onCreatePayment('subscription', (index + 1) * 50000)}
-                >
-                  {plan.action}
+                <button type="button" onClick={() => onAddPlanToCart(plan, index)}>
+                  Subscribe
                 </button>
               </article>
             ))}
@@ -96,13 +112,10 @@ export const SupportPage = () => {
                 placeholder={t('support.contribution.placeholder')}
               />
             </div>
-            <button
-              type="button"
-              disabled={paying}
-              onClick={() => onCreatePayment('donation', Number(customAmount || 0))}
-            >
+            <button type="button" disabled>
               {t('support.contribution.action')}
             </button>
+            <p className="support-contribution-warning">{t('cart.purchasesUnavailable')}</p>
             <p>{t('support.contribution.safe')}</p>
           </div>
         </section>
@@ -110,31 +123,26 @@ export const SupportPage = () => {
         <section className="support-merch">
           <div className="support-merch-head">
             <span>{t('support.merch.kicker')}</span>
-            <h2>{t('support.merch.title')}</h2>
+            <h2>
+              Official <span>Gear</span>
+            </h2>
           </div>
 
           <div className="support-merch-grid">
             {merch.map((item, index) => (
               <article key={`${item.name}-${index}`}>
-                <div className="support-merch-image-wrap">
-                  <img src={item.image} alt={item.alt} />
-                  <div className="support-merch-overlay">
-                    <button
-                      type="button"
-                      disabled={paying}
-                      onClick={() => onCreatePayment('product', 90000)}
-                    >
-                      {t('support.merch.cta')}
-                    </button>
+                <Link to={`/product/merch-${index + 1}`} className="support-merch-card-link">
+                  <div className="support-merch-image-wrap">
+                    <img src={item.image} alt={item.alt} />
                   </div>
-                </div>
-                <div className="support-merch-meta">
-                  <div>
-                    <h4>{item.name}</h4>
-                    <p>{item.description}</p>
+                  <div className="support-merch-meta">
+                    <div>
+                      <h4>{item.name}</h4>
+                      <p>{item.description}</p>
+                    </div>
+                    <strong>{item.price}</strong>
                   </div>
-                  <strong>{item.price}</strong>
-                </div>
+                </Link>
               </article>
             ))}
           </div>

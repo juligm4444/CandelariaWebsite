@@ -30,13 +30,25 @@ serve(async (req) => {
   if (state === '6' || state === 'declined' || state === 'failed') status = 'failed';
   if (state === '5' || state === 'canceled') status = 'canceled';
 
-  const { error } = await supabase
+  const { data: paymentRow, error } = await supabase
     .from('payments')
     .update({ status })
-    .eq('payu_transaction_id', txRef);
+    .eq('payu_transaction_id', txRef)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+
+  if (status === 'succeeded' && paymentRow?.id) {
+    const { error: supporterError } = await supabase.rpc('process_approved_payment', {
+      p_payment_id: paymentRow.id,
+    });
+
+    if (supporterError) {
+      return new Response(JSON.stringify({ error: supporterError.message }), { status: 500 });
+    }
   }
 
   return new Response(

@@ -1,6 +1,6 @@
 {
   "site": {
-    "brand": "Candelaria",
+    "brand": "Candelaria Solar Car",
     "nav": {
       "home": "Home",
       "vehicle": "Vehicle",
@@ -9,6 +9,8 @@
       "about": "About",
       "support": "Support",
       "login": "Login",
+      "profile": "Profile",
+      "purchases": "Purchases",
       "openMenu": "Open menu",
       "closeMenu": "Close menu"
     }
@@ -77,6 +79,8 @@
     "updates": {
       "eyebrow": "Current",
       "title": "Latest Updates",
+      "titleA": "Latest",
+      "titleB": "Updates",
       "readMore": "Read more",
       "fallbackItems": [
         {
@@ -215,7 +219,8 @@
     "membersTitle": "Members",
     "photoPlaceholder": "Team Photo Placeholder",
     "members": {
-      "flipHint": "Hover or tap to flip"
+      "flipHint": "Hover or tap to flip",
+      "socialMedia": "Social Media"
     },
     "carousel": {
       "prev": "Previous",
@@ -368,7 +373,7 @@
     "values": {
       "titleA": "Our",
       "titleB": "Values",
-      "side": "01 // PURPOSE  02 // IMPACT  03 // LEADERSHIP",
+      "side": "",
       "items": [
         {
           "title": "Responsible innovation",
@@ -451,20 +456,20 @@
       "items": [
         {
           "name": "Orbital",
-          "price": "$500 /month",
+          "price": "$5 /month",
           "features": ["Digital badge", "VIP newsletter"],
           "action": "Subscribe"
         },
         {
           "name": "Kinetic",
-          "price": "$2,500 /month",
+          "price": "$10 /month",
           "features": ["Exclusive merch", "Live telemetry access", "Publication mention"],
           "action": "Choose plan",
           "recommended": true
         },
         {
           "name": "Nebula",
-          "price": "$10,000 /month",
+          "price": "$25 /month",
           "features": ["Everything above", "Facility visit", "Team dinner"],
           "action": "Subscribe"
         }
@@ -607,7 +612,42 @@
     "selectPlatform": "Select a platform",
     "addSocialLink": "+ Add Link",
     "socialLinkError": "Please select a platform and enter a URL",
-    "socialLinkExists": "You already have a link for this platform"
+    "socialLinkExists": "You already have a link for this platform",
+    "supporter": {
+      "title": "Supporter Progress",
+      "badge": "{{tier}} Supporter",
+      "internalBadge": "{{role}} • {{tier}} Supporter",
+      "statsTitle": "Support Stats",
+      "totalDonated": "Total Donated",
+      "monthsSubscribed": "Months Subscribed",
+      "currentTier": "Current Tier",
+      "progressTo": "{{percent}}% to {{tier}}",
+      "maxTier": "Maximum tier reached",
+      "remaining": "{{amount}} remaining",
+      "subscriptionBonus": "Subscription bonus: {{amount}} per month",
+      "levelUpTitle": "Tier upgraded",
+      "levelUpBody": "You reached {{tier}} tier. Thank you for your support!",
+      "tiers": {
+        "visitor": "Visitor",
+        "supporter": "Supporter",
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "core": "Core"
+      },
+      "roles": {
+        "leader": "Leader",
+        "coleader": "Co-Leader",
+        "member": "Member"
+      }
+    }
+  },
+  "cart": {
+    "proceedToCheckout": "Proceed to checkout",
+    "processing": "Processing...",
+    "loginRequiredTitle": "Login required",
+    "loginRequiredBody": "Please sign in before checkout.",
+    "purchasesUnavailable": "Purchases are not available at the moment, our team is working hard to solve it."
   },
   "dashboard": {
     "title": "Dashboard",

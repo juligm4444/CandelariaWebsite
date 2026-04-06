@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, X } from 'lucide-react';
+import { LogOut, Menu, ShoppingCart, X } from 'lucide-react';
 import MainLogo from '../assets/images/MainLogo.png';
 import { LanguageToggle } from './LanguageToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { resolveMediaUrl } from '../lib/media';
+import { useCart } from '../contexts/CartContext';
 
 export const Navbar = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
+  const { differentProductsCount } = useCart();
 
   const navItems = [
     { to: '/vehicle', label: t('site.nav.vehicle') },
@@ -50,6 +53,12 @@ export const Navbar = () => {
     setIsProfileMenuOpen(false);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    closeMenu();
+    navigate('/');
+  };
+
   return (
     <header className="site-header">
       <nav className="site-nav">
@@ -79,6 +88,12 @@ export const Navbar = () => {
 
         <div className="site-actions">
           <LanguageToggle />
+          <Link to="/cart" className="navbar-cart-link" aria-label="Open cart">
+            <ShoppingCart className="navbar-cart-icon" aria-hidden="true" />
+            {differentProductsCount > 0 && (
+              <span className="navbar-cart-badge">{differentProductsCount}</span>
+            )}
+          </Link>
           {isAuthenticated && user ? (
             <div className="profile-menu" ref={profileMenuRef}>
               <button
@@ -103,11 +118,18 @@ export const Navbar = () => {
               {isProfileMenuOpen && (
                 <div className="profile-submenu">
                   <Link to="/profile" onClick={closeMenu}>
-                    Profile
+                    {t('site.nav.profile') || 'Profile'}
+                  </Link>
+                  <Link to="/purchases" onClick={closeMenu}>
+                    {t('site.nav.purchases') || 'Purchases'}
                   </Link>
                   <Link to="/dashboard" onClick={closeMenu}>
                     Dashboard
                   </Link>
+                  <button type="button" className="profile-submenu-logout" onClick={handleLogout}>
+                    <LogOut size={14} aria-hidden="true" />
+                    <span>{t('profile.logout') || 'Logout'}</span>
+                  </button>
                 </div>
               )}
             </div>

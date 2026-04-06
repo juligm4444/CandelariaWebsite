@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -8,11 +8,15 @@ import { Footer } from '../components/Footer';
 import { CAREER_OPTIONS, getLocalizedCareerLabel } from '../lib/memberOptions';
 import { API_URL } from '../lib/config';
 import { resolveMediaUrl } from '../lib/media';
+import { useSupporterStats } from '../hooks/useSupporterStats';
+import { useToast } from '../hooks/use-toast';
+import { formatUsd } from '../lib/supporterTier';
 
 export const ProfilePage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, isInternal } = useAuth();
+  const { toast } = useToast();
 
   const [teams, setTeams] = useState([]);
   const [formData, setFormData] = useState({
@@ -27,6 +31,9 @@ export const ProfilePage = () => {
   const [newSocialLink, setNewSocialLink] = useState({ platform: '', url: '' });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const prevTierRef = useRef(null);
+
+  const supporterStats = useSupporterStats(user?.id);
 
   const socialPlatforms = [
     { value: 'behance', label: 'Behance' },
@@ -38,6 +45,7 @@ export const ProfilePage = () => {
   ];
 
   const language = i18n.language === 'es' ? 'es' : 'en';
+  const canEditRole = !(user?.is_team_leader || user?.is_coleader);
 
   const inferredCareerKey = useMemo(() => {
     if (!user) return '';
@@ -92,6 +100,40 @@ export const ProfilePage = () => {
       setSocialLinks(user.social_links);
     }
   }, [inferredCareerKey, language, user]);
+
+  const tierLabel = t(`profile.supporter.tiers.${supporterStats.tier}`, {
+    defaultValue: supporterStats.tier,
+  });
+
+  const nextTierLabel = supporterStats.nextTierKey
+    ? t(`profile.supporter.tiers.${supporterStats.nextTierKey}`, {
+        defaultValue: supporterStats.nextTierKey,
+      })
+    : null;
+
+  const internalRoleLabel = user?.internal_role
+    ? t(`profile.supporter.roles.${user.internal_role}`, {
+        defaultValue: user.internal_role,
+      })
+    : null;
+
+  const profileTierLabel =
+    isInternal && internalRoleLabel
+      ? t('profile.supporter.internalBadge', { role: internalRoleLabel, tier: tierLabel })
+      : t('profile.supporter.badge', { tier: tierLabel });
+
+  useEffect(() => {
+    if (!supporterStats.tier) return;
+
+    if (prevTierRef.current && prevTierRef.current !== supporterStats.tier) {
+      toast({
+        title: t('profile.supporter.levelUpTitle'),
+        description: t('profile.supporter.levelUpBody', { tier: tierLabel }),
+      });
+    }
+
+    prevTierRef.current = supporterStats.tier;
+  }, [supporterStats.tier, t, tierLabel, toast]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -177,7 +219,9 @@ export const ProfilePage = () => {
       formDataToSend.append('full_name', formData.full_name);
       formDataToSend.append('team', formData.team_id);
       formDataToSend.append('career_key', formData.career_key);
-      formDataToSend.append('role', formData.role);
+      if (canEditRole) {
+        formDataToSend.append('role', formData.role);
+      }
       formDataToSend.append('language', language);
 
       if (selectedImage) {
@@ -209,7 +253,7 @@ export const ProfilePage = () => {
           text: error.error || t('profile.updateError') || 'Failed to update profile',
         });
       }
-    } catch (error) {
+    } catch {
       setMessage({
         type: 'error',
         text: t('profile.updateError') || 'An error occurred while updating profile',
@@ -237,6 +281,70 @@ export const ProfilePage = () => {
             <h1>{t('profile.title') || 'My Profile'}</h1>
             <p>{t('profile.subtitle') || 'Manage your profile information'}</p>
           </div>
+
+          <section className="profile-supporter-card">
+            <div className="profile-supporter-top">
+              <h2>{t('profile.supporter.title')}</h2>
+              <span className={`profile-tier-badge is-${supporterStats.tier}`}>
+                {profileTierLabel}
+              </span>
+            </div>
+
+            <div className="profile-tier-progress-wrap">
+              <div className="profile-tier-progress-track">
+                <div
+                  className="profile-tier-progress-fill"
+                  style={{ width: `${supporterStats.progressPercent}%` }}
+                />
+              </div>
+              <p>
+                {nextTierLabel
+                  ? t('profile.supporter.progressTo', {
+                      percent: Math.round(supporterStats.progressPercent),
+                      tier: nextTierLabel,
+                    })
+                  : t('profile.supporter.maxTier')}
+                {nextTierLabel && (
+                  <span>
+                    {' '}
+                    ·{' '}
+                    {t('profile.supporter.remaining', {
+                      amount: formatUsd(
+                        supporterStats.remainingToNextUsd,
+                        i18n.language === 'es' ? 'es-CO' : 'en-US'
+                      ),
+                    })}
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="profile-supporter-stats-grid">
+              <article>
+                <span>{t('profile.supporter.totalDonated')}</span>
+                <strong>
+                  {formatUsd(
+                    supporterStats.totalDonatedUsd,
+                    i18n.language === 'es' ? 'es-CO' : 'en-US'
+                  )}
+                </strong>
+              </article>
+              <article>
+                <span>{t('profile.supporter.monthsSubscribed')}</span>
+                <strong>{supporterStats.monthsSubscribed}</strong>
+              </article>
+              <article>
+                <span>{t('profile.supporter.currentTier')}</span>
+                <strong>{tierLabel}</strong>
+              </article>
+            </div>
+
+            <p className="profile-supporter-bonus-note">
+              {t('profile.supporter.subscriptionBonus', {
+                amount: formatUsd(1.25, i18n.language === 'es' ? 'es-CO' : 'en-US'),
+              })}
+            </p>
+          </section>
 
           {message.text && <div className={`profile-message ${message.type}`}>{message.text}</div>}
 
@@ -354,8 +462,15 @@ export const ProfilePage = () => {
                       value={formData.role}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={!canEditRole}
                       required
                     />
+                    {!canEditRole && (
+                      <span className="field-hint">
+                        {t('profile.roleLocked') ||
+                          'Role editing is disabled for leader and co-leader accounts'}
+                      </span>
+                    )}
                   </div>
 
                   <div className="profile-section">

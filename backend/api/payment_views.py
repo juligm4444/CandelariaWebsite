@@ -75,6 +75,7 @@ def payment_config_view(request):
             'provider': getattr(settings, 'PAYMENT_PROVIDER', 'stripe'),
             'publishable_key': getattr(settings, 'PAYMENT_PUBLIC_KEY', ''),
             'default_currency': getattr(settings, 'PAYMENT_DEFAULT_CURRENCY', 'usd'),
+            'purchases_enabled': bool(getattr(settings, 'PURCHASES_ENABLED', False)),
         }
     )
 
@@ -83,6 +84,12 @@ def payment_config_view(request):
 @permission_classes([IsAuthenticated])
 @throttle_classes([BurstRateThrottle])
 def create_checkout_session_view(request):
+    if not bool(getattr(settings, 'PURCHASES_ENABLED', False)):
+        return Response(
+            {'error': 'Purchases are temporarily unavailable while we complete payment maintenance.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
     serializer = CreateCheckoutSessionSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
@@ -237,6 +244,12 @@ def stripe_webhook_view(request):
 @throttle_classes([BurstRateThrottle])
 def create_payment_view(request):
     """Create a PayU payment record and return checkout payload."""
+    if not bool(getattr(settings, 'PURCHASES_ENABLED', False)):
+        return Response(
+            {'error': 'Purchases are temporarily unavailable while we complete payment maintenance.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
     amount = request.data.get('amount')
     currency = (request.data.get('currency') or 'cop').strip().lower()
     payment_type = (request.data.get('type') or '').strip().lower()
@@ -273,7 +286,6 @@ def create_payment_view(request):
             'payu': {
                 'merchant_id': getattr(settings, 'PAYU_MERCHANT_ID', ''),
                 'account_id': getattr(settings, 'PAYU_ACCOUNT_ID', ''),
-                'api_key': getattr(settings, 'PAYU_API_KEY', ''),
                 'reference_code': tx_ref,
             },
         },
