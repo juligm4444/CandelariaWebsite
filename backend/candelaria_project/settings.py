@@ -282,7 +282,7 @@ PURCHASES_ENABLED = os.getenv(
     'True' if DEBUG else 'False'
 ).strip().lower() in ('true', '1', 'yes')
 
-if not DEBUG and PAYMENT_PROVIDER == 'stripe':
+if not DEBUG and PURCHASES_ENABLED and PAYMENT_PROVIDER == 'stripe':
     if not PAYMENT_PUBLIC_KEY or not PAYMENT_SECRET_KEY or not PAYMENT_WEBHOOK_SECRET:
         raise ImproperlyConfigured(
             'PAYMENT_PUBLIC_KEY, PAYMENT_SECRET_KEY and PAYMENT_WEBHOOK_SECRET are required in production.'
@@ -295,7 +295,7 @@ PAYU_API_KEY = os.getenv('PAYU_API_KEY', '').strip()
 PAYU_API_LOGIN = os.getenv('PAYU_API_LOGIN', '').strip()
 PAYU_TEST_MODE = os.getenv('PAYU_TEST_MODE', 'True').strip().lower() not in ('false', '0', 'no')
 
-if not DEBUG and PAYMENT_PROVIDER == 'payu':
+if not DEBUG and PURCHASES_ENABLED and PAYMENT_PROVIDER == 'payu':
     if not PAYU_MERCHANT_ID or not PAYU_API_KEY or not PAYU_API_LOGIN:
         raise ImproperlyConfigured(
             'PAYU_MERCHANT_ID, PAYU_API_KEY and PAYU_API_LOGIN are required in production when using PayU.'
