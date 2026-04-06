@@ -12,6 +12,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.cache import cache
+from django.db.models import Q
 
 from .models import Member, UserProfile
 from .auth_serializers import (
@@ -87,6 +88,16 @@ def _attempt_key(email, ip):
     return f'auth:attempts:{ip}:{email}'
 
 
+def _find_auth_user(identifier):
+    normalized = (identifier or '').strip().lower()
+    if not normalized:
+        return None
+
+    return User.objects.filter(
+        Q(username__iexact=normalized) | Q(email__iexact=normalized)
+    ).first()
+
+
 def _is_login_locked(email, ip):
     attempts = int(cache.get(_attempt_key(email, ip), 0))
     return attempts >= int(getattr(settings, 'AUTH_MAX_ATTEMPTS', 8))
@@ -160,9 +171,8 @@ def login_view(request):
             'error': 'Too many failed attempts. Please wait and try again.'
         }, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
-    try:
-        user = User.objects.get(username=email)
-    except User.DoesNotExist:
+    user = _find_auth_user(email)
+    if user is None:
         _register_failed_attempt(email, ip)
         return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -276,9 +286,8 @@ def forgot_password_view(request):
     if not email:
         return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        user = User.objects.get(username=email, is_active=True)
-    except User.DoesNotExist:
+    user = _find_auth_user(email)
+    if user is None or not user.is_active:
         return Response({'message': 'If this email is registered, a reset email has been sent.'})
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))

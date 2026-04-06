@@ -80,7 +80,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         """Get all members of a specific team"""
         team = self.get_object()
         # Optimize with prefetch_related for social links
-        members = team.members.prefetch_related('social_links').all()
+        members = team.members.prefetch_related('social_links').filter(user__isnull=False)
         language = request.query_params.get('lang', 'en')
         data = [member.to_dict(language) for member in members]
         return Response(data)
@@ -96,7 +96,7 @@ class MemberViewSet(viewsets.ModelViewSet):
     DELETE /api/members/{id}/ - Delete member (team leader of same team)
     GET /api/members/{id}/social-links/ - Get member's social media links (public)
     """
-    queryset = Member.objects.select_related('team').prefetch_related('social_links').all()
+    queryset = Member.objects.select_related('team').prefetch_related('social_links').filter(user__isnull=False)
     serializer_class = MemberSerializer
     pagination_class = StandardResultsSetPagination
 
@@ -133,6 +133,12 @@ class MemberViewSet(viewsets.ModelViewSet):
         
         data = [member.to_dict(language) for member in queryset]
         return Response(data)
+
+    def create(self, request, *args, **kwargs):
+        return Response(
+            {'error': 'Direct member creation is disabled. Use /api/auth/register/ via invite flow.'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
 
     def retrieve(self, request, pk=None):
         """Get a specific member with language support"""
