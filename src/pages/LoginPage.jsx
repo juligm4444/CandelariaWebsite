@@ -43,9 +43,16 @@ const LoginPage = () => {
     if (result.success) {
       navigate('/');
     } else {
-      setError(result.error);
+      setError(result.errorCode || result.error);
       setLoading(false);
     }
+  };
+
+  const getLoginErrorMessage = (errorValue) => {
+    if (!errorValue) return '';
+    const translated = t(`login.errors.${errorValue}`, { defaultValue: '' });
+    if (translated) return translated;
+    return typeof errorValue === 'string' ? errorValue : t('login.errors.login_failed');
   };
 
   return (
@@ -63,11 +70,7 @@ const LoginPage = () => {
             {/* Error Message */}
             {error && (
               <div className="login-error">
-                <p>
-                  {typeof error === 'string'
-                    ? error
-                    : 'Login failed. Please check your credentials.'}
-                </p>
+                <p>{getLoginErrorMessage(error)}</p>
               </div>
             )}
 

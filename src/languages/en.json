@@ -552,6 +552,13 @@
     "forgotPassword": "Forgot your password?",
     "signIn": "Sign In",
     "signingIn": "Signing in...",
+    "errors": {
+      "email_not_registered": "This email is not registered.",
+      "incorrect_password": "The password is incorrect.",
+      "account_inactive": "This account is inactive. Contact support.",
+      "too_many_attempts": "Too many failed attempts. Please wait and try again.",
+      "login_failed": "Login failed. Please check your credentials."
+    },
     "noAccount": "Don't have an account?",
     "registerLink": "Sign up",
     "orDivider": "OR",

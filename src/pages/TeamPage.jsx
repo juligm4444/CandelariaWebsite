@@ -47,7 +47,9 @@ const normalize = (value) =>
 const TeamMemberCard = ({ member }) => {
   const { t } = useTranslation();
   const [isFlipped, setIsFlipped] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = member?.image ? resolveMediaUrl(member.image) : null;
+  const showFallback = !imageUrl || imageFailed;
   const socialLinks = Array.isArray(member?.social_links) ? member.social_links : [];
 
   const handleEnter = () => {
@@ -74,8 +76,13 @@ const TeamMemberCard = ({ member }) => {
         {/* Front */}
         <div className="team-member-flip-face team-member-flip-front">
           <div className="team-member-image-wrap">
-            {imageUrl ? (
-              <img src={imageUrl} alt={member.name} className="team-member-image" />
+            {!showFallback ? (
+              <img
+                src={imageUrl}
+                alt={member.name}
+                className="team-member-image"
+                onError={() => setImageFailed(true)}
+              />
             ) : (
               <div className="team-member-fallback">{member?.name?.charAt(0) || 'C'}</div>
             )}

@@ -20,6 +20,7 @@ const DashboardPage = () => {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteData, setInviteData] = useState({ email: '' });
   const [members, setMembers] = useState([]);
+  const [imageErrors, setImageErrors] = useState({});
   const [publications, setPublications] = useState([]);
   const [formData, setFormData] = useState({
     name_en: '',
@@ -73,6 +74,7 @@ const DashboardPage = () => {
       ]);
       setPublications(Array.isArray(pubRes.data) ? pubRes.data : []);
       setMembers(Array.isArray(memberRes.data) ? memberRes.data : []);
+      setImageErrors({});
     } catch {
       setError(t('common.loadError'));
     } finally {
@@ -391,12 +393,23 @@ const DashboardPage = () => {
               <div className="team-management-grid">
                 {sortedTeamMembers.map((member) => {
                   const imageUrl = member.image ? resolveMediaUrl(member.image) : null;
+                  const showFallback = !imageUrl || imageErrors[member.id];
                   return (
                     <article key={member.id} className="team-member-bubble">
                       <div className="team-member-bubble-main">
                         <div className="team-member-image-wrap team-member-manage-image-wrap">
-                          {imageUrl ? (
-                            <img src={imageUrl} alt={member.name} className="team-member-image" />
+                          {!showFallback ? (
+                            <img
+                              src={imageUrl}
+                              alt={member.name}
+                              className="team-member-image"
+                              onError={() =>
+                                setImageErrors((current) => ({
+                                  ...current,
+                                  [member.id]: true,
+                                }))
+                              }
+                            />
                           ) : (
                             <div className="team-member-fallback">
                               {member.name?.charAt(0) || 'M'}

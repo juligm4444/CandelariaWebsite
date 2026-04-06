@@ -44,20 +44,53 @@ def _get_profile_for_user(user):
 
 
 def _build_auth_user_payload(user, language='en'):
-    profile = _get_profile_for_user(user)
+    profile = None
+    fallback_profile = {
+        'id': None,
+        'email': (user.email or user.username or '').strip().lower(),
+        'name': (f'{user.first_name} {user.last_name}'.strip() or user.username or '').strip(),
+        'is_internal': False,
+        'internal_role': None,
+        'created_at': None,
+    }
+
+    try:
+        profile = _get_profile_for_user(user)
+    except Exception:
+        # Legacy databases may have a drifted `profiles` schema.
+        # Auth should still work using the Django auth user as source of truth.
+        profile = None
+
+    profile_data = {
+        'id': getattr(profile, 'id', fallback_profile['id']),
+        'email': getattr(profile, 'email', fallback_profile['email']),
+        'name': getattr(profile, 'name', fallback_profile['name']),
+        'is_internal': bool(getattr(profile, 'is_internal', fallback_profile['is_internal'])),
+        'internal_role': getattr(profile, 'internal_role', fallback_profile['internal_role']),
+        'created_at': getattr(profile, 'created_at', fallback_profile['created_at']),
+    }
 
     try:
         member = Member.objects.get(user=user)
     except Member.DoesNotExist:
         member = None
 
+    if member and profile is None:
+        profile_data['is_internal'] = True
+        if member.is_team_leader:
+            profile_data['internal_role'] = 'leader'
+        elif member.is_coleader:
+            profile_data['internal_role'] = 'coleader'
+        else:
+            profile_data['internal_role'] = 'member'
+
     if member:
         payload = member.to_dict(language=language, include_email=True)
     else:
         payload = {
             'id': None,
-            'email': profile.email,
-            'name': profile.name,
+            'email': profile_data['email'],
+            'name': profile_data['name'],
             'career': '',
             'role': '',
             'image': None,
@@ -65,15 +98,15 @@ def _build_auth_user_payload(user, language='en'):
             'team_name': None,
             'is_team_leader': False,
             'is_coleader': False,
-            'created_at': profile.created_at.isoformat() if profile.created_at else None,
+            'created_at': profile_data['created_at'].isoformat() if profile_data['created_at'] else None,
             'social_links': [],
         }
 
     payload['user_id'] = user.id
-    payload['profile_id'] = profile.id
-    payload['is_internal'] = bool(profile.is_internal)
-    payload['internal_role'] = profile.internal_role
-    payload['is_external'] = not bool(profile.is_internal)
+    payload['profile_id'] = profile_data['id']
+    payload['is_internal'] = profile_data['is_internal']
+    payload['internal_role'] = profile_data['internal_role']
+    payload['is_external'] = not profile_data['is_internal']
     return payload
 
 
@@ -168,17 +201,31 @@ def login_view(request):
 
     if _is_login_locked(email, ip):
         return Response({
-            'error': 'Too many failed attempts. Please wait and try again.'
+            'error': 'Too many failed attempts. Please wait and try again.',
+            'code': 'too_many_attempts',
         }, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
     user = _find_auth_user(email)
     if user is None:
         _register_failed_attempt(email, ip)
-        return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({
+            'error': 'Email is not registered.',
+            'code': 'email_not_registered',
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
-    if not user.is_active or not user.check_password(password):
+    if not user.is_active:
         _register_failed_attempt(email, ip)
-        return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({
+            'error': 'This account is inactive. Contact support.',
+            'code': 'account_inactive',
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    if not user.check_password(password):
+        _register_failed_attempt(email, ip)
+        return Response({
+            'error': 'Incorrect password.',
+            'code': 'incorrect_password',
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
     _clear_failed_attempts(email, ip)
 

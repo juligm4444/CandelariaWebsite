@@ -552,6 +552,13 @@
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "signIn": "Iniciar Sesión",
     "signingIn": "Iniciando sesión...",
+    "errors": {
+      "email_not_registered": "Este correo no está registrado.",
+      "incorrect_password": "La contraseña es incorrecta.",
+      "account_inactive": "Esta cuenta está inactiva. Contacta al soporte.",
+      "too_many_attempts": "Demasiados intentos fallidos. Espera un momento e inténtalo de nuevo.",
+      "login_failed": "No se pudo iniciar sesión. Revisa tus credenciales."
+    },
     "noAccount": "¿No tienes una cuenta?",
     "registerLink": "Regístrate",
     "orDivider": "O",
