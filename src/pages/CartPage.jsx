@@ -77,19 +77,19 @@ export const CartPage = () => {
       <main className="cart-main section-shell">
         <section className="cart-header">
           <h1>
-            Your <span>Cart</span>
+            {t('cart.titlePrefix')} <span>{t('cart.titleHighlight')}</span>
           </h1>
-          <p className="page-intro">Review your selected digital products before checkout.</p>
+          <p className="page-intro">{t('cart.pageIntro')}</p>
         </section>
 
         <section className="cart-layout">
           <div className="cart-items-panel">
             {items.length === 0 ? (
               <div className="cart-empty-state">
-                <h2>Your cart is empty</h2>
-                <p>Add memberships and gear from the support page to continue.</p>
+                <h2>{t('cart.emptyTitle')}</h2>
+                <p>{t('cart.emptyBody')}</p>
                 <Link to="/support" className="landing-primary-button cart-empty-cta">
-                  Go To Support
+                  {t('cart.goToSupport')}
                 </Link>
               </div>
             ) : (
@@ -100,12 +100,18 @@ export const CartPage = () => {
                       <CartItemThumbnail item={item} />
                       <div className="cart-item-info">
                         <h3>{item.name}</h3>
-                        <p>{item.kind === 'membership' ? 'Membership' : 'Product'}</p>
+                        <p>
+                          {item.kind === 'membership' ? t('cart.membership') : t('cart.product')}
+                        </p>
                         {item.meta?.size && (
-                          <p className="cart-item-meta-tag">Size: {item.meta.size}</p>
+                          <p className="cart-item-meta-tag">
+                            {t('cart.size')}: {item.meta.size}
+                          </p>
                         )}
                         {item.meta?.design && (
-                          <p className="cart-item-meta-tag">Design: {item.meta.design}</p>
+                          <p className="cart-item-meta-tag">
+                            {t('cart.design')}: {item.meta.design}
+                          </p>
                         )}
                       </div>
                       <strong className="cart-item-price">
@@ -128,7 +134,7 @@ export const CartPage = () => {
                         className="ghost-button cart-remove-button"
                         onClick={() => removeItem(item.key)}
                       >
-                        Remove
+                        {t('cart.remove')}
                       </button>
                     </div>
                   </article>
@@ -138,17 +144,17 @@ export const CartPage = () => {
           </div>
 
           <aside className="cart-summary-panel">
-            <h2>Summary</h2>
+            <h2>{t('cart.summary')}</h2>
             <div className="cart-summary-line">
-              <span>Different products</span>
+              <span>{t('cart.differentProducts')}</span>
               <strong>{items.length}</strong>
             </div>
             <div className="cart-summary-line">
-              <span>Total items</span>
+              <span>{t('cart.totalItems')}</span>
               <strong>{totalItems}</strong>
             </div>
             <div className="cart-summary-line cart-summary-total">
-              <span>Subtotal</span>
+              <span>{t('cart.subtotal')}</span>
               <strong>{formatMoney(subtotal, currency)}</strong>
             </div>
 
