@@ -1,0 +1,11 @@
+# Keep Vercel uploads small and avoid local-only artifacts
+node_modules
+backend/venv
+backend/__pycache__
+backend/media
+media
+.git
+.vscode
+.env
+.env.*
+*.log
