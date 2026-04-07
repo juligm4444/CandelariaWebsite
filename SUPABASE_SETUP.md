@@ -4,6 +4,7 @@ This project uses two data paths:
 
 - Django API database (backend/.env)
 - Supabase Auth + Supabase SQL migrations (supabase/migrations)
+- Supabase Storage for durable uploaded media
 
 This guide covers the Supabase side for the dual-user registration model.
 
@@ -51,6 +52,42 @@ Create a local env file from .env.example and set:
 
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_ANON_KEY
+
+## Backend Environment Variables (Django media storage)
+
+Set these in the backend environment and in Vercel production env vars:
+
+- SUPABASE_URL
+- SUPABASE_SERVICE_ROLE_KEY
+- SUPABASE_STORAGE_BUCKET
+
+Recommended bucket setup:
+
+- Create a public bucket named `media` or set `SUPABASE_STORAGE_BUCKET` to your bucket name.
+- Store objects under these prefixes:
+  - `members/`
+  - `teams/`
+  - `publications/`
+  - `publications/files/`
+
+Behavior:
+
+- When `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are present, Django uses Supabase Storage as the default backend for `ImageField` and `FileField` uploads.
+- Existing database paths are preserved, so current records continue working after the files are uploaded to the bucket.
+
+## One-Time Media Migration
+
+After configuring the backend env vars, upload the current local media files:
+
+```powershell
+cd backend
+python manage.py sync_media_to_supabase
+```
+
+Useful options:
+
+- `python manage.py sync_media_to_supabase --dry-run`
+- `python manage.py sync_media_to_supabase --overwrite`
 
 Note:
 

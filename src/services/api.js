@@ -9,11 +9,36 @@ const api = axios.create({
   },
 });
 
+const publicRequest = { requiresAuth: false };
+
+api.interceptors.request.use((config) => {
+  const nextConfig = { ...config };
+  const headers = { ...(nextConfig.headers || {}) };
+
+  if (nextConfig.requiresAuth === false) {
+    delete headers.Authorization;
+  } else {
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+  }
+
+  if (typeof FormData !== 'undefined' && nextConfig.data instanceof FormData) {
+    delete headers['Content-Type'];
+  }
+
+  nextConfig.headers = headers;
+  return nextConfig;
+});
+
 // Teams API
 export const teamsAPI = {
-  getAll: (lang = 'en') => api.get(`/teams/?lang=${lang}`),
-  getById: (id, lang = 'en') => api.get(`/teams/${id}/?lang=${lang}`),
-  getMembers: (id, lang = 'en') => api.get(`/teams/${id}/members/?lang=${lang}`),
+  getAll: (lang = 'en') => api.get(`/teams/?lang=${lang}`, publicRequest),
+  getById: (id, lang = 'en') => api.get(`/teams/${id}/?lang=${lang}`, publicRequest),
+  getMembers: (id, lang = 'en') => api.get(`/teams/${id}/members/?lang=${lang}`, publicRequest),
   create: (data) => api.post('/teams/', data),
   update: (id, data) => api.put(`/teams/${id}/`, data),
   delete: (id) => api.delete(`/teams/${id}/`),
@@ -25,10 +50,10 @@ export const membersAPI = {
     const params = { lang };
     if (teamId) params.team = teamId;
     if (includeInactive) params.include_inactive = true;
-    return api.get('/members/', { params });
+    return api.get('/members/', { params, requiresAuth: false });
   },
-  getById: (id, lang = 'en') => api.get(`/members/${id}/?lang=${lang}`),
-  getSocialLinks: (id) => api.get(`/members/${id}/social-links/`),
+  getById: (id, lang = 'en') => api.get(`/members/${id}/?lang=${lang}`, publicRequest),
+  getSocialLinks: (id) => api.get(`/members/${id}/social-links/`, publicRequest),
   create: (data) => api.post('/members/', data),
   update: (id, data) => api.patch(`/members/${id}/`, data),
   delete: (id) => api.delete(`/members/${id}/`),
@@ -48,9 +73,9 @@ export const publicationsAPI = {
   getAll: (lang = 'en', teamId = null) => {
     const params = { lang };
     if (teamId) params.team = teamId;
-    return api.get('/publications/', { params });
+    return api.get('/publications/', { params, requiresAuth: false });
   },
-  getBySlug: (slug, lang = 'en') => api.get(`/publications/${slug}/?lang=${lang}`),
+  getBySlug: (slug, lang = 'en') => api.get(`/publications/${slug}/?lang=${lang}`, publicRequest),
   create: (data) => api.post('/publications/', data),
   update: (slug, data) => api.patch(`/publications/${slug}/`, data),
   delete: (slug) => api.delete(`/publications/${slug}/`),
@@ -69,9 +94,9 @@ export const adminsAPI = {
 export const socialAPI = {
   getAll: (memberId = null) => {
     const params = memberId ? { member: memberId } : {};
-    return api.get('/social-links/', { params });
+    return api.get('/social-links/', { params, requiresAuth: false });
   },
-  getById: (id) => api.get(`/social-links/${id}/`),
+  getById: (id) => api.get(`/social-links/${id}/`, publicRequest),
   create: (data) => api.post('/social-links/', data),
   update: (id, data) => api.put(`/social-links/${id}/`, data),
   delete: (id) => api.delete(`/social-links/${id}/`),
@@ -79,7 +104,7 @@ export const socialAPI = {
 
 // Payments API
 export const paymentsAPI = {
-  getConfig: () => api.get('/payments/config/'),
+  getConfig: () => api.get('/payments/config/', publicRequest),
   createCheckoutSession: (data) => api.post('/payments/checkout-session/', data),
   createPayment: (data) => api.post('/payments/create-payment/', data),
 };

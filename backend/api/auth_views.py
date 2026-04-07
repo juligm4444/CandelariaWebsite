@@ -2,6 +2,7 @@
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -160,7 +161,11 @@ def register_view(request):
     serializer = RegisterSerializer(data=request.data)
 
     if serializer.is_valid():
-        result = serializer.save()
+        try:
+            result = serializer.save()
+        except DRFValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+
         user = result['user']
         profile = result['profile']
 
@@ -250,7 +255,7 @@ def login_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 @throttle_classes([AuthRateThrottle])
 def logout_view(request):
     try:

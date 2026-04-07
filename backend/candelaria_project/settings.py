@@ -256,6 +256,26 @@ SIMPLE_JWT = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+SUPABASE_URL = (os.getenv('SUPABASE_URL') or os.getenv('VITE_SUPABASE_URL') or '').strip()
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '').strip()
+SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'media').strip() or 'media'
+USE_SUPABASE_STORAGE = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
+
+if USE_SUPABASE_STORAGE:
+    STORAGES = {
+        'default': {
+            'BACKEND': 'api.storage.SupabaseStorage',
+            'OPTIONS': {
+                'bucket_name': SUPABASE_STORAGE_BUCKET,
+                'supabase_url': SUPABASE_URL,
+                'service_role_key': SUPABASE_SERVICE_ROLE_KEY,
+            },
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
+
 # Frontend URL used in password reset emails
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 

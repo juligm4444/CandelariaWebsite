@@ -37,6 +37,14 @@ Supabase auth/migrations setup and CLI flow is documented in:
 
 - `SUPABASE_SETUP.md`
 
+Media migration commands:
+
+```powershell
+cd backend
+python manage.py sync_media_to_supabase --dry-run
+python manage.py sync_media_to_supabase
+```
+
 ## Security and Hardening
 
 Current protections include:

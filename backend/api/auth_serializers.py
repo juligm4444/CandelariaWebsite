@@ -47,6 +47,38 @@ class RegisterSerializer(serializers.Serializer):
         reject_suspicious_text(value, 'role')
         return value.strip()
 
+    def validate(self, attrs):
+        email = attrs.get('email', '').lower()
+        internal_role = self._resolve_whitelist_role(email)
+
+        if internal_role is None:
+            return attrs
+
+        team_id = attrs.get('team_id')
+        career_key = attrs.get('career_key')
+        image = attrs.get('image')
+        errors = {}
+
+        if not team_id:
+            errors['team_id'] = 'Team is required for internal members.'
+
+        if not career_key:
+            errors['career_key'] = 'Career is required for internal members.'
+
+        if not image:
+            errors['image'] = 'Profile image is required for internal members.'
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        if internal_role == UserProfile.ROLE_LEADER and Member.objects.filter(team_id=team_id, is_team_leader=True, is_active=True).exists():
+            raise serializers.ValidationError({'team_id': 'This team already has an active leader.'})
+
+        if internal_role == UserProfile.ROLE_COLEADER and Member.objects.filter(team_id=team_id, is_coleader=True, is_active=True).exists():
+            raise serializers.ValidationError({'team_id': 'This team already has an active co-leader.'})
+
+        return attrs
+
     def _resolve_whitelist_role(self, email):
         db_entry = InternalWhitelistEntry.objects.filter(email=email).first()
         if db_entry:
@@ -89,16 +121,7 @@ class RegisterSerializer(serializers.Serializer):
 
         member = None
         if is_internal:
-            if not team_id:
-                raise serializers.ValidationError({'team_id': 'Team is required for internal members.'})
-            if not career_key:
-                raise serializers.ValidationError({'career_key': 'Career is required for internal members.'})
-            if not image:
-                raise serializers.ValidationError({'image': 'Profile image is required for internal members.'})
-
             career_pair = get_career_pair(career_key)
-            if not career_pair:
-                raise serializers.ValidationError({'career_key': 'Invalid career selection.'})
 
             if internal_role == UserProfile.ROLE_LEADER:
                 role_pair = {'role_en': 'Team Leader', 'role_es': 'Lider de Equipo'}
@@ -108,12 +131,6 @@ class RegisterSerializer(serializers.Serializer):
                 role_pair = resolve_role_pair(role or 'Member', language)
 
             team = Team.objects.get(id=team_id)
-
-            if internal_role == UserProfile.ROLE_LEADER and Member.objects.filter(team=team, is_team_leader=True, is_active=True).exists():
-                raise serializers.ValidationError({'team_id': 'This team already has an active leader.'})
-
-            if internal_role == UserProfile.ROLE_COLEADER and Member.objects.filter(team=team, is_coleader=True, is_active=True).exists():
-                raise serializers.ValidationError({'team_id': 'This team already has an active co-leader.'})
 
             member = Member(
                 user=user,
