@@ -1,4 +1,5 @@
 import mimetypes
+import json
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -17,6 +18,7 @@ class SupabaseStorage(Storage):
         self.supabase_url = (supabase_url or settings.SUPABASE_URL).rstrip('/')
         self.service_role_key = service_role_key or settings.SUPABASE_SERVICE_ROLE_KEY
         self.upload_base_url = f"{self.supabase_url}/storage/v1/object/{self.bucket_name}"
+        self.info_base_url = f"{self.supabase_url}/storage/v1/object/info/{self.bucket_name}"
         self.public_base_url = f"{self.supabase_url}/storage/v1/object/public/{self.bucket_name}"
 
     def _normalize_name(self, name):
@@ -29,6 +31,10 @@ class SupabaseStorage(Storage):
     def _build_object_url(self, name):
         normalized_name = self._normalize_name(name)
         return f"{self.upload_base_url}/{quote(normalized_name, safe='/')}"
+
+    def _build_info_url(self, name):
+        normalized_name = self._normalize_name(name)
+        return f"{self.info_base_url}/{quote(normalized_name, safe='/')}"
 
     def _authorized_headers(self, extra_headers=None):
         headers = {
@@ -97,16 +103,20 @@ class SupabaseStorage(Storage):
     def exists(self, name):
         try:
             response = self._request(
-                'HEAD',
-                self._build_object_url(name),
+                'GET',
+                self._build_info_url(name),
                 headers=self._authorized_headers(),
             )
             response.read()
             return True
         except HTTPError as exc:
-            if exc.code == 404:
-                return False
             message = exc.read().decode('utf-8', errors='ignore')
+
+            # Supabase may sometimes reply with HTTP 400 but an object-not-found payload.
+            lowered = message.lower()
+            if exc.code == 404 or '"statusCode":"404"'.lower() in lowered or 'object not found' in lowered or 'not_found' in lowered:
+                return False
+
             raise OSError(f"Supabase exists check failed for {name}: {exc.code} {message}") from exc
         except URLError as exc:
             raise OSError(f"Supabase exists check failed for {name}: {exc.reason}") from exc
@@ -119,11 +129,23 @@ class SupabaseStorage(Storage):
     def size(self, name):
         try:
             response = self._request(
-                'HEAD',
-                self._build_object_url(name),
+                'GET',
+                self._build_info_url(name),
                 headers=self._authorized_headers(),
             )
-            return int(response.headers.get('Content-Length', '0'))
+            payload = response.read().decode('utf-8', errors='ignore')
+            data = json.loads(payload) if payload else {}
+
+            if isinstance(data, dict):
+                if 'metadata' in data and isinstance(data['metadata'], dict):
+                    meta_size = data['metadata'].get('size')
+                    if meta_size is not None:
+                        return int(meta_size)
+
+                if 'size' in data and data['size'] is not None:
+                    return int(data['size'])
+
+            return 0
         except HTTPError as exc:
             if exc.code == 404:
                 raise FileNotFoundError(name) from exc
