@@ -347,49 +347,88 @@ TEAM_LEADER_WHITELIST_ENABLED = os.getenv('TEAM_LEADER_WHITELIST_ENABLED', 'true
 TEAM_LEADER_AUTO_ASSIGN = os.getenv('TEAM_LEADER_AUTO_ASSIGN', 'false').lower() == 'true'
 ADMIN_APPROVAL_REQUIRED = os.getenv('ADMIN_APPROVAL_REQUIRED', 'true').lower() == 'true'
 
-# Security Logging Configuration
-import os
-os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'security': {
-            'format': '{asctime} | {levelname} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S'
+# Security Logging Configuration (Vercel-compatible)
+# Only create logs directory in development, use console logging in production
+if DEBUG:
+    # Local development - use file logging
+    import os
+    os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
+    
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'security': {
+                'format': '{asctime} | {levelname} | {message}',
+                'style': '{',
+                'datefmt': '%Y-%m-%d %H:%M:%S'
+            },
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
         },
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+        'handlers': {
+            'security_file': {
+                'level': 'INFO',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': os.path.join(BASE_DIR, 'logs', f'security_{os.getenv("ENVIRONMENT", "dev")}.log'),
+                'formatter': 'security',
+                'maxBytes': 1024*1024*10,  # 10MB
+                'backupCount': 5,
+            },
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
         },
-    },
-    'handlers': {
-        'security_file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', f'security_{os.getenv("ENVIRONMENT", "dev")}.log'),
-            'formatter': 'security',
-            'maxBytes': 1024*1024*10,  # 10MB
-            'backupCount': 5,
+        'loggers': {
+            'security': {
+                'handlers': ['security_file', 'console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.security': {
+                'handlers': ['security_file'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
         },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+    }
+else:
+    # Production (Vercel) - console logging only (no file system writes)
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'security': {
+                'format': '[SECURITY] {asctime} | {levelname} | {message}',
+                'style': '{',
+                'datefmt': '%Y-%m-%d %H:%M:%S'
+            },
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
         },
-    },
-    'loggers': {
-        'security': {
-            'handlers': ['security_file', 'console'] if DEBUG else ['security_file'],
-            'level': 'INFO',
-            'propagate': False,
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'security',
+            },
         },
-        'django.security': {
-            'handlers': ['security_file'],
-            'level': 'WARNING',
-            'propagate': False,
+        'loggers': {
+            'security': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.security': {
+                'handlers': ['console'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
         },
-    },
-}
+    }
