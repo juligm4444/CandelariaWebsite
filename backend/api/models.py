@@ -131,6 +131,26 @@ class Member(models.Model):
 
         return data
 
+    @classmethod
+    def create_from_whitelist_entry(cls, user, whitelist_entry):
+        """Create a member from a whitelist entry with team leader privileges"""
+        member = cls.objects.create(
+            user=user,
+            name=f"{whitelist_entry.first_name} {whitelist_entry.last_name}",
+            email=user.email,
+            team=whitelist_entry.team,
+            is_team_leader=True,
+            is_active=True,
+            # Set default values for team leaders
+            career_en="Leadership",
+            career_es="Liderazgo",
+            role_en="Team Leader",
+            role_es="Líder de Equipo",
+            charge_en="Team Management",
+            charge_es="Gestión de Equipo"
+        )
+        return member
+
 
 class InternalWhitelistEntry(models.Model):
     """Database-backed whitelist entries for internal team users."""
@@ -325,6 +345,129 @@ class Publication(models.Model):
             'created_at': self.created_at.isoformat() if hasattr(self, 'created_at') else None,
             'updated_at': self.updated_at.isoformat() if hasattr(self, 'updated_at') else None
         }
+
+
+class TeamLeaderWhitelist(models.Model):
+    """DEPRECATED - Use TeamLeaderRequest instead. Kept for migration compatibility."""
+    email = models.EmailField(unique=True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'team_leader_whitelist'
+        verbose_name = "Team Leader Whitelist (DEPRECATED)"
+        verbose_name_plural = "Team Leader Whitelists (DEPRECATED)"
+        ordering = ['team__name_en', 'email']
+    
+    def __str__(self):
+        return f"[DEPRECATED] {self.email} - {self.team.name_en}"
+
+
+class TeamLeaderRequest(models.Model):
+    """Secure model for team leader requests - requires manual approval"""
+    email = models.EmailField()
+    requested_team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    
+    # Security fields
+    is_whitelist_verified = models.BooleanField(default=False)
+    is_admin_approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    
+    # Audit trail
+    created_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    
+    # Security status
+    STATUS_CHOICES = [
+        ('pending_verification', 'Pending Email Verification'),
+        ('pending_approval', 'Pending Admin Approval'),
+        ('approved', 'Approved'),
+        ('denied', 'Denied'),
+        ('expired', 'Expired')
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
+    
+    class Meta:
+        verbose_name = "Team Leader Request"
+        verbose_name_plural = "Team Leader Requests"
+        unique_together = ['email', 'requested_team']
+        db_table = 'team_leader_requests'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.email} -> {self.requested_team.name_en} ({self.get_status_display()})"
+    
+    def is_email_whitelisted(self):
+        """Check if email is in environment variable whitelist"""
+        import os
+        team_name = self.requested_team.name_en.upper().replace(' ', '_').replace('-', '_')
+        team_env_var = f"TEAM_LEADERS_{team_name}"
+        whitelisted_emails = os.getenv(team_env_var, '').split(',')
+        return self.email.lower().strip() in [email.lower().strip() for email in whitelisted_emails if email.strip()]
+    
+    def verify_whitelist(self):
+        """Verify email against secure whitelist and auto-assign if whitelisted"""
+        if self.is_email_whitelisted():
+            self.is_whitelist_verified = True
+            self.is_admin_approved = True
+            self.status = 'approved'
+            self.approved_at = timezone.now()
+            self.save()
+            
+            # Immediately assign team leadership if whitelisted
+            try:
+                from django.utils import timezone
+                member = Member.objects.get(user__email=self.email)
+                member.is_team_leader = True
+                member.team = self.requested_team
+                member.save()
+                
+                # Log security event
+                self.log_security_event(f"Team leadership auto-assigned to {self.email} via whitelist verification")
+                return True
+            except Member.DoesNotExist:
+                self.log_security_event(f"ERROR: Member not found for auto-approved request {self.email}")
+                return False
+        return False
+    
+    def approve(self, admin_user):
+        """Approve the request and assign team leadership"""
+        from django.utils import timezone
+        if self.is_whitelist_verified and admin_user.is_staff:
+            self.is_admin_approved = True
+            self.approved_by = admin_user
+            self.approved_at = timezone.now()
+            self.status = 'approved'
+            self.save()
+            
+            # Now safely assign team leadership
+            try:
+                member = Member.objects.get(user__email=self.email)
+                member.is_team_leader = True
+                member.team = self.requested_team
+                member.save()
+                
+                # Log security event
+                self.log_security_event(f"Team leadership assigned to {self.email} by {admin_user.email}")
+                return True
+            except Member.DoesNotExist:
+                self.log_security_event(f"ERROR: Member not found for approved request {self.email}")
+                return False
+        return False
+    
+    def log_security_event(self, message):
+        """Log security-related events"""
+        import logging
+        from django.utils import timezone
+        security_logger = logging.getLogger('security')
+        security_logger.info(f"TEAM_LEADER_REQUEST: {message} | IP: {self.ip_address} | Time: {timezone.now()}")
 
 
 class RedSocial(models.Model):

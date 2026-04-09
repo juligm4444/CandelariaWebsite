@@ -3,7 +3,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db import transaction
-from .models import Member, Team, UserProfile, InternalWhitelistEntry
+from .models import Member, Team, UserProfile, InternalWhitelistEntry, TeamLeaderWhitelist
 from .member_catalog import get_career_pair, resolve_role_pair
 from .security import reject_suspicious_text
 
@@ -49,7 +49,14 @@ class RegisterSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email = attrs.get('email', '').lower()
-        internal_role = self._resolve_whitelist_role(email)
+        internal_role, team_leader_entry = self._resolve_whitelist_role(email)
+
+        # If this is a team leader from whitelist, auto-fill required fields
+        if team_leader_entry:
+            attrs['team_id'] = team_leader_entry.team.id
+            attrs['career_key'] = 'design'  # Default career for leaders
+            # Set a default role for team leaders
+            attrs['role'] = 'Team Leader'
 
         if internal_role is None:
             return attrs
@@ -65,7 +72,8 @@ class RegisterSerializer(serializers.Serializer):
         if not career_key:
             errors['career_key'] = 'Career is required for internal members.'
 
-        if not image:
+        # Don't require image for team leaders from whitelist
+        if not image and not team_leader_entry:
             errors['image'] = 'Profile image is required for internal members.'
 
         if errors:
@@ -80,10 +88,17 @@ class RegisterSerializer(serializers.Serializer):
         return attrs
 
     def _resolve_whitelist_role(self, email):
+        # First check team leader whitelist
+        team_leader_entry = TeamLeaderWhitelist.objects.filter(email=email, is_active=True).first()
+        if team_leader_entry:
+            return UserProfile.ROLE_LEADER, team_leader_entry
+        
+        # Then check internal whitelist 
         db_entry = InternalWhitelistEntry.objects.filter(email=email).first()
         if db_entry:
-            return db_entry.internal_role
-        return None
+            return db_entry.internal_role, None
+        
+        return None, None
 
     @transaction.atomic
     def create(self, validated_data):
@@ -97,7 +112,7 @@ class RegisterSerializer(serializers.Serializer):
         role = (validated_data.pop('role', '') or '').strip()
         image = validated_data.pop('image', None)
 
-        internal_role = self._resolve_whitelist_role(email)
+        internal_role, team_leader_entry = self._resolve_whitelist_role(email)
         is_internal = internal_role is not None
 
         user = User.objects.create_user(
@@ -148,6 +163,14 @@ class RegisterSerializer(serializers.Serializer):
             )
             member.set_password(password)
             member.save()
+
+            # If this was a team leader from whitelist, mark as used
+            if team_leader_entry:
+                team_leader_entry.is_active = False
+                team_leader_entry.save()
+                print(f"✅ Team Leader registered: {email} for team {team.name_en}")
+        
+        return {'user': user, 'profile': profile, 'member': member}
 
         return {
             'user': user,

@@ -11,6 +11,8 @@ from .models import (
     UserProfile,
     Subscription,
     Payment,
+    TeamLeaderWhitelist,
+    TeamLeaderRequest,
 )
 
 
@@ -119,3 +121,91 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'amount', 'currency', 'type', 'status', 'payu_transaction_id', 'created_at']
     list_filter = ['status', 'type', 'currency']
     search_fields = ['user__email', 'payu_transaction_id']
+
+
+@admin.register(TeamLeaderWhitelist)
+class TeamLeaderWhitelistAdmin(admin.ModelAdmin):
+    list_display = ['email', 'team', 'first_name', 'last_name', 'is_active', 'created_at']
+    list_filter = ['team', 'is_active', 'created_at']
+    search_fields = ['email', 'first_name', 'last_name', 'team__name_en', 'team__name_es']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at']
+    
+    fieldsets = (
+        ('DEPRECATED WARNING', {
+            'fields': (),
+            'description': '<strong style="color: red;">⚠️ This model is DEPRECATED. Use Team Leader Requests instead for secure approval process.</strong>'
+        }),
+        (None, {
+            'fields': ('email', 'team', 'first_name', 'last_name', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        })
+    )
+
+
+@admin.register(TeamLeaderRequest)
+class TeamLeaderRequestAdmin(admin.ModelAdmin):
+    list_display = [
+        'email', 'requested_team', 'status', 'is_whitelist_verified', 
+        'is_admin_approved', 'approved_by', 'created_at'
+    ]
+    list_filter = [
+        'status', 'is_whitelist_verified', 'is_admin_approved', 
+        'requested_team', 'created_at'
+    ]
+    search_fields = ['email', 'first_name', 'last_name', 'requested_team__name_en']
+    readonly_fields = [
+        'created_at', 'ip_address', 'user_agent', 'is_whitelist_verified',
+        'approved_at', 'approved_by'
+    ]
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Request Information', {
+            'fields': ('email', 'requested_team', 'first_name', 'last_name', 'status')
+        }),
+        ('Security Verification', {
+            'fields': ('is_whitelist_verified', 'is_admin_approved'),
+            'classes': ('collapse',)
+        }),
+        ('Approval Information', {
+            'fields': ('approved_by', 'approved_at'),
+            'classes': ('collapse',)
+        }),
+        ('Audit Trail', {
+            'fields': ('created_at', 'ip_address', 'user_agent'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['verify_whitelist', 'deny_requests']
+    
+    def verify_whitelist(self, request, queryset):
+        """Verify selected requests against environment whitelist (auto-assigns if whitelisted)"""
+        verified_count = 0
+        for req in queryset.filter(status='pending_verification'):
+            if req.verify_whitelist():
+                verified_count += 1
+        
+        self.message_user(
+            request,
+            f"✅ Verified and auto-assigned {verified_count} team leadership requests."
+        )
+    verify_whitelist.short_description = "🔍 Verify against whitelist (auto-assigns)"
+    
+    # Remove the approve_requests action since it's now automatic
+    
+    def deny_requests(self, request, queryset):
+        """Deny selected requests"""
+        denied_count = queryset.filter(
+            status__in=['pending_verification', 'pending_approval']
+        ).update(status='denied')
+        
+        self.message_user(
+            request,
+            f"❌ Denied {denied_count} team leadership requests."
+        )
+    deny_requests.short_description = "❌ Deny selected requests"

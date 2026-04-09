@@ -28,5 +28,20 @@ dist-ssr
 .env.*
 !.env.example
 
+# Security and sensitive data
+backend/logs/
+security_*.log
+team_leaders.txt
+whitelist.txt
+backend/setup_team_leaders.py
+backend/add_team_leaders.py
+backend/team_leadership/
+
+# Database and media files
+backend/media/
+*.db
+*.sqlite3
+db.sqlite3
+
 # Supabase local metadata
 supabase/.temp/

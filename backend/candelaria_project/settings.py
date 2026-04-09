@@ -340,3 +340,56 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+
+# Team Leader Security Configuration
+TEAM_LEADER_WHITELIST_ENABLED = os.getenv('TEAM_LEADER_WHITELIST_ENABLED', 'true').lower() == 'true'
+TEAM_LEADER_AUTO_ASSIGN = os.getenv('TEAM_LEADER_AUTO_ASSIGN', 'false').lower() == 'true'
+ADMIN_APPROVAL_REQUIRED = os.getenv('ADMIN_APPROVAL_REQUIRED', 'true').lower() == 'true'
+
+# Security Logging Configuration
+import os
+os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'security': {
+            'format': '{asctime} | {levelname} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'security_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', f'security_{os.getenv("ENVIRONMENT", "dev")}.log'),
+            'formatter': 'security',
+            'maxBytes': 1024*1024*10,  # 10MB
+            'backupCount': 5,
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'security': {
+            'handlers': ['security_file', 'console'] if DEBUG else ['security_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+}

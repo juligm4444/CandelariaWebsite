@@ -15,7 +15,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q
 
-from .models import Member, UserProfile
+from .models import Member, UserProfile, TeamLeaderRequest, Team
+from .security_logging import get_client_ip, log_team_leader_event
 from .auth_serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -158,37 +159,145 @@ def _clear_failed_attempts(email, ip):
 @permission_classes([AllowAny])
 @throttle_classes([AuthRateThrottle])
 def register_view(request):
-    serializer = RegisterSerializer(data=request.data)
+    """Secure registration with team leader request system"""
+    try:
+        data = request.data
+        email = data.get('email', '').lower().strip()
+        password = data.get('password')
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        requested_team_id = data.get('team_id')  # Optional team leadership request
+        
+        # Get client information for security logging
+        client_ip = get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
 
-    if serializer.is_valid():
-        try:
-            result = serializer.save()
-        except DRFValidationError as exc:
-            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        # Validation
+        if not all([email, password, first_name, last_name]):
+            log_team_leader_event('registration_failed', email, 'N/A', client_ip, 
+                                'Missing required fields')
+            return Response({
+                'error': 'All fields are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        user = result['user']
-        profile = result['profile']
+        if User.objects.filter(email=email).exists():
+            log_team_leader_event('registration_failed', email, 'N/A', client_ip, 
+                                'Email already exists')
+            return Response({
+                'error': 'User with this email already exists'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
+        # Create Django User (always as regular user first)
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            password=password
+        )
+
+        # Create UserProfile
+        profile = _get_profile_for_user(user)
+
+        # Create regular member (no auto team leadership)
+        member = Member.objects.create(
+            user=user,
+            first_name=first_name,
+            last_name=last_name,
+            is_team_leader=False,  # Always start as regular member
+            is_active=True,
+            career_en="Member",
+            career_es="Miembro",
+            role_en="Team Member",
+            role_es="Miembro del Equipo",
+            charge_en="Contributing Member",
+            charge_es="Miembro Contribuyente"
+        )
+
+        # If team leadership is requested, create secure request
+        leadership_request_created = False
+        if requested_team_id and settings.TEAM_LEADER_WHITELIST_ENABLED:
+            try:
+                requested_team = Team.objects.get(id=requested_team_id)
+                
+                # Create team leader request for verification
+                team_request = TeamLeaderRequest.objects.create(
+                    email=email,
+                    requested_team=requested_team,
+                    first_name=first_name,
+                    last_name=last_name,
+                    ip_address=client_ip,
+                    user_agent=user_agent
+                )
+                
+                # Verify against whitelist (auto-assigns if whitelisted)
+                if team_request.verify_whitelist():
+                    leadership_request_created = True
+                    log_team_leader_event('auto_approved', email, requested_team.name_en, 
+                                        client_ip, 'Email verified and team leadership auto-assigned')
+                else:
+                    # Not whitelisted - log potential security issue
+                    log_team_leader_event('security_violation', email, requested_team.name_en, 
+                                        client_ip, 'Non-whitelisted email attempted team leadership')
+                    
+            except Team.DoesNotExist:
+                log_team_leader_event('request_failed', email, f'Team ID {requested_team_id}', 
+                                    client_ip, 'Invalid team ID provided')
+
+        # Log successful registration
+        log_team_leader_event('registration_success', email, 
+                            requested_team.name_en if requested_team_id else 'N/A', 
+                            client_ip, f'Leadership request: {leadership_request_created}')
+
+        # Generate tokens
         refresh = RefreshToken.for_user(user)
         refresh['is_internal'] = bool(profile.is_internal)
         refresh['internal_role'] = profile.internal_role
 
-        member = _build_auth_user_payload(user)
-        refresh['member_id'] = member.get('id')
-        refresh['email'] = member.get('email')
-        refresh['is_team_leader'] = bool(member.get('is_team_leader'))
-        refresh['is_coleader'] = bool(member.get('is_coleader'))
-
-        return Response({
+        member_data = _build_auth_user_payload(user)
+        refresh['member_id'] = member_data.get('id')
+        refresh['email'] = member_data.get('email')
+        refresh['is_team_leader'] = bool(member_data.get('is_team_leader'))
+        refresh['is_coleader'] = bool(member_data.get('is_coleader'))
+        
+        response_data = {
             'message': 'Registration successful',
-            'member': member,
+            'member': member_data,
             'tokens': {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
-        }, status=status.HTTP_201_CREATED)
+        }
+        
+        # Only mention leadership if it was auto-assigned
+        if leadership_request_created:
+            response_data['leadership_status'] = 'Team leadership automatically assigned'
+            
+            # Refresh member data to include new team leader status
+            member_data = _build_auth_user_payload(user)
+            response_data['member'] = member_data
+            
+            # Update JWT tokens with new leadership status
+            refresh['member_id'] = member_data.get('id')
+            refresh['email'] = member_data.get('email')
+            refresh['is_team_leader'] = bool(member_data.get('is_team_leader'))
+            refresh['is_coleader'] = bool(member_data.get('is_coleader'))
+            
+            response_data['tokens'] = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+        
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        # Log registration errors for security monitoring
+        log_team_leader_event('error', email if 'email' in locals() else 'unknown', 
+                            'N/A', client_ip if 'client_ip' in locals() else 'unknown', 
+                            f'Registration error: {str(e)}')
+        return Response({
+            'error': 'Registration failed'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
