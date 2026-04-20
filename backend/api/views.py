@@ -13,7 +13,6 @@ from django.core.exceptions import ValidationError
 from .models import Team, Member, Publication, RedSocial, InternalWhitelistEntry, UserProfile
 from .member_catalog import get_career_pair, resolve_role_pair
 from .email_whitelist import (
-    add_email_to_whitelist_section,
     remove_email_from_whitelist,
     SECTION_LEADERS,
     SECTION_COLEADERS,
@@ -252,10 +251,6 @@ class MemberViewSet(viewsets.ModelViewSet):
 
         if role not in {SECTION_LEADERS, SECTION_COLEADERS, SECTION_MEMBERS}:
             return Response({'error': 'Invalid role section.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        added = add_email_to_whitelist_section(email, role)
-        if not added and not InternalWhitelistEntry.objects.filter(email=email).exists():
-            return Response({'error': 'Email is already in whitelist or invalid.'}, status=status.HTTP_400_BAD_REQUEST)
 
         db_role = UserProfile.ROLE_MEMBER
         if role == SECTION_LEADERS:

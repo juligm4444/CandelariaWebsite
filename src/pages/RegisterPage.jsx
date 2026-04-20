@@ -98,7 +98,7 @@ const RegisterPage = () => {
       }));
     }
 
-    if (status.is_taken) {
+    if (status?.is_taken) {
       setErrors((prev) => ({ ...prev, email: 'This email is already registered.' }));
     }
   };
@@ -361,14 +361,22 @@ const RegisterPage = () => {
                     <label htmlFor="profile-image">
                       Profile picture {!emailStatus?.is_team_leader_whitelist ? '*' : '(optional for team leaders)'}
                     </label>
-                    <input
-                      id="profile-image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      required={!emailStatus?.is_team_leader_whitelist}
-                      className="form-input"
-                    />
+                    <div className="register-file-input-wrapper">
+                      <label
+                        htmlFor="profile-image"
+                        className={`register-file-input-label${profileImage ? ' has-file' : ''}`}
+                      >
+                        <span>{profileImage ? profileImage.name : 'Tap to choose a photo'}</span>
+                      </label>
+                      <input
+                        id="profile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        required={!emailStatus?.is_team_leader_whitelist}
+                        className="register-file-input-hidden"
+                      />
+                    </div>
                     {emailStatus?.is_team_leader_whitelist && (
                       <p className="field-hint">
                         As a team leader from the whitelist, a profile picture is optional.
