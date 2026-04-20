@@ -519,6 +519,7 @@ def reset_password_view(request):
 @throttle_classes([AuthRateThrottle])
 def check_email_view(request):
     from .email_whitelist import get_email_whitelist_role
+    from .team_leader_utils import get_team_leader_info
 
     email = request.query_params.get('email', '').strip().lower()
 
@@ -526,6 +527,7 @@ def check_email_view(request):
         return Response({'error': 'Email parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     whitelist_role = get_email_whitelist_role(email)
+    team_leader_info = get_team_leader_info(email)
 
     is_whitelisted = whitelist_role is not None
     is_taken = Member.objects.filter(email=email).exists() or User.objects.filter(username=email).exists()
@@ -537,5 +539,9 @@ def check_email_view(request):
         'whitelist_role': whitelist_role,
         'can_edit_role': whitelist_role in [None, 'members'],
         'is_taken': is_taken,
-        'can_register': not is_taken
+        'can_register': not is_taken,
+        # Team leader specific info
+        'is_team_leader_whitelist': team_leader_info['is_team_leader'],
+        'whitelist_team_key': team_leader_info['team_key'],
+        'whitelist_team_id': team_leader_info['team']['id'] if team_leader_info['team'] else None,
     }, status=status.HTTP_200_OK)
