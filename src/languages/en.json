@@ -636,6 +636,7 @@
     "logout": "Logout",
     "updateSuccess": "Profile updated successfully!",
     "updateError": "Failed to update profile. Please try again.",
+    "externalSupporter": "External Supporter",
     "socialLinks": "Social Media Links",
     "platform": "Platform",
     "url": "URL",
