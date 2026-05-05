@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "buildCommand": "npm run build && cd backend && python manage.py migrate",
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "candelaria_project.settings"
+  },
   "builds": [
     {
       "src": "package.json",
