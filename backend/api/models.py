@@ -636,7 +636,6 @@ def ensure_user_profile(sender, instance, created, **kwargs):
             UserProfile.objects.get_or_create(
                 user=instance,
                 defaults={
-                    'id': uuid.uuid4(),
                     'email': (instance.email or instance.username or '').strip().lower(),
                     'name': (instance.first_name or instance.username or '').strip(),
                     'is_internal': False,

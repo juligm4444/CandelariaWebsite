@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                     DROP TABLE IF EXISTS profiles CASCADE;
 
                     CREATE TABLE profiles (
-                        id            uuid         PRIMARY KEY DEFAULT gen_random_uuid(),
+                        id            uuid         PRIMARY KEY,
                         user_id       integer      NOT NULL UNIQUE
                                                    REFERENCES auth_user(id)
                                                    ON DELETE CASCADE
@@ -44,6 +44,8 @@ class Migration(migrations.Migration):
                         internal_role varchar(20)  NULL,
                         created_at    timestamptz  NOT NULL DEFAULT now()
                     );
+
+                    ALTER TABLE profiles ALTER COLUMN id SET DEFAULT gen_random_uuid();
                 END IF;
             END $$;
             """,
