@@ -186,6 +186,7 @@ class UserProfile(models.Model):
 
     INTERNAL_ROLE_CHOICES = InternalWhitelistEntry.INTERNAL_ROLE_CHOICES
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     email = models.EmailField(max_length=200)
     name = models.CharField(max_length=200)
@@ -196,11 +197,6 @@ class UserProfile(models.Model):
     class Meta:
         db_table = 'profiles'
         ordering = ['-created_at']
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.pk = uuid.uuid4()
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.email} ({"internal" if self.is_internal else "external"})'
