@@ -197,6 +197,11 @@ class UserProfile(models.Model):
         db_table = 'profiles'
         ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.pk = uuid.uuid4()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f'{self.email} ({"internal" if self.is_internal else "external"})'
 

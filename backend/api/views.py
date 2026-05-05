@@ -123,14 +123,18 @@ class MemberViewSet(viewsets.ModelViewSet):
         """List all members with optional language filter"""
         language = request.query_params.get('lang', 'en')
         team_id = request.query_params.get('team')
-        include_inactive = request.query_params.get('include_inactive', 'false').lower() == 'true'
-        
+        is_staff = request.user.is_authenticated and request.user.is_staff
+        include_inactive = (
+            request.query_params.get('include_inactive', 'false').lower() == 'true'
+            and is_staff
+        )
+
         queryset = self.get_queryset()
         if team_id:
             queryset = queryset.filter(team_id=team_id)
         if not include_inactive:
             queryset = queryset.filter(is_active=True)
-        
+
         data = [member.to_dict(language) for member in queryset]
         return Response(data)
 
