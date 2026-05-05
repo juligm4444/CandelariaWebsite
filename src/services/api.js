@@ -34,6 +34,62 @@ api.interceptors.request.use((config) => {
   return nextConfig;
 });
 
+let _isRefreshing = false;
+let _refreshQueue = [];
+
+const _drainQueue = (error, token) => {
+  _refreshQueue.forEach(({ resolve, reject }) => (error ? reject(error) : resolve(token)));
+  _refreshQueue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+
+    if (error.response?.status !== 401 || original._retried) {
+      return Promise.reject(error);
+    }
+
+    if (_isRefreshing) {
+      return new Promise((resolve, reject) => {
+        _refreshQueue.push({ resolve, reject });
+      }).then((token) => {
+        original.headers = { ...(original.headers || {}), Authorization: `Bearer ${token}` };
+        return api(original);
+      });
+    }
+
+    original._retried = true;
+    _isRefreshing = true;
+
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+
+    if (!refreshToken) {
+      _isRefreshing = false;
+      return Promise.reject(error);
+    }
+
+    try {
+      const { data } = await axios.post(`${API_URL}/token/refresh/`, { refresh: refreshToken });
+      const newAccess = data.access;
+      localStorage.setItem('access_token', newAccess);
+      if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+      _drainQueue(null, newAccess);
+      _isRefreshing = false;
+      original.headers = { ...(original.headers || {}), Authorization: `Bearer ${newAccess}` };
+      return api(original);
+    } catch (refreshError) {
+      _drainQueue(refreshError, null);
+      _isRefreshing = false;
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      window.location.href = '/login';
+      return Promise.reject(refreshError);
+    }
+  }
+);
+
 // Teams API
 export const teamsAPI = {
   getAll: (lang = 'en') => api.get(`/teams/?lang=${lang}`, publicRequest),

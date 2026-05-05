@@ -13,7 +13,6 @@ from django.core.exceptions import ValidationError
 from .models import Team, Member, Publication, RedSocial, InternalWhitelistEntry, UserProfile
 from .member_catalog import get_career_pair, resolve_role_pair
 from .email_whitelist import (
-    add_email_to_whitelist_section,
     remove_email_from_whitelist,
     SECTION_LEADERS,
     SECTION_COLEADERS,
@@ -226,53 +225,64 @@ class MemberViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], throttle_classes=[BurstRateThrottle])
     def invite(self, request):
-        actor = getattr(request.user, 'member_profile', None)
-        if not actor or not actor.is_active:
-            return Response({'error': 'Member profile not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not actor.is_team_leader and not actor.is_coleader:
-            return Response({'error': 'Only leaders and co-leaders can invite members.'}, status=status.HTTP_403_FORBIDDEN)
-
-        email = (request.data.get('email') or '').strip().lower()
-        role = (request.data.get('role') or SECTION_MEMBERS).strip().lower()
-        confirm = bool(request.data.get('confirm', False))
-
-        if not confirm:
-            return Response({'error': 'Action confirmation is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not email:
-            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        import logging
+        import traceback
+        logger = logging.getLogger(__name__)
 
         try:
-            validate_email(email)
-        except ValidationError:
-            return Response({'error': 'Invalid email format.'}, status=status.HTTP_400_BAD_REQUEST)
+            actor = getattr(request.user, 'member_profile', None)
+            if not actor or not actor.is_active:
+                return Response({'error': 'Member profile not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if actor.is_coleader and role != SECTION_MEMBERS:
-            return Response({'error': 'Co-leaders can only invite normal members.'}, status=status.HTTP_403_FORBIDDEN)
+            if not actor.is_team_leader and not actor.is_coleader:
+                return Response({'error': 'Only leaders and co-leaders can invite members.'}, status=status.HTTP_403_FORBIDDEN)
 
-        if role not in {SECTION_LEADERS, SECTION_COLEADERS, SECTION_MEMBERS}:
-            return Response({'error': 'Invalid role section.'}, status=status.HTTP_400_BAD_REQUEST)
+            email = (request.data.get('email') or '').strip().lower()
+            role = (request.data.get('role') or SECTION_MEMBERS).strip().lower()
+            confirm = bool(request.data.get('confirm', False))
 
-        added = add_email_to_whitelist_section(email, role)
-        if not added and not InternalWhitelistEntry.objects.filter(email=email).exists():
-            return Response({'error': 'Email is already in whitelist or invalid.'}, status=status.HTTP_400_BAD_REQUEST)
+            if not confirm:
+                return Response({'error': 'Action confirmation is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        db_role = UserProfile.ROLE_MEMBER
-        if role == SECTION_LEADERS:
-            db_role = UserProfile.ROLE_LEADER
-        elif role == SECTION_COLEADERS:
-            db_role = UserProfile.ROLE_COLEADER
+            if not email:
+                return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        InternalWhitelistEntry.objects.update_or_create(
-            email=email,
-            defaults={
-                'internal_role': db_role,
-                'invited_by': request.user,
-            },
-        )
+            try:
+                validate_email(email)
+            except ValidationError:
+                return Response({'error': 'Invalid email format.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'message': 'Invitation added to whitelist.', 'email': email, 'role': role})
+            if actor.is_coleader and role != SECTION_MEMBERS:
+                return Response({'error': 'Co-leaders can only invite normal members.'}, status=status.HTTP_403_FORBIDDEN)
+
+            if role not in {SECTION_LEADERS, SECTION_COLEADERS, SECTION_MEMBERS}:
+                return Response({'error': 'Invalid role section.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            db_role = UserProfile.ROLE_MEMBER
+            if role == SECTION_LEADERS:
+                db_role = UserProfile.ROLE_LEADER
+            elif role == SECTION_COLEADERS:
+                db_role = UserProfile.ROLE_COLEADER
+
+            InternalWhitelistEntry.objects.update_or_create(
+                email=email,
+                defaults={
+                    'internal_role': db_role,
+                    'invited_by': request.user,
+                },
+            )
+
+            return Response({'message': 'Invitation added to whitelist.', 'email': email, 'role': role})
+
+        except Exception as exc:
+            logger.error('invite_error user=%s error=%s\n%s',
+                         getattr(request.user, 'username', '?'),
+                         exc,
+                         traceback.format_exc())
+            return Response(
+                {'error': f'Invite failed: {type(exc).__name__}: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], throttle_classes=[BurstRateThrottle])
     def kick(self, request, pk=None):

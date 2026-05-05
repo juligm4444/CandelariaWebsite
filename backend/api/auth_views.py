@@ -189,17 +189,18 @@ def register_view(request):
         refresh['is_team_leader'] = bool(member_data.get('is_team_leader'))
         refresh['is_coleader'] = bool(member_data.get('is_coleader'))
 
-        return Response(
-            {
-                'message': 'Registration successful',
-                'member': member_data,
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                },
+        response_data = {
+            'message': 'Registration successful',
+            'member': member_data,
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
             },
-            status=status.HTTP_201_CREATED,
-        )
+        }
+        if member and member.is_team_leader:
+            response_data['leadership_status'] = 'Team leadership automatically assigned'
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     except Exception as e:
         log_team_leader_event('error', email, 'N/A', client_ip,

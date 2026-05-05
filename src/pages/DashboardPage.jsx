@@ -154,8 +154,12 @@ const DashboardPage = () => {
       setShowInvite(false);
       resetMessageSoon();
     } catch (err) {
-      setError(err?.response?.data?.error || t('dashboard.messages.inviteError'));
-      resetMessageSoon();
+      const serverMsg =
+        err?.response?.data?.error ||
+        err?.response?.data?.detail ||
+        (typeof err?.response?.data === 'string' ? err.response.data : null);
+      setError(serverMsg || t('dashboard.messages.inviteError'));
+      // Do NOT auto-clear invite errors — the user must read them
     }
   };
 
@@ -237,7 +241,12 @@ const DashboardPage = () => {
           </div>
 
           {loading && <p className="state-msg">{t('common.loading')}</p>}
-          {error && <p className="state-msg error">{error}</p>}
+          {error && (
+            <div className="state-msg error dashboard-alert">
+              <span>{error}</span>
+              <button type="button" className="dashboard-alert-dismiss" onClick={() => setError('')}>✕</button>
+            </div>
+          )}
           {success && <p className="state-msg">{success}</p>}
 
           <section className="dashboard-toolbar">
@@ -488,7 +497,7 @@ const DashboardPage = () => {
                 <button
                   type="button"
                   className="team-member-bubble invite-bubble"
-                  onClick={() => setShowInvite((prev) => !prev)}
+                  onClick={() => { setShowInvite((prev) => !prev); setError(''); }}
                 >
                   +
                 </button>

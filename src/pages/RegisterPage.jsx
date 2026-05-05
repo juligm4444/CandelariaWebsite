@@ -80,6 +80,15 @@ const RegisterPage = () => {
       setFormData((prev) => ({ ...prev, role: fixedRole }));
     }
 
+    if (status?.is_team_leader_whitelist) {
+      setFormData((prev) => ({
+        ...prev,
+        team_id: status.whitelist_team_id ? String(status.whitelist_team_id) : '',
+        career_key: 'design',
+        role: 'Team Leader',
+      }));
+    }
+
     if (status?.is_taken) {
       setErrors((prev) => ({ ...prev, email: t('register.emailTaken', 'This email is already registered.') }));
     }
@@ -108,7 +117,10 @@ const RegisterPage = () => {
       newErrors.full_name = t('register.nameRequired', 'Full name is required');
     }
 
-    if (emailStatus?.is_whitelisted) {
+    const isWhitelistedInternal = !!emailStatus?.is_whitelisted;
+    const isTeamLeaderFromWhitelist = !!emailStatus?.is_team_leader_whitelist;
+
+    if (isWhitelistedInternal && !isTeamLeaderFromWhitelist) {
       if (!formData.team_id) newErrors.team_id = t('register.teamRequired', 'Team is required');
       if (!formData.career_key) newErrors.career_key = t('register.careerRequired', 'Career is required');
       if (!formData.role.trim()) newErrors.role = t('register.roleRequired', 'Role is required');
@@ -282,7 +294,14 @@ const RegisterPage = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="team_id">{t('register.team')} *</label>
+                    <label htmlFor="team_id">
+                      {t('register.team')} *
+                      {emailStatus?.is_team_leader_whitelist && (
+                        <span className="field-hint" style={{ fontWeight: 'normal', marginLeft: '0.5rem' }}>
+                          (auto-filled from whitelist)
+                        </span>
+                      )}
+                    </label>
                     <select
                       id="team_id"
                       name="team_id"
@@ -290,6 +309,7 @@ const RegisterPage = () => {
                       value={formData.team_id}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={emailStatus?.is_team_leader_whitelist}
                     >
                       <option value="">{t('register.selectTeam')}</option>
                       {teams.map((team) => (
@@ -302,7 +322,14 @@ const RegisterPage = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="career_key">{t('register.career')} *</label>
+                    <label htmlFor="career_key">
+                      {t('register.career')} *
+                      {emailStatus?.is_team_leader_whitelist && (
+                        <span className="field-hint" style={{ fontWeight: 'normal', marginLeft: '0.5rem' }}>
+                          (auto-filled)
+                        </span>
+                      )}
+                    </label>
                     <select
                       id="career_key"
                       name="career_key"
@@ -310,6 +337,7 @@ const RegisterPage = () => {
                       value={formData.career_key}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={emailStatus?.is_team_leader_whitelist}
                     >
                       <option value="">{t('register.selectCareer')}</option>
                       {CAREER_OPTIONS.map((career) => (
@@ -324,7 +352,14 @@ const RegisterPage = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="role">{t('register.role')} *</label>
+                    <label htmlFor="role">
+                      {t('register.role')} *
+                      {emailStatus?.is_team_leader_whitelist && (
+                        <span className="field-hint" style={{ fontWeight: 'normal', marginLeft: '0.5rem' }}>
+                          (auto-filled from whitelist)
+                        </span>
+                      )}
+                    </label>
                     <input
                       id="role"
                       name="role"
@@ -333,7 +368,7 @@ const RegisterPage = () => {
                       value={formData.role}
                       onChange={handleChange}
                       className="form-input"
-                      disabled={emailStatus?.can_edit_role === false}
+                      disabled={emailStatus?.can_edit_role === false || emailStatus?.is_team_leader_whitelist}
                     />
                     {emailStatus?.can_edit_role === false && (
                       <p className="field-hint">
@@ -345,17 +380,30 @@ const RegisterPage = () => {
 
                   <div className="form-group">
                     <label htmlFor="profile-image">
-                      {t('register.profilePicture', 'Profile picture')} *
+                      {t('register.profilePicture', 'Profile picture')}{' '}
+                      {!emailStatus?.is_team_leader_whitelist ? '*' : t('register.profilePictureOptional', '(optional)')}
                     </label>
-                    <input
-                      id="profile-image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      required
-                      className="form-input"
-                    />
-                    {imagePreview && (
+                    <div className="register-file-input-wrapper">
+                      <label
+                        htmlFor="profile-image"
+                        className={`register-file-input-label${profileImage ? ' has-file' : ''}`}
+                      >
+                        <span>{profileImage ? profileImage.name : t('register.tapToChoosePhoto', 'Tap to choose a photo')}</span>
+                      </label>
+                      <input
+                        id="profile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        required={!emailStatus?.is_team_leader_whitelist}
+                        className="register-file-input-hidden"
+                      />
+                    </div>
+                    {emailStatus?.is_team_leader_whitelist && (
+                      <p className="field-hint">
+                        {t('register.profilePictureHint', 'As a team leader, a profile picture is optional.')}
+                      </p>
+                    )}                    {imagePreview && (
                       <img
                         src={imagePreview}
                         alt="Profile preview"
