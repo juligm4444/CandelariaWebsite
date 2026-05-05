@@ -5,12 +5,17 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { publicationsAPI } from '../services/api';
 import DonateIcon from '../assets/icons/donate.svg';
+import MainLogo from '../assets/images/MainLogo.png';
 import { resolveMediaUrl } from '../lib/media';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 
 export const HomePage = () => {
   const { t, i18n } = useTranslation();
   const [publications, setPublications] = useState([]);
   const [activeHighlight, setActiveHighlight] = useState(0);
+  const updatesRef = useScrollReveal();
+  const appreciationRef = useScrollReveal();
+  const sponsorsRef = useScrollReveal();
 
   const heroHighlights = useMemo(
     () => t('home.hero.highlights', { returnObjects: true }) || [],
@@ -147,7 +152,7 @@ export const HomePage = () => {
           </div>
         </section>
 
-        <section className="section-shell updates-section">
+        <section className="section-shell updates-section reveal-up" ref={updatesRef}>
           <div className="section-heading-row">
             <div>
               <span className="section-label">{t('home.updates.eyebrow')}</span>
@@ -165,7 +170,9 @@ export const HomePage = () => {
                   {item.image ? (
                     <img src={item.image} alt={item.alt} />
                   ) : (
-                    <div className="publication-image-fallback">SOLAR</div>
+                    <div className="publication-image-fallback">
+                      <img src={MainLogo} alt="" aria-hidden="true" />
+                    </div>
                   )}
                 </div>
 
@@ -184,7 +191,7 @@ export const HomePage = () => {
           </div>
         </section>
 
-        <section className="section-shell appreciation-section">
+        <section className="section-shell appreciation-section reveal-up" ref={appreciationRef}>
           <div className="appreciation-card">
             <div className="appreciation-image-wrap">
               <img
@@ -208,12 +215,22 @@ export const HomePage = () => {
           </div>
         </section>
 
-        <section className="sponsors-section">
+        <section className="sponsors-section reveal-fade" ref={sponsorsRef}>
           <div className="section-shell sponsors-shell">
             <p className="sponsors-label">{t('home.sponsors.title')}</p>
             <div className="sponsors-grid">
               {sponsorItems.map((item) => (
                 <div className="sponsor-mark" key={item.name}>
+                  <div className="sponsor-logo-box" aria-hidden="true">
+                    <span className="sponsor-logo-monogram">
+                      {item.name
+                        .split(' ')
+                        .slice(0, 2)
+                        .map((w) => w[0])
+                        .join('')
+                        .toUpperCase()}
+                    </span>
+                  </div>
                   <span className="sponsor-name">{item.name}</span>
                   <span className="sponsor-caption">{item.caption}</span>
                 </div>

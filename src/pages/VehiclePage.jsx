@@ -16,7 +16,7 @@ export const VehiclePage = () => {
     <div className="app-shell">
       <Navbar />
       <main className="vehicle-main">
-        <section className="publications-hero section-shell">
+        <section className="vehicle-hero section-shell">
           <h1>
             {t('vehicle.hero.titleA')}{' '}
             <span className="team-title-glow">{t('vehicle.hero.titleB')}</span>
@@ -110,20 +110,6 @@ export const VehiclePage = () => {
             </article>
           </aside>
 
-          <div className="vehicle-controls">
-            <button aria-label={t('vehicle.viewer.controls.rotate')}>
-              {t('vehicle.viewer.controls.rotate')}
-            </button>
-            <button
-              className="vehicle-controls-primary"
-              aria-label={t('vehicle.viewer.controls.simulate')}
-            >
-              {t('vehicle.viewer.controls.simulate')}
-            </button>
-            <button aria-label={t('vehicle.viewer.controls.zoom')}>
-              {t('vehicle.viewer.controls.zoom')}
-            </button>
-          </div>
         </section>
 
         <section className="vehicle-bento section-shell">

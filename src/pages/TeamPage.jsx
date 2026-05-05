@@ -91,6 +91,7 @@ const TeamMemberCard = ({ member }) => {
             <span>{member.role}</span>
             <h4>{member.name}</h4>
             <p>{member.career}</p>
+            <span className="team-member-tap-hint">{t('team.members.flipHint')}</span>
           </div>
         </div>
 
@@ -350,11 +351,13 @@ export const TeamPage = () => {
                     </div>
                   </div>
 
-                  <div
-                    className="team-selected-photo-placeholder"
-                    aria-label={t('team.photoPlaceholder')}
-                  >
-                    <span>{t('team.photoPlaceholder')}</span>
+                  <div className="team-selected-visual">
+                    <img
+                      src={selectedTeam.logo}
+                      alt=""
+                      className="team-selected-logo-large"
+                      aria-hidden="true"
+                    />
                   </div>
                 </div>
               </article>

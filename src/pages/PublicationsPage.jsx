@@ -4,7 +4,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { publicationsAPI } from '../services/api';
+import MainLogo from '../assets/images/MainLogo.png';
 import { resolveMediaUrl } from '../lib/media';
+
+const FilterGroup = ({ label, items, selected, onSelect, scrollable = false }) => (
+  <div className="publications-filter-group">
+    <span className="publications-filter-label">{label}</span>
+    <div className={`publications-chip-row${scrollable ? ' publications-chip-scroll' : ''}`}>
+      {items.map(({ value, chipLabel }) => (
+        <button
+          key={value}
+          type="button"
+          className={selected === value ? 'is-active' : ''}
+          onClick={() => onSelect(value)}
+        >
+          {chipLabel}
+        </button>
+      ))}
+    </div>
+  </div>
+);
 
 export const PublicationsPage = () => {
   const { t, i18n } = useTranslation();
@@ -94,46 +113,34 @@ export const PublicationsPage = () => {
         </section>
 
         <section className="publications-filters section-shell">
-          <div className="publications-filter-head">
-            <span>{t('publications.filtersTitle')}</span>
-          </div>
-
-          <div className="publications-select-row">
-            <select
-              className="publications-select"
-              value={selectedTeam}
-              onChange={(event) => setSelectedTeam(event.target.value)}
-            >
-              <option value="all">{t('publications.allTeams')}</option>
-              {availableTeams.map((teamName) => (
-                <option key={teamName} value={teamName}>
-                  {teamName}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="publications-select"
-              value={selectedYear}
-              onChange={(event) => setSelectedYear(event.target.value)}
-            >
-              <option value="all">{t('publications.allYears')}</option>
-              {availableYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="publications-select"
-              value={sortMode}
-              onChange={(event) => setSortMode(event.target.value)}
-            >
-              <option value="recent">{t('publications.sortRecent')}</option>
-              <option value="popular">{t('publications.sortPopular')}</option>
-            </select>
-          </div>
+          <FilterGroup
+            label={t('publications.allTeams')}
+            items={[
+              { value: 'all', chipLabel: t('publications.allTeams') },
+              ...availableTeams.map((name) => ({ value: name, chipLabel: name })),
+            ]}
+            selected={selectedTeam}
+            onSelect={setSelectedTeam}
+            scrollable
+          />
+          <FilterGroup
+            label={t('publications.allYears')}
+            items={[
+              { value: 'all', chipLabel: t('publications.allYears') },
+              ...availableYears.map((year) => ({ value: year, chipLabel: year })),
+            ]}
+            selected={selectedYear}
+            onSelect={setSelectedYear}
+          />
+          <FilterGroup
+            label={t('publications.filtersTitle')}
+            items={[
+              { value: 'recent', chipLabel: t('publications.sortRecent') },
+              { value: 'popular', chipLabel: t('publications.sortPopular') },
+            ]}
+            selected={sortMode}
+            onSelect={setSortMode}
+          />
         </section>
 
         {loading && <p className="state-msg">{t('common.loading')}</p>}
@@ -167,7 +174,9 @@ export const PublicationsPage = () => {
                 {publication.image ? (
                   <img src={resolveMediaUrl(publication.image)} alt={publication.name} />
                 ) : (
-                  <div className="publication-image-fallback">SOLAR</div>
+                  <div className="publication-image-fallback">
+                    <img src={MainLogo} alt="" aria-hidden="true" />
+                  </div>
                 )}
               </div>
 

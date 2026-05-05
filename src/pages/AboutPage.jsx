@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import DonateIcon from '../assets/icons/donate.svg';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 
 export const AboutPage = () => {
   const { t } = useTranslation();
@@ -16,6 +17,10 @@ export const AboutPage = () => {
     () => t('about.description.paragraphs', { returnObjects: true }) || [],
     [t]
   );
+
+  const missionRef = useScrollReveal();
+  const valuesRef = useScrollReveal();
+  const historyRef = useScrollReveal();
 
   return (
     <div className="app-shell">
@@ -53,7 +58,7 @@ export const AboutPage = () => {
           </article>
         </section>
 
-        <section className="about-mission-strip">
+        <section className="about-mission-strip reveal-up" ref={missionRef}>
           <div className="section-shell about-mission-grid">
             <article>
               <h2>{t('about.mission.title')}</h2>
@@ -67,7 +72,7 @@ export const AboutPage = () => {
           </div>
         </section>
 
-        <section className="about-values-strip">
+        <section className="about-values-strip reveal-up" ref={valuesRef}>
           <div className="section-shell about-values-shell">
             <div className="about-values-head">
               <h2>
@@ -89,7 +94,7 @@ export const AboutPage = () => {
           </div>
         </section>
 
-        <section className="about-history section-shell">
+        <section className="about-history section-shell reveal-up" ref={historyRef}>
           <div className="about-history-head">
             <h2>
               {t('about.history.titleA')} <span>{t('about.history.titleB')}</span>
@@ -115,7 +120,7 @@ export const AboutPage = () => {
         <section className="section-shell appreciation-section">
           <div className="appreciation-card">
             <div className="appreciation-image-wrap">
-              <img src={t('about.hero.image')} alt={t('about.support.imageAlt')} />
+              <img src={t('vehicle.viewer.image')} alt={t('about.support.imageAlt')} />
             </div>
             <div className="appreciation-overlay" />
             <div className="appreciation-content">
