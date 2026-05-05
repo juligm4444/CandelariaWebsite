@@ -17,6 +17,10 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
+            sql="CREATE EXTENSION IF NOT EXISTS pgcrypto;",
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        migrations.RunSQL(
             sql="""
             DO $$
             BEGIN
@@ -29,7 +33,7 @@ class Migration(migrations.Migration):
                     DROP TABLE IF EXISTS profiles CASCADE;
 
                     CREATE TABLE profiles (
-                        id            bigserial    PRIMARY KEY,
+                        id            uuid         PRIMARY KEY DEFAULT gen_random_uuid(),
                         user_id       integer      NOT NULL UNIQUE
                                                    REFERENCES auth_user(id)
                                                    ON DELETE CASCADE
