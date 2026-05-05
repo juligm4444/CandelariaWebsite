@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import slugify
@@ -632,15 +632,16 @@ def ensure_user_profile(sender, instance, created, **kwargs):
         return
 
     try:
-        UserProfile.objects.get_or_create(
-            user=instance,
-            defaults={
-                'email': (instance.email or instance.username or '').strip().lower(),
-                'name': (instance.first_name or instance.username or '').strip(),
-                'is_internal': False,
-                'internal_role': None,
-            },
-        )
+        with transaction.atomic():
+            UserProfile.objects.get_or_create(
+                user=instance,
+                defaults={
+                    'email': (instance.email or instance.username or '').strip().lower(),
+                    'name': (instance.first_name or instance.username or '').strip(),
+                    'is_internal': False,
+                    'internal_role': None,
+                },
+            )
     except Exception as exc:
         import logging
         logging.getLogger('security').error(
