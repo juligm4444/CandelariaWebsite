@@ -34,9 +34,9 @@ export const ProductDetailPage = () => {
         <Navbar />
         <main className="product-detail-main section-shell">
           <div className="product-detail-not-found">
-            <h1>Product not found</h1>
+            <h1>{t('productDetail.notFound')}</h1>
             <Link to="/support" className="landing-primary-button">
-              ← Back to Shop
+              {t('productDetail.backToShop')}
             </Link>
           </div>
         </main>

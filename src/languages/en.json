@@ -1,6 +1,6 @@
 {
   "site": {
-    "brand": "Candelaria Solar Car",
+    "brand": "Candelaria",
     "nav": {
       "home": "Home",
       "vehicle": "Vehicle",
@@ -327,6 +327,7 @@
     "next": "Next",
     "readPost": "Read publication",
     "backToList": "Back to publications",
+    "downloadPdf": "Download PDF",
     "emptyTitle": "No publications yet",
     "emptyBody": "You can insert one publication to validate the database connection and translation flow.",
     "by": "By"
@@ -451,6 +452,9 @@
     "plans": {
       "kicker": "Sponsorship",
       "title": "Elite Memberships",
+      "titleA": "Choose a",
+      "titleB": "Plan",
+      "defaultAction": "Subscribe",
       "subtitle": "Choose the support tier that best matches your commitment and join a partnership model designed to deliver visibility, collaboration, and measurable impact.",
       "recommended": "Recommended",
       "items": [
@@ -487,6 +491,8 @@
     "merch": {
       "kicker": "Candelaria Ecosystem",
       "title": "Official Gear",
+      "titleA": "Official",
+      "titleB": "Gear",
       "cta": "Add to cart",
       "items": [
         {
@@ -669,7 +675,22 @@
     "processing": "Processing...",
     "loginRequiredTitle": "Login required",
     "loginRequiredBody": "Please sign in before checkout.",
-    "purchasesUnavailable": "Purchases are not available at the moment, our team is working hard to solve it."
+    "purchasesUnavailable": "Purchases are not available at the moment, our team is working hard to solve it.",
+    "addedTitle": "Added to cart",
+    "addedBody": "{{name}} membership was added to your cart."
+  },
+  "purchases": {
+    "status": {
+      "active": "Active",
+      "cancelled": "Cancelled",
+      "pending": "Pending",
+      "completed": "Completed"
+    },
+    "ref": "Ref"
+  },
+  "productDetail": {
+    "notFound": "Product not found",
+    "backToShop": "← Back to Shop"
   },
   "dashboard": {
     "title": "Dashboard",

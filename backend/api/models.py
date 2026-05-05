@@ -133,21 +133,20 @@ class Member(models.Model):
 
     @classmethod
     def create_from_whitelist_entry(cls, user, whitelist_entry):
-        """Create a member from a whitelist entry with team leader privileges"""
+        """Create a member from a whitelist entry with team leader privileges."""
+        team = getattr(whitelist_entry, 'requested_team', None) or getattr(whitelist_entry, 'team', None)
+        name = f"{whitelist_entry.first_name} {whitelist_entry.last_name}".strip()
         member = cls.objects.create(
             user=user,
-            name=f"{whitelist_entry.first_name} {whitelist_entry.last_name}",
+            name=name,
             email=user.email,
-            team=whitelist_entry.team,
+            team=team,
             is_team_leader=True,
             is_active=True,
-            # Set default values for team leaders
             career_en="Leadership",
             career_es="Liderazgo",
             role_en="Team Leader",
             role_es="Líder de Equipo",
-            charge_en="Team Management",
-            charge_es="Gestión de Equipo"
         )
         return member
 
@@ -413,27 +412,29 @@ class TeamLeaderRequest(models.Model):
         return self.email.lower().strip() in [email.lower().strip() for email in whitelisted_emails if email.strip()]
     
     def verify_whitelist(self):
-        """Verify email against secure whitelist and auto-assign if whitelisted"""
+        """Verify email against secure whitelist and auto-assign if whitelisted."""
         if self.is_email_whitelisted():
             self.is_whitelist_verified = True
             self.is_admin_approved = True
             self.status = 'approved'
             self.approved_at = timezone.now()
             self.save()
-            
-            # Immediately assign team leadership if whitelisted
+
             try:
-                from django.utils import timezone
-                member = Member.objects.get(user__email=self.email)
-                member.is_team_leader = True
-                member.team = self.requested_team
-                member.save()
-                
-                # Log security event
+                from django.contrib.auth.models import User as AuthUser
+                user = AuthUser.objects.get(email=self.email)
+                try:
+                    member = Member.objects.get(user=user)
+                    member.is_team_leader = True
+                    member.team = self.requested_team
+                    member.save()
+                except Member.DoesNotExist:
+                    member = Member.create_from_whitelist_entry(user, self)
+
                 self.log_security_event(f"Team leadership auto-assigned to {self.email} via whitelist verification")
                 return True
-            except Member.DoesNotExist:
-                self.log_security_event(f"ERROR: Member not found for auto-approved request {self.email}")
+            except Exception as exc:
+                self.log_security_event(f"ERROR auto-assigning team leadership to {self.email}: {exc}")
                 return False
         return False
     
@@ -630,12 +631,18 @@ def ensure_user_profile(sender, instance, created, **kwargs):
     if not created:
         return
 
-    UserProfile.objects.get_or_create(
-        user=instance,
-        defaults={
-            'email': (instance.email or instance.username or '').strip().lower(),
-            'name': (instance.first_name or instance.username or '').strip(),
-            'is_internal': False,
-            'internal_role': None,
-        },
-    )
+    try:
+        UserProfile.objects.get_or_create(
+            user=instance,
+            defaults={
+                'email': (instance.email or instance.username or '').strip().lower(),
+                'name': (instance.first_name or instance.username or '').strip(),
+                'is_internal': False,
+                'internal_role': None,
+            },
+        )
+    except Exception as exc:
+        import logging
+        logging.getLogger('security').error(
+            f'ensure_user_profile: failed to create profile for user {instance.pk}: {exc}'
+        )

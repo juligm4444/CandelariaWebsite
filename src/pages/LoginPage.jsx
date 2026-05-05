@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from '../components/Navbar';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -14,10 +15,10 @@ const LoginPage = () => {
     password: '',
     rememberMe: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already authenticated (only after auth check is complete)
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       navigate('/');
@@ -26,11 +27,8 @@ const LoginPage = () => {
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({
-      ...formData,
-      [e.target.name]: value,
-    });
-    setError(''); // Clear error when user types
+    setFormData({ ...formData, [e.target.name]: value });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -61,20 +59,17 @@ const LoginPage = () => {
       <main className="login-main">
         <div className="login-container">
           <div className="login-card">
-            {/* Header */}
             <div className="login-header">
               <h1>{t('login.title')}</h1>
               <p>{t('login.subtitle')}</p>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="login-error">
                 <p>{getLoginErrorMessage(error)}</p>
               </div>
             )}
 
-            {/* Form */}
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="email">{t('login.email')}</label>
@@ -93,17 +88,27 @@ const LoginPage = () => {
 
               <div className="form-group">
                 <label htmlFor="password">{t('login.password')}</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder={t('login.passwordPlaceholder')}
-                  className="form-input"
-                />
+                <div className="input-wrapper">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder={t('login.passwordPlaceholder')}
+                    className="form-input"
+                  />
+                  <button
+                    type="button"
+                    className="input-toggle"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div className="form-options">
@@ -122,11 +127,17 @@ const LoginPage = () => {
               </div>
 
               <button type="submit" disabled={loading} className="login-button">
-                {loading ? t('login.signingIn') : t('login.signIn')}
+                {loading ? (
+                  <span className="btn-loading">
+                    <span className="btn-spinner" />
+                    {t('login.signingIn')}
+                  </span>
+                ) : (
+                  t('login.signIn')
+                )}
               </button>
             </form>
 
-            {/* Footer */}
             <div className="login-footer">
               <p>
                 {t('login.noAccount')}{' '}

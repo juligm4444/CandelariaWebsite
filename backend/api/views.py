@@ -3,7 +3,7 @@ import json
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Prefetch
@@ -28,6 +28,7 @@ from .permissions import (
     IsOwnerOrTeamLeader,
     IsPublicationAuthorOrTeamLeader,
     IsTeamLeaderOfSameTeam,
+    IsRedSocialOwnerOrTeamLeader,
     ReadOnly
 )
 from .throttles import BurstRateThrottle
@@ -80,7 +81,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         """Get all members of a specific team"""
         team = self.get_object()
         # Optimize with prefetch_related for social links
-        members = team.members.prefetch_related('social_links').filter(user__isnull=False)
+        members = team.members.prefetch_related('social_links').filter(user__isnull=False, is_active=True)
         language = request.query_params.get('lang', 'en')
         data = [member.to_dict(language) for member in members]
         return Response(data)
@@ -501,15 +502,9 @@ class RedSocialViewSet(viewsets.ModelViewSet):
     serializer_class = RedSocialSerializer
 
     def get_permissions(self):
-        """
-        Public read access
-        Create/Update/Delete: Authenticated members (own links or team leader)
-        """
         if self.action in ['list', 'retrieve']:
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [IsAuthenticatedOrReadOnly]
-        return [permission() for permission in permission_classes]
+            return [AllowAny()]
+        return [IsRedSocialOwnerOrTeamLeader()]
 
     def list(self, request):
         """List all social links with optional member filter"""

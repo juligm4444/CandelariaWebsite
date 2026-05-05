@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LogOut, Menu, ShoppingCart, X } from 'lucide-react';
 import MainLogo from '../assets/images/MainLogo.png';
 import { LanguageToggle } from './LanguageToggle';
+import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { resolveMediaUrl } from '../lib/media';
 import { useCart } from '../contexts/CartContext';
@@ -87,6 +88,7 @@ export const Navbar = () => {
         </div>
 
         <div className="site-actions">
+          <ThemeToggle />
           <LanguageToggle />
           <Link to="/cart" className="navbar-cart-link" aria-label="Open cart">
             <ShoppingCart className="navbar-cart-icon" aria-hidden="true" />

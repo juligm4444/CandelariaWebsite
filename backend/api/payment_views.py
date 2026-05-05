@@ -3,6 +3,7 @@ import hmac
 import json
 import time
 import uuid
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.db import transaction
@@ -27,6 +28,41 @@ def _client_ip(request):
 
 def _create_signature_payload(timestamp, raw_body):
     return f'{timestamp}.{raw_body.decode("utf-8")}'.encode('utf-8')
+
+
+def _verify_payu_signature(payload, api_key, merchant_id):
+    """Verify PayU IPN MD5 signature.
+
+    PayU signs: MD5(api_key~merchant_id~reference_sale~value~currency~state_pol)
+    where value is rounded to 1 decimal place.
+    """
+    sign_received = str(payload.get('sign') or '').strip()
+    if not sign_received:
+        return False, 'Missing PayU signature.'
+
+    if not api_key or not merchant_id:
+        return False, 'PayU credentials not configured — rejecting webhook.'
+
+    reference_sale = str(payload.get('reference_sale') or '').strip()
+    value = str(payload.get('value') or payload.get('amount') or '').strip()
+    currency = str(payload.get('currency') or '').strip()
+    state_pol = str(payload.get('state_pol') or '').strip()
+
+    if not all([reference_sale, value, currency, state_pol]):
+        return False, 'Payload missing required fields for signature verification.'
+
+    try:
+        value_str = f'{float(value):.1f}'
+    except (TypeError, ValueError):
+        return False, 'Invalid value field in PayU payload.'
+
+    raw = f'{api_key}~{merchant_id}~{reference_sale}~{value_str}~{currency}~{state_pol}'
+    expected = hashlib.md5(raw.encode('utf-8')).hexdigest()
+
+    if not hmac.compare_digest(expected.lower(), sign_received.lower()):
+        return False, 'PayU signature mismatch.'
+
+    return True, None
 
 
 def _verify_stripe_signature(raw_body, signature_header, endpoint_secret, tolerance_seconds):
@@ -258,8 +294,8 @@ def create_payment_view(request):
         return Response({'error': 'Invalid payment type.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        amount_value = float(amount)
-    except (TypeError, ValueError):
+        amount_value = Decimal(str(amount))
+    except (TypeError, ValueError, InvalidOperation):
         return Response({'error': 'Invalid amount.'}, status=status.HTTP_400_BAD_REQUEST)
 
     if amount_value <= 0:
@@ -298,11 +334,24 @@ def create_payment_view(request):
 @permission_classes([AllowAny])
 @throttle_classes([AuthRateThrottle])
 def payu_webhook_view(request):
-    """Update payment statuses from PayU webhooks."""
+    """Update payment statuses from PayU IPN webhooks."""
     try:
         payload = json.loads((request.body or b'{}').decode('utf-8'))
     except json.JSONDecodeError:
         return Response({'error': 'Invalid JSON payload.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    api_key = getattr(settings, 'PAYU_API_KEY', '').strip()
+    merchant_id = getattr(settings, 'PAYU_MERCHANT_ID', '').strip()
+
+    verified, error_message = _verify_payu_signature(payload, api_key, merchant_id)
+    if not verified:
+        SecurityAuditEvent.objects.create(
+            event_type='payment.payu_webhook.rejected',
+            severity='warning',
+            ip_address=_client_ip(request),
+            details={'reason': error_message},
+        )
+        return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
     tx_ref = str(payload.get('reference_sale') or payload.get('referenceCode') or '').strip()
     state = str(payload.get('state_pol') or payload.get('state') or '').strip().lower()
@@ -324,4 +373,12 @@ def payu_webhook_view(request):
         payment.status = Payment.STATUS_PENDING
 
     payment.save(update_fields=['status'])
+
+    SecurityAuditEvent.objects.create(
+        event_type='payment.payu_webhook.accepted',
+        severity='info',
+        ip_address=_client_ip(request),
+        details={'tx_ref': tx_ref, 'state': state, 'payment_id': payment.id},
+    )
+
     return Response({'status': 'ok', 'payment_id': payment.id, 'payment_status': payment.status})

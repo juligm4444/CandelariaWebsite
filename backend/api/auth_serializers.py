@@ -1,11 +1,15 @@
 # Authentication API Serializers
 
+import logging
+
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db import transaction
 from .models import Member, Team, UserProfile, InternalWhitelistEntry, TeamLeaderWhitelist
 from .member_catalog import get_career_pair, resolve_role_pair
 from .security import reject_suspicious_text
+
+security_log = logging.getLogger('security')
 
 
 
@@ -168,15 +172,9 @@ class RegisterSerializer(serializers.Serializer):
             if team_leader_entry:
                 team_leader_entry.is_active = False
                 team_leader_entry.save()
-                print(f"✅ Team Leader registered: {email} for team {team.name_en}")
-        
-        return {'user': user, 'profile': profile, 'member': member}
+                security_log.info('Team leader registered from whitelist: %s for team %s', email, team.name_en)
 
-        return {
-            'user': user,
-            'profile': profile,
-            'member': member,
-        }
+        return {'user': user, 'profile': profile, 'member': member}
 
 
 class LoginSerializer(serializers.Serializer):

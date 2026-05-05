@@ -29,14 +29,13 @@ const formatDate = (dateStr, locale) => {
 };
 
 const StatusBadge = ({ status }) => {
-  const map = {
-    active: { label: 'Active', labelEs: 'Activa', cls: 'status-active' },
-    cancelled: { label: 'Cancelled', labelEs: 'Cancelada', cls: 'status-cancelled' },
-    pending: { label: 'Pending', labelEs: 'Pendiente', cls: 'status-pending' },
-    completed: { label: 'Completed', labelEs: 'Completado', cls: 'status-completed' },
-  };
-  const info = map[status] || map.pending;
-  return <span className={`purchases-status-badge ${info.cls}`}>{info.label}</span>;
+  const { t } = useTranslation();
+  const cls = { active: 'status-active', cancelled: 'status-cancelled', pending: 'status-pending', completed: 'status-completed' };
+  return (
+    <span className={`purchases-status-badge ${cls[status] || cls.pending}`}>
+      {t(`purchases.status.${status}`, t('purchases.status.pending'))}
+    </span>
+  );
 };
 
 const SubscriptionCard = ({ sub, onCancel, onChangeTier, isEs }) => {
@@ -175,7 +174,7 @@ const SubscriptionCard = ({ sub, onCancel, onChangeTier, isEs }) => {
 };
 
 export const PurchasesPage = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const isEs = i18n.language === 'es';
 
@@ -276,7 +275,7 @@ export const PurchasesPage = () => {
                         <strong>{purchase.total}</strong>
                       </div>
                       {purchase.reference && (
-                        <p className="purchases-ref">Ref: {purchase.reference}</p>
+                        <p className="purchases-ref">{t('purchases.ref')}: {purchase.reference}</p>
                       )}
                     </article>
                   ))}

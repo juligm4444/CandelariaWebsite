@@ -33,8 +33,8 @@ export const SupportPage = () => {
     });
 
     toast({
-      title: 'Added to cart',
-      description: `${plan.name} membership was added to your cart.`,
+      title: t('cart.addedTitle'),
+      description: t('cart.addedBody', { name: plan.name }),
     });
   };
 
@@ -61,7 +61,7 @@ export const SupportPage = () => {
           <div className="support-plans-head">
             <span>{t('support.plans.kicker')}</span>
             <h2>
-              Choose a <span>Plan</span>
+              {t('support.plans.titleA')} <span>{t('support.plans.titleB')}</span>
             </h2>
             <p className="page-intro">{t('support.plans.subtitle')}</p>
           </div>
@@ -83,7 +83,7 @@ export const SupportPage = () => {
                   ))}
                 </ul>
                 <button type="button" onClick={() => onAddPlanToCart(plan, index)}>
-                  Subscribe
+                  {plan.action || t('support.plans.defaultAction')}
                 </button>
               </article>
             ))}
@@ -124,7 +124,7 @@ export const SupportPage = () => {
           <div className="support-merch-head">
             <span>{t('support.merch.kicker')}</span>
             <h2>
-              Official <span>Gear</span>
+              {t('support.merch.titleA')} <span>{t('support.merch.titleB')}</span>
             </h2>
           </div>
 

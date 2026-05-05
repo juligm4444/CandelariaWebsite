@@ -96,7 +96,7 @@ export const PublicationDetailPage = () => {
                       rel="noopener noreferrer"
                       className="publication-read-link"
                     >
-                      Download PDF
+                      {t('publications.downloadPdf')}
                     </a>
                   </div>
                 )}

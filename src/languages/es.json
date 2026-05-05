@@ -1,6 +1,6 @@
 {
   "site": {
-    "brand": "Candelaria Solar Car",
+    "brand": "Candelaria",
     "nav": {
       "home": "Inicio",
       "vehicle": "Vehículo",
@@ -327,6 +327,7 @@
     "next": "Siguiente",
     "readPost": "Leer publicación",
     "backToList": "Volver a publicaciones",
+    "downloadPdf": "Descargar PDF",
     "emptyTitle": "Aún no hay publicaciones",
     "emptyBody": "Puedes insertar una publicación para validar la conexión con base de datos y el flujo de traducción.",
     "by": "Por"
@@ -451,6 +452,9 @@
     "plans": {
       "kicker": "Patrocinios",
       "title": "Membresías de élite",
+      "titleA": "Elige un",
+      "titleB": "Plan",
+      "defaultAction": "Suscribirse",
       "subtitle": "Elige el nivel de apoyo que mejor refleje tu compromiso y súmate a un esquema de colaboración diseñado para generar visibilidad, impacto y crecimiento conjunto.",
       "recommended": "Recomendado",
       "items": [
@@ -487,6 +491,8 @@
     "merch": {
       "kicker": "Ecosistema Candelaria",
       "title": "Equipo Oficial",
+      "titleA": "Equipo",
+      "titleB": "Oficial",
       "cta": "Añadir al carrito",
       "items": [
         {
@@ -669,7 +675,22 @@
     "processing": "Procesando...",
     "loginRequiredTitle": "Inicio de sesión requerido",
     "loginRequiredBody": "Por favor inicia sesión antes de continuar con el checkout.",
-    "purchasesUnavailable": "Las compras no están disponibles en este momento, nuestro equipo está trabajando para solucionarlo."
+    "purchasesUnavailable": "Las compras no están disponibles en este momento, nuestro equipo está trabajando para solucionarlo.",
+    "addedTitle": "Añadido al carrito",
+    "addedBody": "La membresía {{name}} fue añadida a tu carrito."
+  },
+  "purchases": {
+    "status": {
+      "active": "Activa",
+      "cancelled": "Cancelada",
+      "pending": "Pendiente",
+      "completed": "Completado"
+    },
+    "ref": "Ref"
+  },
+  "productDetail": {
+    "notFound": "Producto no encontrado",
+    "backToShop": "← Volver a la tienda"
   },
   "dashboard": {
     "title": "Panel",

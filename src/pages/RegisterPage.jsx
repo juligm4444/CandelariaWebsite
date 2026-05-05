@@ -6,6 +6,7 @@ import { Navbar } from '../components/Navbar';
 import axios from 'axios';
 import { CAREER_OPTIONS, getLocalizedCareerLabel } from '../lib/memberOptions';
 import { API_URL } from '../lib/config';
+import { Eye, EyeOff, CheckCircle, XCircle, Loader } from 'lucide-react';
 
 const RegisterPage = () => {
   const { t, i18n } = useTranslation();
@@ -28,11 +29,11 @@ const RegisterPage = () => {
   const [emailStatus, setEmailStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
-    }
+    if (isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
@@ -40,43 +41,34 @@ const RegisterPage = () => {
       try {
         const response = await axios.get(`${API_URL}/teams/`);
         setTeams(response.data);
-      } catch (error) {
-        console.error('Failed to load teams:', error);
+      } catch {
+        // Teams failed to load — fields will be hidden for non-whitelisted users anyway
       }
     };
-
     loadTeams();
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setProfileImage(file || null);
-
     if (!file) {
       setImagePreview('');
       return;
     }
-
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result?.toString() || '');
     reader.readAsDataURL(file);
-
     setErrors((prev) => ({ ...prev, image: '' }));
   };
 
   const handleEmailBlur = async () => {
-    if (!formData.email || !formData.email.includes('@')) {
-      return;
-    }
+    if (!formData.email || !formData.email.includes('@')) return;
 
     setCheckingEmail(true);
     const status = await checkEmailAvailability(formData.email);
@@ -88,8 +80,8 @@ const RegisterPage = () => {
       setFormData((prev) => ({ ...prev, role: fixedRole }));
     }
 
-    if (status.is_taken) {
-      setErrors((prev) => ({ ...prev, email: 'This email is already registered.' }));
+    if (status?.is_taken) {
+      setErrors((prev) => ({ ...prev, email: t('register.emailTaken', 'This email is already registered.') }));
     }
   };
 
@@ -97,47 +89,34 @@ const RegisterPage = () => {
     const newErrors = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('register.emailRequired', 'Email is required');
     } else if (!formData.email.includes('@')) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = t('register.emailInvalid', 'Invalid email format');
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('register.passwordRequired', 'Password is required');
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = t('register.passwordLength', 'Password must be at least 8 characters');
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('register.passwordMatch', 'Passwords do not match');
     }
 
     if (!formData.full_name) {
-      newErrors.full_name = 'Full name is required';
+      newErrors.full_name = t('register.nameRequired', 'Full name is required');
     }
 
-    const isWhitelistedInternal = !!emailStatus?.is_whitelisted;
-
-    if (isWhitelistedInternal) {
-      if (!formData.team_id) {
-        newErrors.team_id = 'Team is required';
-      }
-
-      if (!formData.career_key) {
-        newErrors.career_key = 'Career is required';
-      }
-
-      if (!formData.role.trim()) {
-        newErrors.role = 'Role is required';
-      }
-
-      if (!profileImage) {
-        newErrors.image = 'Profile picture is required';
-      }
+    if (emailStatus?.is_whitelisted) {
+      if (!formData.team_id) newErrors.team_id = t('register.teamRequired', 'Team is required');
+      if (!formData.career_key) newErrors.career_key = t('register.careerRequired', 'Career is required');
+      if (!formData.role.trim()) newErrors.role = t('register.roleRequired', 'Role is required');
+      if (!profileImage) newErrors.image = t('register.imageRequired', 'Profile picture is required');
     }
 
-    if (emailStatus && emailStatus.is_taken) {
-      newErrors.email = 'This email is already registered';
+    if (emailStatus?.is_taken) {
+      newErrors.email = t('register.emailTaken', 'This email is already registered');
     }
 
     setErrors(newErrors);
@@ -146,10 +125,7 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
@@ -157,15 +133,13 @@ const RegisterPage = () => {
     payload.append('full_name', formData.full_name);
     payload.append('email', formData.email);
     payload.append('password', formData.password);
-    const isWhitelistedInternal = !!emailStatus?.is_whitelisted;
-    if (isWhitelistedInternal) {
+
+    if (emailStatus?.is_whitelisted) {
       payload.append('team_id', String(parseInt(formData.team_id, 10)));
       payload.append('career_key', formData.career_key);
       payload.append('role', formData.role);
       payload.append('language', i18n.language === 'es' ? 'es' : 'en');
-      if (profileImage) {
-        payload.append('image', profileImage);
-      }
+      if (profileImage) payload.append('image', profileImage);
     }
 
     const result = await register(payload);
@@ -177,6 +151,8 @@ const RegisterPage = () => {
       setLoading(false);
     }
   };
+
+  const isWhitelisted = !!emailStatus?.is_whitelisted;
 
   return (
     <div className="app-shell">
@@ -200,55 +176,7 @@ const RegisterPage = () => {
             )}
 
             <form className="login-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">{t('register.email')} *</label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  onBlur={handleEmailBlur}
-                  className="form-input"
-                />
-                {checkingEmail && <p className="field-hint">Checking email...</p>}
-                {emailStatus && emailStatus.can_register && (
-                  <p className="field-hint">Email is available</p>
-                )}
-                {errors.email && <p className="login-inline-error">{errors.email}</p>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="password">{t('register.password')} *</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-                {errors.password && <p className="login-inline-error">{errors.password}</p>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword">{t('register.confirmPassword')} *</label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-                {errors.confirmPassword && (
-                  <p className="login-inline-error">{errors.confirmPassword}</p>
-                )}
-              </div>
-
+              {/* Full name */}
               <div className="form-group">
                 <label htmlFor="full_name">{t('register.name')} *</label>
                 <input
@@ -263,8 +191,96 @@ const RegisterPage = () => {
                 {errors.full_name && <p className="login-inline-error">{errors.full_name}</p>}
               </div>
 
-              {emailStatus?.is_whitelisted ? (
+              {/* Email */}
+              <div className="form-group">
+                <label htmlFor="email">{t('register.email')} *</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  onBlur={handleEmailBlur}
+                  className="form-input"
+                />
+                <div className="email-status">
+                  {checkingEmail && (
+                    <span className="email-status-checking">
+                      <Loader size={13} className="spin-icon" />
+                      {t('register.checkingEmail', 'Checking...')}
+                    </span>
+                  )}
+                  {!checkingEmail && emailStatus && emailStatus.can_register && !emailStatus.is_taken && (
+                    <span className="email-status-ok">
+                      <CheckCircle size={13} />
+                      {t('register.emailAvailable', 'Available')}
+                    </span>
+                  )}
+                </div>
+                {errors.email && <p className="login-inline-error">{errors.email}</p>}
+              </div>
+
+              {/* Password */}
+              <div className="form-group">
+                <label htmlFor="password">{t('register.password')} *</label>
+                <div className="input-wrapper">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                  <button
+                    type="button"
+                    className="input-toggle"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {errors.password && <p className="login-inline-error">{errors.password}</p>}
+              </div>
+
+              {/* Confirm password */}
+              <div className="form-group">
+                <label htmlFor="confirmPassword">{t('register.confirmPassword')} *</label>
+                <div className="input-wrapper">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                  <button
+                    type="button"
+                    className="input-toggle"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="login-inline-error">{errors.confirmPassword}</p>
+                )}
+              </div>
+
+              {/* Internal member fields (whitelisted only) */}
+              {isWhitelisted ? (
                 <>
+                  <div className="register-internal-badge">
+                    <CheckCircle size={14} />
+                    {t('register.internalMember', 'Internal member — complete your profile below')}
+                  </div>
+
                   <div className="form-group">
                     <label htmlFor="team_id">{t('register.team')} *</label>
                     <select
@@ -302,7 +318,9 @@ const RegisterPage = () => {
                         </option>
                       ))}
                     </select>
-                    {errors.career_key && <p className="login-inline-error">{errors.career_key}</p>}
+                    {errors.career_key && (
+                      <p className="login-inline-error">{errors.career_key}</p>
+                    )}
                   </div>
 
                   <div className="form-group">
@@ -318,13 +336,17 @@ const RegisterPage = () => {
                       disabled={emailStatus?.can_edit_role === false}
                     />
                     {emailStatus?.can_edit_role === false && (
-                      <p className="field-hint">Role is fixed by whitelist for this email.</p>
+                      <p className="field-hint">
+                        {t('register.roleFixed', 'Role assigned by whitelist')}
+                      </p>
                     )}
                     {errors.role && <p className="login-inline-error">{errors.role}</p>}
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="profile-image">Profile picture *</label>
+                    <label htmlFor="profile-image">
+                      {t('register.profilePicture', 'Profile picture')} *
+                    </label>
                     <input
                       id="profile-image"
                       type="file"
@@ -344,18 +366,29 @@ const RegisterPage = () => {
                   </div>
                 </>
               ) : (
-                <p className="field-hint">
-                  This email is not in the internal whitelist. Your account will be created as an
-                  external supporter.
-                </p>
+                emailStatus && !emailStatus.is_taken && (
+                  <p className="register-external-note">
+                    {t(
+                      'register.externalNote',
+                      'Your account will be created as an external supporter. Internal members must use their whitelisted email.'
+                    )}
+                  </p>
+                )
               )}
 
               <button
                 type="submit"
-                disabled={loading || (emailStatus && emailStatus.is_taken)}
+                disabled={loading || (emailStatus?.is_taken ?? false)}
                 className="login-button"
               >
-                {loading ? t('register.signingUp') : t('register.signUp')}
+                {loading ? (
+                  <span className="btn-loading">
+                    <span className="btn-spinner" />
+                    {t('register.signingUp')}
+                  </span>
+                ) : (
+                  t('register.signUp')
+                )}
               </button>
             </form>
 
