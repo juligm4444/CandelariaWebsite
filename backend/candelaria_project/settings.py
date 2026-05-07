@@ -208,7 +208,12 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = _parse_csv_env('CSRF_TRUSTED_ORIGINS')
 
 # REST Framework Configuration
+_drf_renderers = ['rest_framework.renderers.JSONRenderer']
+if DEBUG:
+    _drf_renderers.append('rest_framework.renderers.BrowsableAPIRenderer')
+
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': _drf_renderers,
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],

@@ -56,15 +56,27 @@ const RegisterPage = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setProfileImage(file || null);
     if (!file) {
+      setProfileImage(null);
       setImagePreview('');
       return;
     }
+
+    const MAX_BYTES = 4 * 1024 * 1024; // 4 MB — safely under Vercel's 4.5 MB payload limit
+    if (file.size > MAX_BYTES) {
+      setErrors((prev) => ({
+        ...prev,
+        image: t('register.imageTooLarge', 'Image must be smaller than 4 MB. Please compress or resize it first.'),
+      }));
+      e.target.value = '';
+      return;
+    }
+
+    setProfileImage(file);
+    setErrors((prev) => ({ ...prev, image: '' }));
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result?.toString() || '');
     reader.readAsDataURL(file);
-    setErrors((prev) => ({ ...prev, image: '' }));
   };
 
   const handleEmailBlur = async () => {

@@ -35,8 +35,9 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]
 
-# Serve media files in development and on Vercel for repository-bundled uploads.
-if settings.DEBUG or os.getenv('VERCEL'):
+# Serve media files locally in development only.
+# In production, files are stored in Supabase with absolute URLs — no local serving needed.
+if settings.DEBUG and not settings.USE_SUPABASE_STORAGE:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),

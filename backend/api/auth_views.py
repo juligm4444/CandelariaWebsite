@@ -365,17 +365,25 @@ def forgot_password_view(request):
     frontend_base = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
     reset_url = f"{frontend_base}/reset-password?uid={uid}&token={token}"
 
-    send_mail(
-        subject='Candelaria Password Reset',
-        message=(
-            'You requested a password reset for your Candelaria account.\n\n'
-            f'Open this link to set a new password:\n{reset_url}\n\n'
-            'If you did not request this, you can ignore this email.'
-        ),
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@candelaria.local'),
-        recipient_list=[email],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject='Candelaria Password Reset',
+            message=(
+                'You requested a password reset for your Candelaria account.\n\n'
+                f'Open this link to set a new password:\n{reset_url}\n\n'
+                'If you did not request this, you can ignore this email.'
+            ),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@candelaria.local'),
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).error('Password reset email failed for %s: %s', email, exc)
+        return Response(
+            {'error': 'Could not send the reset email. Please try again later.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
     return Response({'message': 'If this email is registered, a reset email has been sent.'})
 
