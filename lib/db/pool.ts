@@ -39,9 +39,18 @@ export function getPool(): Pool {
       // Supabase. The traffic is still encrypted either way; only the extra
       // chain-of-trust check is skipped, and only on a machine the team
       // actually controls, never on the deployed site.
+      //
+      // The pooler's certificate is signed by Supabase's own CA, which Node
+      // does not ship in its trust store. In production that CA must be
+      // supplied through `DATABASE_CA_CERT` (PEM, from Supabase > Project
+      // Settings > Database > SSL Configuration); without it the handshake
+      // fails with SELF_SIGNED_CERT_IN_CHAIN and every query errors.
       ssl: connectionString.includes('localhost')
         ? undefined
-        : { rejectUnauthorized: process.env.NODE_ENV === 'production' },
+        : {
+            rejectUnauthorized: process.env.NODE_ENV === 'production',
+            ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, '\n') || undefined,
+          },
     });
 
     // `pg` emits `error` on an idle client when the connection drops, for
