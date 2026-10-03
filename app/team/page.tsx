@@ -22,7 +22,10 @@ export const metadata: Metadata = {
 
 export default async function TeamPage() {
   const { locale, t } = await getContent();
-  const members: Member[] = await listActiveMembers().catch(() => []);
+  const members: Member[] = await listActiveMembers().catch((error: unknown) => {
+    console.error('[team] listActiveMembers failed: %s', error instanceof Error ? error.message : error);
+    return [];
+  });
 
   const byArea = new Map<AreaKey, Member[]>();
   for (const member of members) {
