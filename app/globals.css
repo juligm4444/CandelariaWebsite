@@ -1,0 +1,372 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   Candelaria Solar Car - design tokens
+   Source of truth: docs/brand/candelaria-marca.md (Manual de Marca v1.0).
+   Single locked theme. There is no light/dark switch anywhere in this project.
+   The page canvas is Morado profundo 300; "paper" panels in Neutro 100 are
+   deliberate insets, which keeps the manual's 45/30/15/6/4 colour proportion.
+   ========================================================================== */
+
+@theme {
+  /* --- identity: gold ------------------------------------------------------ */
+  --color-dorado-100: #ffb938;
+  --color-dorado-200: #f2a413;
+  --color-dorado-300: #bc8215;
+  --color-dorado-texto: #866018;
+
+  /* --- identity: deep purple ---------------------------------------------- */
+  --color-morado-100: #3e1057;
+  --color-morado-200: #2d0e3f;
+  --color-morado-300: #1e0a29;
+
+  /* --- support: violet / lavender ----------------------------------------- */
+  --color-violeta-100: #c471ea;
+  --color-violeta-200: #bc56eb;
+  --color-violeta-300: #a634da;
+  --color-lavanda-100: #d4bcfa;
+  --color-lavanda-200: #b793f0;
+  --color-lavanda-300: #9b6fe2;
+
+  /* --- support: neutrals --------------------------------------------------- */
+  --color-neutro-100: #efeeea;
+  --color-neutro-200: #d5d5d2;
+  --color-neutro-300: #bababa;
+
+  /* --- area accents --------------------------------------------------------
+     The palette value is the one the manual publishes, and it is what paints
+     bars and borders. It is NOT used for label text: several of these do not
+     clear 4.5:1 as 16px type (Celdas is 3.80:1 on Morado 200, and every one of
+     them fails on Neutro 100). Each area therefore carries a label tone
+     derived with the manual's own HSL rule (§4.2): move S and L together in
+     steps of 10. The derived tones live in the semantic layer below, so
+     `.on-paper` swaps them exactly like every other token. */
+  --color-area-baterias: #12a03c;
+  --color-area-celdas: #4f6cf0;
+  --color-area-chasis: #afb8bd;
+  --color-area-comite: #e8490f;
+  --color-area-diseno: #f76bb3;
+  --color-area-logistica: #1cc4dc;
+  --color-area-rrhh: #b35ccb;
+
+  /* --- typography --------------------------------------------------------- */
+  --font-titulo: 'Sansation', ui-sans-serif, system-ui, sans-serif;
+  /* `--font-inter` is injected by next/font on <html>; the inline fallback
+     keeps the declaration valid if that class ever fails to apply. */
+  --font-texto:
+    'Helvetica Now Text', var(--font-inter, 'Inter'), 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
+
+  /* Every step is a multiple of 8, per the manual. 16 is the floor. */
+  --text-label: 1rem; /* 16 */
+  --text-body: 1rem; /* 16 */
+  --text-lead: 1.5rem; /* 24 */
+  --text-concepto: 1.5rem; /* 24 */
+  --text-sub: 2rem; /* 32 */
+  --text-doc: 2.5rem; /* 40 */
+  --text-h2: 3rem; /* 48 */
+  --text-h1: 4.5rem; /* 72 */
+  --text-display: 7rem; /* 112 */
+
+  /* --- spacing scale: 8 / 16 / 24 / 32 / 40 / 56 / 72 / 120 --------------- */
+  --spacing-1: 0.5rem;
+  --spacing-2: 1rem;
+  --spacing-3: 1.5rem;
+  --spacing-4: 2rem;
+  --spacing-5: 2.5rem;
+  --spacing-7: 3.5rem;
+  --spacing-9: 4.5rem;
+  --spacing-15: 7.5rem;
+
+  /* --- radii: 24 blocks, 16 cards, 12 pills ------------------------------- */
+  --radius-pill: 0.75rem;
+  --radius-card: 1rem;
+  --radius-block: 1.5rem;
+
+  /* --- motion ------------------------------------------------------------- */
+  --ease-brand: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-cdl-marquee: cdl-marquee 36s linear infinite;
+
+  @keyframes cdl-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+}
+
+/* ============================================================================
+   Semantic layer. Two surface families, one theme.
+   `.on-paper` re-points the same variables so a component written once reads
+   correctly on either family without a second set of class names.
+   ========================================================================== */
+
+:root {
+  --cdl-canvas: var(--color-morado-300);
+  --cdl-surface: var(--color-morado-200);
+  --cdl-surface-raised: var(--color-morado-100);
+  --cdl-text: var(--color-neutro-100);
+  --cdl-text-muted: rgb(239 238 234 / 0.72);
+  /* 0.56 is the floor that still clears 4.5:1 on Morado 100, the lightest
+     surface in the deep family. 0.48 measured 3.91:1 there. */
+  --cdl-text-faint: rgb(239 238 234 / 0.56);
+  --cdl-border: rgb(239 238 234 / 0.18);
+  --cdl-border-strong: rgb(239 238 234 / 0.32);
+  --cdl-accent: var(--color-dorado-100);
+  --cdl-accent-ink: var(--color-morado-300);
+  --cdl-focus: var(--color-violeta-300);
+
+  /* The primary button inverts against whichever surface family it sits on, so
+     one component definition reads correctly on both. */
+  --cdl-btn-bg: var(--color-neutro-100);
+  --cdl-btn-fg: var(--color-morado-300);
+  --cdl-btn-bg-hover: #ffffff;
+
+  /* Area label tones over the deep purple family. Each is the palette colour
+     lifted by one 10% step of S and L where the original fell short of AA. */
+  --cdl-label-baterias: #0cd949; /* 7.81:1 */
+  --cdl-label-celdas: #778ffb; /* 5.01:1 */
+  --cdl-label-chasis: #afb8bd; /* 7.35:1, unchanged */
+  --cdl-label-comite: #fd652d; /* 4.98:1 */
+  --cdl-label-diseno: #f76bb3; /* 5.44:1, unchanged */
+  --cdl-label-logistica: #1cc4dc; /* 7.04:1, unchanged */
+  --cdl-label-rrhh: #ca7ae0; /* 5.21:1 */
+}
+
+.on-paper {
+  --cdl-canvas: var(--color-neutro-100);
+  --cdl-surface: #ffffff;
+  --cdl-surface-raised: var(--color-neutro-200);
+  --cdl-text: var(--color-morado-300);
+  --cdl-text-muted: rgb(30 10 41 / 0.72);
+  /* 0.5 measured 3.43:1 on Neutro 100. 0.62 clears 4.5:1. */
+  --cdl-text-faint: rgb(30 10 41 / 0.62);
+  --cdl-border: rgb(30 10 41 / 0.14);
+  --cdl-border-strong: rgb(30 10 41 / 0.28);
+  --cdl-accent: var(--color-dorado-texto);
+  --cdl-accent-ink: var(--color-neutro-100);
+  --cdl-focus: var(--color-violeta-300);
+
+  --cdl-btn-bg: var(--color-morado-300);
+  --cdl-btn-fg: var(--color-neutro-100);
+  --cdl-btn-bg-hover: var(--color-morado-100);
+
+  /* Same derivation, downward: every area colour fails on Neutro 100 at its
+     published value (Chasis is 1.74:1). */
+  --cdl-label-baterias: #136c2d; /* 5.65:1 */
+  --cdl-label-celdas: #2c4ce0; /* 5.60:1 */
+  --cdl-label-chasis: #6a6a6a; /* 4.69:1 */
+  --cdl-label-comite: #ae3e16; /* 5.14:1 */
+  --cdl-label-diseno: #a12866; /* 6.01:1 */
+  --cdl-label-logistica: #1f6873; /* 5.48:1 */
+  --cdl-label-rrhh: #9747ad; /* 4.73:1 */
+
+  background-color: var(--cdl-canvas);
+  color: var(--cdl-text);
+}
+
+@theme inline {
+  --color-canvas: var(--cdl-canvas);
+  --color-surface: var(--cdl-surface);
+  --color-surface-raised: var(--cdl-surface-raised);
+  --color-ink: var(--cdl-text);
+  --color-ink-muted: var(--cdl-text-muted);
+  --color-ink-faint: var(--cdl-text-faint);
+  --color-hairline: var(--cdl-border);
+  --color-hairline-strong: var(--cdl-border-strong);
+  --color-accent: var(--cdl-accent);
+  --color-accent-ink: var(--cdl-accent-ink);
+}
+
+/* ============================================================================
+   Fonts. Sansation is self-hosted (woff2). Helvetica Now is a licensed face we
+   are not allowed to ship, so the manual's documented fallback stack is used
+   and never swapped for a face with a different silhouette.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Sansation';
+  src: url('/fonts/Sansation-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sansation';
+  src: url('/fonts/Sansation-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  * {
+    border-color: var(--cdl-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--cdl-canvas);
+    color: var(--cdl-text);
+    font-family: var(--font-texto);
+    font-size: var(--text-body);
+    font-weight: 300;
+    line-height: 1.6;
+    letter-spacing: 0;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-titulo);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: 0;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Italic is reserved for quotations and references (manual, §5). */
+  em,
+  blockquote {
+    font-style: italic;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--cdl-focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-violeta-300);
+    color: var(--color-neutro-100);
+  }
+
+  button,
+  [role='button'],
+  a[href],
+  label[for],
+  summary {
+    cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  /*
+   * Scroll reveal. The element is visible by default and the animation only
+   * enhances it, so a browser without scroll-driven animations, a blocked
+   * script or a reduced-motion preference all render the content normally.
+   */
+  .cdl-reveal {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .cdl-reveal {
+        animation: cdl-reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 24%;
+      }
+    }
+  }
+
+  @keyframes cdl-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The manual forbids shadows; depth comes from background contrast. A single
+     radial halo of Morado 100 over Morado 300 is the one permitted exception. */
+  .halo-brand {
+    background-image: radial-gradient(
+      60% 60% at 50% 0%,
+      var(--color-morado-100) 0%,
+      transparent 70%
+    );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ============================================================================
+   Utilities
+   ========================================================================== */
+
+@utility gutter {
+  padding-inline: max(1.5rem, 6.25vw);
+}
+
+/*
+ * Scroll rails need the same inset as a scroll offset too. Without it,
+ * `scroll-snap-align: start` snaps the first card to the scroll-port edge and
+ * the browser silently scrolls past the start padding, so the rail opens
+ * misaligned with the heading above it.
+ */
+@utility gutter-scroll {
+  scroll-padding-inline: max(1.5rem, 6.25vw);
+}
+
+@utility icon-brand {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  stroke-width: 2;
+}
+
+@utility text-balance-tight {
+  text-wrap: balance;
+  line-height: 1.08;
+}

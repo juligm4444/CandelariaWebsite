@@ -45,3 +45,18 @@ db.sqlite3
 
 # Supabase local metadata
 supabase/.temp/
+graphify-out/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Tooling output
+.playwright-cli/
+.vercel/
+coverage/
+semgrep.sarif
+codeql-db/
+.impeccable/
