@@ -4,7 +4,12 @@ import { cn } from '@/lib/utils';
 
 /**
  * Horizontal rhythm. The side margin is 6.25% of the viewport with a 24px
- * floor, exactly as the manual's 120px-on-1920 grid resolves (§7).
+ * floor, exactly as the manual's 120px-on-1920 grid resolves (§7), so the
+ * content runs the full width of the screen between those margins instead
+ * of sitting in a fixed column. The cap (120rem: the 1920 canvas, scaled
+ * with the root size on larger screens, see `html` in globals.css) only
+ * bites on ultra-wide screens, where it keeps lines and grids from
+ * stretching across a 21:9 panel.
  */
 export function Container({
   children,
@@ -19,9 +24,9 @@ export function Container({
     <div
       className={cn(
         'gutter mx-auto w-full',
-        width === 'default' && 'max-w-[1400px]',
-        width === 'narrow' && 'max-w-[1040px]',
-        width === 'reading' && 'max-w-[760px]',
+        width === 'default' && 'max-w-[120rem]',
+        width === 'narrow' && 'max-w-[65rem]',
+        width === 'reading' && 'max-w-[47.5rem]',
         className,
       )}
     >

@@ -22,16 +22,30 @@ brand manual and is binding, and `docs/DESIGN.md` explains how it was applied.
   `data-theme`. Two surface families, `:root` (deep purple) and `.on-paper`
   (Neutro 100), driven by the same semantic variables.
 - **Type sizes are multiples of 8, with 16px as the floor.** No 14px, no 12px.
-  Letter-spacing stays at 0 everywhere, including labels.
-- **No shadows.** Depth comes from background contrast. The one exception is
-  `.halo-brand`.
+  Letter-spacing stays at 0 everywhere, including labels. Sizes are set on the
+  manual's 1920 canvas, in rem; above 1920 x 1080 the root font size scales
+  the whole page (see `html` in `app/globals.css`), so never size layout in
+  px and never put a fixed max-width column back (the old 1400px cap left
+  QHD/4K screens with a strip of content in the middle).
+- **No shadows.** Depth comes from background contrast. The exceptions are
+  `.halo-brand` and the selected-state text glow (`.cdl-nav-item`).
+- **No underlines for "you are here".** The current/selected item turns gold
+  and its text glows, driven by `aria-current` / `aria-selected` /
+  `aria-pressed` on `.cdl-nav-item`. Every menu uses `components/ui/nav-link.tsx`;
+  don't hand-roll another active state. Hover and press feedback is gradient *light* painted inside
+  the element (`cdl-light`, `cdl-light-edge`, `cdl-link`, `cdl-glow`, ripple;
+  see "Interaction light" in `app/globals.css`), never `box-shadow`.
 - **Area colours**: `area.accent` paints bars and borders, `area.label` paints
   text. They are different values on purpose, and `label` is contrast-checked
   for both surface families.
 - **All copy lives in `content/es.ts` and `content/en.ts`.** English is typed
   against Spanish, so a missing key is a compile error.
 - **Never invent a technical figure.** The vehicle page publishes a validation
-  state, not a measurement, until the owning area closes it.
+  state, not a measurement, until the owning area closes it. Only areas in
+  `PUBLISHED_AREAS` (`content/vehicle-specs.ts`) reach the site at all.
+- **The 3D viewer adds nothing to the studio scene.** Lights, background and
+  camera come from the exported GLB (`scripts/blender/export-vehicle-scene.py`);
+  don't add environments or lights in the viewer.
 
 ## Security invariants
 

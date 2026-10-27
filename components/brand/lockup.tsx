@@ -85,32 +85,3 @@ export function Lockup({
     </span>
   );
 }
-
-/**
- * Area mark. Same condor in the area colour, always shown next to the area
- * name, which is what the manual requires for internal pieces (§3).
- */
-export function AreaMark({
-  src,
-  name,
-  size = 64,
-  className,
-}: {
-  src: string;
-  name: string;
-  size?: number;
-  className?: string;
-}) {
-  return (
-    <span className={cn('inline-block shrink-0', className)} style={{ padding: size / 4 }}>
-      <Image
-        src={src}
-        width={size}
-        height={size}
-        alt={`Isotipo del área de ${name}`}
-        sizes={`${size}px`}
-        className="h-auto w-full"
-      />
-    </span>
-  );
-}

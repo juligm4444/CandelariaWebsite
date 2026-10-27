@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Entrar',
+  description: 'Entra a tu cuenta de Candelaria Solar Car.',
   robots: { index: false, follow: false },
 };
 
@@ -34,7 +35,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
       footer={
         <>
           {t.auth.login.noAccount}{' '}
-          <Link href="/register" className="font-medium text-accent">
+          <Link href="/register" data-light="" className="cdl-link inline-flex min-h-12 items-center font-medium text-accent">
             {t.auth.login.registerLink}
           </Link>
         </>

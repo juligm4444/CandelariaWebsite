@@ -15,6 +15,8 @@ const config = [
       'next-env.d.ts',
       '.playwright-cli/**',
       'supabase/migrations/**',
+      // Vendor decoder copied from three.js, not our code.
+      'public/draco/**',
     ],
   },
 

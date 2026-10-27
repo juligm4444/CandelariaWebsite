@@ -1,16 +1,19 @@
 'use client';
 
 import { IconChevronDown, IconMenu2, IconX } from '@tabler/icons-react';
+import { motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { Lockup } from '@/components/brand/lockup';
 import { LocaleSwitch } from '@/components/layout/locale-switch';
+import { NavLink, isCurrentPath } from '@/components/ui/nav-link';
 import { signOut } from '@/lib/auth/client';
 import type { Dictionary } from '@/lib/i18n/dictionary';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
+import { usePrefersReducedMotion } from '@/lib/use-reduced-motion';
 
 export type NavUser = {
   name: string;
@@ -35,6 +38,9 @@ export function Navbar({
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  // Which desktop link the pointer is over: one highlight slides between them.
+  const [hovered, setHovered] = useState<string | null>(null);
+  const reduce = usePrefersReducedMotion();
   const accountRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const accountId = useId();
@@ -44,7 +50,6 @@ export function Navbar({
     { href: '/team', label: t.nav.team },
     { href: '/publications', label: t.nav.publications },
     { href: '/about', label: t.nav.about },
-    { href: '/support', label: t.nav.support },
   ];
 
   // Close both overlays whenever the route changes. Adjusting state during
@@ -92,31 +97,49 @@ export function Navbar({
     router.refresh();
   };
 
-  const isCurrent = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isCurrent = (href: string) => isCurrentPath(pathname, href);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/88 backdrop-blur-md">
+    <>
+    <header className="cdl-header sticky top-0 z-40 border-b border-hairline bg-canvas/88 backdrop-blur-md">
+      {/* The full bar needs 1280px: four links, the language switch, the
+          call to action and the account. Below that (tablets included) the
+          menu button opens the full-height sheet. */}
       <nav
         aria-label={t.nav.primary}
-        className="gutter mx-auto flex h-[4.5rem] w-full max-w-[1400px] items-center justify-between gap-4"
+        className="gutter mx-auto flex h-[4.5rem] w-full max-w-[120rem] items-center justify-between gap-4"
       >
         <Link href="/" className="-ml-2 shrink-0 rounded-pill" aria-label={t.nav.home}>
           <Lockup size={36} priority />
         </Link>
 
-        <ul className="hidden items-center gap-5 lg:flex">
+        <ul className="hidden items-center gap-1 xl:flex" onPointerLeave={() => setHovered(null)}>
           {links.map((link) => (
-            <li key={link.href}>
-              <Link
+            <li key={link.href} onPointerEnter={() => setHovered(link.href)}>
+              <NavLink
                 href={link.href}
-                aria-current={isCurrent(link.href) ? 'page' : undefined}
-                className={cn(
-                  'text-base transition-colors duration-200 ease-brand hover:text-ink',
-                  isCurrent(link.href) ? 'text-accent' : 'text-ink-muted',
-                )}
+                onFocus={() => setHovered(link.href)}
+                onBlur={() => setHovered(null)}
+                data-ripple=""
+                className="cdl-press relative isolate inline-flex min-h-12 items-center rounded-pill px-4 text-base"
+                adornment={
+                  // One highlight for the whole nav, sliding between links.
+                  hovered === link.href ? (
+                    <motion.span
+                      layoutId="nav-hover"
+                      aria-hidden
+                      className="absolute inset-0 -z-10 rounded-pill border border-hairline"
+                      style={{
+                        background:
+                          'radial-gradient(120% 140% at 50% 0%, rgb(255 185 56 / 0.16), rgb(62 16 87 / 0.55) 70%)',
+                      }}
+                      transition={reduce ? { duration: 0 } : { type: 'spring', duration: 0.42, bounce: 0.12 }}
+                    />
+                  ) : null
+                }
               >
                 {link.label}
-              </Link>
+              </NavLink>
             </li>
           ))}
         </ul>
@@ -124,14 +147,27 @@ export function Navbar({
         <div className="flex items-center gap-2">
           <LocaleSwitch locale={locale} label={t.common.languageSwitch} className="hidden sm:inline-flex" />
 
+          <Link
+            href="/support"
+            aria-current={isCurrent('/support') ? 'page' : undefined}
+            data-light=""
+            data-ripple=""
+            data-magnetic=""
+            className="cdl-press cdl-light cdl-sheen hidden min-h-12 items-center rounded-pill bg-dorado-100 px-4 text-base font-medium text-morado-300 [--cdl-light-alpha:0.38] [--cdl-light-rgb:255_255_255] [--cdl-light-size:180px] md:inline-flex"
+          >
+            {t.nav.supportCta}
+          </Link>
+
           {user ? (
-            <div ref={accountRef} className="relative hidden lg:block">
+            <div ref={accountRef} className="relative hidden xl:block">
               <button
                 type="button"
                 aria-expanded={accountOpen}
                 aria-controls={accountId}
                 onClick={() => setAccountOpen((open) => !open)}
-                className="inline-flex min-h-12 items-center gap-2 rounded-pill border border-hairline px-3 text-base transition-colors duration-200 ease-brand hover:border-accent"
+                data-light=""
+                data-ripple=""
+                className="cdl-press cdl-light cdl-light-edge inline-flex min-h-12 items-center gap-2 rounded-pill border border-hairline px-3 text-base [--cdl-light-alpha:0.12]"
               >
                 <span className="max-w-32 truncate">{user.name}</span>
                 <IconChevronDown
@@ -152,7 +188,9 @@ export function Navbar({
           ) : (
             <Link
               href="/login"
-              className="hidden min-h-12 items-center rounded-pill bg-[var(--cdl-btn-bg)] px-4 text-base font-medium text-[var(--cdl-btn-fg)] transition-colors duration-200 ease-brand hover:bg-[var(--cdl-btn-bg-hover)] lg:inline-flex"
+              data-light=""
+              data-ripple=""
+              className="cdl-press cdl-light cdl-light-edge hidden min-h-12 items-center rounded-pill border border-hairline-strong px-4 text-base font-medium text-ink hover:border-hairline hover:text-accent [--cdl-light-alpha:0.12] xl:inline-flex"
             >
               {t.nav.login}
             </Link>
@@ -164,7 +202,8 @@ export function Navbar({
             aria-controls={panelId}
             aria-label={menuOpen ? t.nav.closeMenu : t.nav.openMenu}
             onClick={() => setMenuOpen((open) => !open)}
-            className="inline-flex size-12 items-center justify-center rounded-pill border border-hairline transition-colors duration-200 ease-brand hover:border-accent lg:hidden"
+            data-ripple=""
+            className="cdl-press inline-flex size-12 items-center justify-center rounded-pill border border-hairline hover:border-accent xl:hidden"
           >
             {menuOpen ? (
               <IconX className="icon-brand" aria-hidden />
@@ -174,29 +213,44 @@ export function Navbar({
           </button>
         </div>
       </nav>
+    </header>
 
+      {/* The sheet lives outside <header> on purpose: the header's
+          backdrop-filter makes it the containing block of fixed children, so
+          inside it the sheet collapsed to the header's own height. */}
       {menuOpen ? (
         <div
           id={panelId}
-          className="fixed inset-x-0 bottom-0 top-[4.5rem] z-40 overflow-y-auto border-t border-hairline bg-canvas lg:hidden"
+          data-open=""
+          className="fixed inset-x-0 bottom-0 top-[4.5rem] z-40 overflow-y-auto overscroll-contain border-t border-hairline bg-canvas transition-[opacity,translate] duration-300 ease-out-ui starting:-translate-y-2 starting:opacity-0 xl:hidden"
         >
           <div className="gutter flex flex-col gap-5 py-5">
             <ul className="flex flex-col">
-              {links.map((link) => (
-                <li key={link.href} className="border-b border-hairline">
-                  <Link
+              {links.map((link, index) => (
+                <li
+                  key={link.href}
+                  data-stagger=""
+                  style={{ '--i': index } as React.CSSProperties}
+                  className="border-b border-hairline"
+                >
+                  <NavLink
                     href={link.href}
-                    aria-current={isCurrent(link.href) ? 'page' : undefined}
-                    className={cn(
-                      'flex min-h-14 items-center font-titulo text-2xl font-bold',
-                      isCurrent(link.href) ? 'text-accent' : 'text-ink',
-                    )}
+                    data-ripple=""
+                    className="cdl-press flex min-h-14 items-center font-titulo text-2xl font-bold [--cdl-nav-color:var(--cdl-text)]"
                   >
                     {link.label}
-                  </Link>
+                  </NavLink>
                 </li>
               ))}
             </ul>
+
+            <Link
+              href="/support"
+              data-ripple=""
+              className="cdl-press inline-flex min-h-14 items-center justify-center rounded-pill bg-dorado-100 px-6 text-base font-medium text-morado-300 [--cdl-light-rgb:255_255_255]"
+            >
+              {t.nav.supportCta}
+            </Link>
 
             {user ? (
               <div className="overflow-hidden rounded-card border border-hairline">
@@ -206,13 +260,15 @@ export function Navbar({
               <div className="flex flex-col gap-2">
                 <Link
                   href="/login"
-                  className="inline-flex min-h-14 items-center justify-center rounded-pill bg-[var(--cdl-btn-bg)] px-6 text-base font-medium text-[var(--cdl-btn-fg)]"
+                  data-ripple=""
+                  className="cdl-press inline-flex min-h-14 items-center justify-center rounded-pill bg-[var(--cdl-btn-bg)] px-6 text-base font-medium text-[var(--cdl-btn-fg)]"
                 >
                   {t.nav.login}
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex min-h-14 items-center justify-center rounded-pill border border-hairline-strong px-6 text-base font-medium text-ink"
+                  data-ripple=""
+                  className="cdl-press inline-flex min-h-14 items-center justify-center rounded-pill border border-hairline-strong px-6 text-base font-medium text-ink"
                 >
                   {t.nav.register}
                 </Link>
@@ -223,7 +279,7 @@ export function Navbar({
           </div>
         </div>
       ) : null}
-    </header>
+    </>
   );
 }
 
@@ -248,7 +304,9 @@ function AccountLinks({
         <Link
           key={item.href}
           href={item.href}
-          className="flex min-h-12 items-center border-b border-hairline px-4 text-base text-ink-muted transition-colors duration-200 ease-brand hover:bg-surface-raised hover:text-ink"
+          data-light=""
+          data-ripple=""
+          className="cdl-light flex min-h-12 items-center border-b border-hairline px-4 text-base text-ink-muted transition-colors duration-200 hover:text-ink [--cdl-light-alpha:0.14]"
         >
           {item.label}
         </Link>
@@ -256,7 +314,9 @@ function AccountLinks({
       <button
         type="button"
         onClick={onSignOut}
-        className="flex min-h-12 items-center px-4 text-left text-base text-ink-muted transition-colors duration-200 ease-brand hover:bg-surface-raised hover:text-ink"
+        data-light=""
+        data-ripple=""
+        className="cdl-light flex min-h-12 items-center px-4 text-left text-base text-ink-muted transition-colors duration-200 hover:text-ink [--cdl-light-alpha:0.14]"
       >
         {t.nav.logout}
       </button>

@@ -1,20 +1,49 @@
-import { IconArrowRight } from '@tabler/icons-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { IconArrowRight, IconBuildingCommunity, IconCar, IconSchool } from '@tabler/icons-react';
+import type { Metadata } from 'next';
 
-import { Isotipo } from '@/components/brand/lockup';
-import { AreaCard } from '@/components/content/area-card';
+import { AreaBanner } from '@/components/content/area-banner';
 import { PublicationCard } from '@/components/content/publication-card';
+import { HeroScrub, type HeroSpec } from '@/components/home/hero-scrub';
 import { Reveal } from '@/components/motion/reveal';
-import { ValuesBand } from '@/components/motion/values-band';
 import { ButtonLink } from '@/components/ui/button';
 import { Container, Eyebrow, Hairline, Section, SectionHeader } from '@/components/ui/layout';
-import { EmptyState, Panel } from '@/components/ui/surface';
-import { areas } from '@/content/areas';
+import { EmptyState } from '@/components/ui/surface';
+import { TextLink } from '@/components/ui/text-link';
+import { areaByKey, type AreaKey } from '@/content/areas';
+import { isPublished, vehicleSpecs } from '@/content/vehicle-specs';
 import { latestPublications, type Publication } from '@/lib/db/publications';
 import { getContent } from '@/lib/i18n/server';
+import { SOCIAL_IMAGE } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+/** Title and description come from the root layout; only the URL is the page's own. */
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Candelaria Solar Car',
+    title: 'Candelaria Solar Car · Vehículo solar de la Universidad de los Andes',
+    description:
+      'Semillero de investigación interdisciplinario de la Universidad de los Andes que diseña, construye y valida un vehículo solar de competencia.',
+    url: '/',
+    locale: 'es_CO',
+    images: [SOCIAL_IMAGE],
+  },
+};
+
+const PILLAR_ICONS = [IconCar, IconSchool, IconBuildingCommunity];
+
+/**
+ * The three headline figures the hero counts up to, from the spec sheet.
+ * Only corroborated areas qualify (PUBLISHED_AREAS); a figure from any other
+ * area is skipped.
+ */
+const HERO_SPECS: { area: AreaKey; key: string }[] = [
+  { area: 'celdas', key: 'arrayArea' },
+  { area: 'baterias', key: 'energy' },
+  { area: 'baterias', key: 'motorPower' },
+];
 
 export default async function HomePage() {
   const { locale, t } = await getContent();
@@ -23,161 +52,81 @@ export default async function HomePage() {
   // to the empty state instead of a 500 on the landing page.
   const updates: Publication[] = await latestPublications(locale, 3).catch(() => []);
 
+  const heroSpecs: HeroSpec[] = [];
+  let provisional = false;
+  for (const { area, key } of HERO_SPECS) {
+    if (!isPublished(area)) continue;
+    const block = vehicleSpecs.find((b) => b.area === area);
+    const row = block?.rows.find((r) => r.key === key);
+    if (!block || !row || !('value' in row)) continue;
+    provisional ||= block.provisional;
+    heroSpecs.push({
+      label: t.vehicle.specs.labels[key] ?? key,
+      value: row.value,
+      unit: row.unit ?? '',
+      fractionDigits: row.fractionDigits ?? 0,
+    });
+  }
+
   return (
     <>
-      {/* 1. Hero. Asymmetric split: the message on the left, the mark on the
-          right over the one permitted halo. */}
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="halo-brand pointer-events-none absolute inset-0 opacity-70"
-        />
-        <Container className="relative grid min-h-[calc(100dvh-4.5rem)] items-center gap-9 py-9 lg:grid-cols-[7fr_5fr] lg:gap-15">
-          <div className="flex flex-col items-start gap-5">
-            <h1 className="text-balance-tight text-[2.5rem] sm:text-[3.5rem] lg:text-[4.5rem]">
-              {t.home.hero.title}
-            </h1>
-            <p className="max-w-[46ch] text-base text-ink-muted md:text-[1.5rem] md:leading-[1.45]">
-              {t.home.hero.lead}
-            </p>
-            <div className="flex flex-wrap gap-2 pt-2">
-              <ButtonLink href="/vehicle" variant="accent" size="lg">
-                {t.home.hero.primary}
-                <IconArrowRight className="icon-brand size-5" aria-hidden />
-              </ButtonLink>
-              <ButtonLink href="/about" variant="secondary" size="lg">
-                {t.home.hero.secondary}
-              </ButtonLink>
-            </div>
-          </div>
+      <HeroScrub copy={t.home.hero} specs={heroSpecs} provisional={provisional} locale={locale} />
 
-          <div className="relative justify-self-center lg:justify-self-end">
-            <Isotipo size={320} alt={t.home.hero.isotipoAlt} priority className="max-w-[72vw]" />
-          </div>
-        </Container>
-      </section>
-
-      {/* 2. What the project is. Bento with real visual variation: one image
-          cell, one material cell, one typographic cell. */}
+      {/* What the project is. Three compartments of one ruled block, each lit
+          from under the pointer. */}
       <Section surface="raised" labelledBy="pilares">
         <Container className="flex flex-col gap-7">
           <SectionHeader id="pilares" title={t.home.pillars.title} lead={t.home.pillars.lead} />
-
-          <div className="grid gap-3 md:grid-cols-6">
-            <Reveal className="md:col-span-4">
-              <article className="relative flex h-full min-h-80 flex-col justify-end overflow-hidden rounded-block border border-hairline p-4 md:p-5">
-                <Image
-                  src="/img/fibra.webp"
-                  alt=""
-                  fill
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                  className="object-cover"
-                />
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-gradient-to-t from-morado-300 via-morado-300/70 to-morado-300/10"
-                />
-                <div className="relative flex flex-col gap-2">
-                  <h3 className="font-titulo text-2xl font-bold md:text-[2rem]">
-                    {t.home.pillars.items[0]?.title}
-                  </h3>
-                  <p className="max-w-[48ch] text-base text-ink-muted">
-                    {t.home.pillars.items[0]?.body}
-                  </p>
-                </div>
-              </article>
-            </Reveal>
-
-            <Reveal className="md:col-span-2" delay={0.08}>
-              <Panel className="flex h-full flex-col justify-between gap-5">
-                <Isotipo size={72} alt="" className="-ml-4.5 opacity-90" />
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-titulo text-2xl font-bold">
-                    {t.home.pillars.items[1]?.title}
-                  </h3>
-                  <p className="text-base text-ink-muted">{t.home.pillars.items[1]?.body}</p>
-                </div>
-              </Panel>
-            </Reveal>
-
-            <Reveal className="md:col-span-6" delay={0.16}>
-              <article className="relative flex min-h-56 items-end overflow-hidden rounded-block border border-hairline p-4 md:p-5">
-                <Image
-                  src="/img/luz.webp"
-                  alt=""
-                  fill
-                  sizes="100vw"
-                  className="object-cover object-right"
-                />
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-gradient-to-r from-morado-300 via-morado-300/75 to-morado-300/5"
-                />
-                <div className="relative flex max-w-[52ch] flex-col gap-2">
-                  <h3 className="font-titulo text-2xl font-bold md:text-[2rem]">
-                    {t.home.pillars.items[2]?.title}
-                  </h3>
-                  <p className="text-base text-ink-muted">{t.home.pillars.items[2]?.body}</p>
-                </div>
-              </article>
-            </Reveal>
-          </div>
+          <ul className="grid gap-px overflow-hidden rounded-block border border-hairline bg-hairline lg:grid-cols-3">
+            {t.home.pillars.items.map((item, index) => {
+              const Icon = PILLAR_ICONS[index] ?? IconCar;
+              return (
+                <li
+                  key={item.title}
+                  data-light=""
+                  className="cdl-light group flex flex-col gap-4 bg-surface p-4 [--cdl-light-alpha:0.1] md:grid md:grid-cols-[3.5rem_minmax(0,1fr)] md:gap-x-5 md:gap-y-2 md:p-5 lg:flex"
+                >
+                  <span className="cdl-glow inline-flex size-14 items-center justify-center rounded-card border border-hairline-strong text-accent group-hover:border-accent md:row-span-2">
+                    <Icon className="icon-brand size-6" aria-hidden />
+                  </span>
+                  <h3 className="font-titulo text-2xl font-bold">{item.title}</h3>
+                  <p className="text-base text-ink-muted">{item.body}</p>
+                </li>
+              );
+            })}
+          </ul>
         </Container>
       </Section>
 
-      {/* 3. The seven areas. A horizontal rail, because seven items in a grid
-          reads as a dump and seven rows reads as a list. */}
-      <Section labelledBy="areas" space="tight">
-        <Container className="flex flex-col gap-5">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <SectionHeader
-              id="areas"
-              eyebrow={t.home.areas.eyebrow}
-              title={t.home.areas.title}
-              lead={t.home.areas.lead}
-            />
-            <Link
-              href="/team"
-              className="inline-flex min-h-12 items-center gap-2 text-base font-medium text-accent"
-            >
-              {t.home.areas.cta}
-              <IconArrowRight className="icon-brand size-5" aria-hidden />
-            </Link>
-          </div>
-        </Container>
-
-        <ul className="gutter gutter-scroll mx-auto mt-5 flex w-full max-w-[1400px] snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:thin]">
-          {areas.map((area) => (
-            <li key={area.key} className="w-72 shrink-0 snap-start">
-              <AreaCard area={area} locale={locale} href={`/team#${area.key}`} />
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      {/* 4. Method. Paper band, triptych divided by hairlines. */}
-      <Section surface="paper" labelledBy="metodo">
+      {/* The three areas that set the physics: one photographic banner each,
+          identical in size, each a single link to the area on the Team page. */}
+      <Section labelledBy="laboratorios">
         <Container className="flex flex-col gap-7">
-          <SectionHeader id="metodo" title={t.home.method.title} lead={t.home.method.lead} />
-
-          <ol className="grid gap-5 md:grid-cols-3 md:gap-0">
-            {t.home.method.steps.map((step, index) => (
-              <li
-                key={step.verb}
-                className="flex flex-col gap-2 border-t border-hairline pt-4 md:border-l md:border-t-0 md:pl-5 md:pr-5 md:pt-0 md:first:border-l-0 md:first:pl-0"
-              >
-                <h3 className="font-titulo text-[2rem] font-bold text-accent">{step.verb}</h3>
-                <p className="text-base text-ink-muted">{step.body}</p>
-                <span aria-hidden className="sr-only">
-                  {index + 1}
-                </span>
-              </li>
-            ))}
-          </ol>
+          <SectionHeader id="laboratorios" title={t.home.labs.title} lead={t.home.labs.lead} />
+          <ul className="grid gap-5 lg:grid-cols-3">
+            {t.home.labs.items.map((item, index) => {
+              const area = areaByKey.get(item.area);
+              if (!area) return null;
+              return (
+                <li key={item.area}>
+                  <Reveal className="h-full" delay={index * 0.06}>
+                    <AreaBanner
+                      area={area}
+                      locale={locale}
+                      href={`/team?area=${item.area}`}
+                      body={item.body}
+                      cta={t.home.labs.cta}
+                      index={index}
+                    />
+                  </Reveal>
+                </li>
+              );
+            })}
+          </ul>
         </Container>
       </Section>
 
-      {/* 5. Latest publications. Editorial list from the database. */}
+      {/* Latest publications. */}
       <Section labelledBy="bitacora">
         <Container className="flex flex-col gap-7">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -187,13 +136,7 @@ export default async function HomePage() {
               title={t.home.updates.title}
               lead={t.home.updates.lead}
             />
-            <Link
-              href="/publications"
-              className="inline-flex min-h-12 items-center gap-2 text-base font-medium text-accent"
-            >
-              {t.home.updates.cta}
-              <IconArrowRight className="icon-brand size-5" aria-hidden />
-            </Link>
+            <TextLink href="/publications">{t.home.updates.cta}</TextLink>
           </div>
 
           {updates.length === 0 ? (
@@ -202,12 +145,14 @@ export default async function HomePage() {
             <ul className="grid gap-5 md:grid-cols-3">
               {updates.map((publication, index) => (
                 <li key={publication.id}>
-                  <PublicationCard
-                    publication={publication}
-                    locale={locale}
-                    t={t}
-                    priority={index === 0}
-                  />
+                  <Reveal className="h-full" delay={index * 0.06}>
+                    <PublicationCard
+                      publication={publication}
+                      locale={locale}
+                      t={t}
+                      priority={index === 0}
+                    />
+                  </Reveal>
                 </li>
               ))}
             </ul>
@@ -215,29 +160,29 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* 6. Values. The single marquee on the site. */}
-      <Section surface="raised" space="tight">
-        <ValuesBand items={t.home.values.items} label={t.home.values.label} />
-      </Section>
-
-      {/* 7. Support. One call to action, one intent. */}
-      <Section labelledBy="apoyo" className="overflow-hidden">
+      {/* Support. One centred call to action, two journeys. */}
+      <Section surface="raised" labelledBy="apoyo" className="overflow-hidden">
         <div aria-hidden className="halo-brand pointer-events-none absolute inset-0 opacity-80" />
-        <Container width="narrow" className="relative flex flex-col items-start gap-5">
-          <h2 id="apoyo" className="text-balance-tight text-[2rem] md:text-[3rem]">
+        <Container width="narrow" className="relative flex flex-col items-center gap-5 text-center">
+          <h2 id="apoyo" className="max-w-[20ch] text-balance-tight text-[2rem] md:text-[3rem]">
             {t.home.support.title}
           </h2>
           <p className="max-w-[58ch] text-base text-ink-muted md:text-[1.5rem] md:leading-[1.5]">
             {t.home.support.body}
           </p>
-          <ButtonLink href="/support" variant="accent" size="lg">
-            {t.home.support.cta}
-            <IconArrowRight className="icon-brand size-5" aria-hidden />
-          </ButtonLink>
+          <div className="flex flex-wrap justify-center gap-2">
+            <ButtonLink href="/support#membresias" variant="accent" size="lg" magnetic>
+              {t.home.support.cta}
+              <IconArrowRight className="icon-brand size-5" aria-hidden />
+            </ButtonLink>
+            <ButtonLink href="/support#patrocinio-bloque" variant="secondary" size="lg">
+              {t.home.support.secondary}
+            </ButtonLink>
+          </div>
         </Container>
       </Section>
 
-      {/* 8. Institutional credit. */}
+      {/* Institutional credit. */}
       <Section space="tight" className="border-t border-hairline">
         <Container className="flex flex-col gap-3">
           <Eyebrow>{t.home.institutional.label}</Eyebrow>

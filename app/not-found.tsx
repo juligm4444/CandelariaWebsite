@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
+
 import { Isotipo } from '@/components/brand/lockup';
 import { ButtonLink } from '@/components/ui/button';
 import { Container, Section } from '@/components/ui/layout';
 import { getContent } from '@/lib/i18n/server';
+
+export const metadata: Metadata = {
+  title: 'Página no encontrada',
+  description: 'La dirección que buscas no existe en el sitio de Candelaria Solar Car.',
+  robots: { index: false, follow: true },
+};
 
 export default async function NotFound() {
   const { t } = await getContent();

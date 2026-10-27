@@ -28,18 +28,20 @@ export function LocaleSwitch({
       aria-label={label}
       disabled={pending}
       onClick={() => startTransition(() => setLocale(next))}
+      data-light=""
+      data-ripple=""
       className={cn(
-        'inline-flex min-h-12 items-center gap-1 rounded-pill border border-hairline px-2 text-base font-medium',
-        'transition-colors duration-200 ease-brand hover:border-accent hover:text-accent',
+        'cdl-press cdl-light cdl-light-edge inline-flex min-h-12 items-center gap-1 rounded-pill border border-hairline px-2 text-base font-medium',
+        'hover:border-transparent hover:text-accent [--cdl-light-alpha:0.12]',
         'disabled:opacity-60',
         className,
       )}
     >
-      <span className={locale === 'es' ? 'text-ink' : 'text-ink-faint'}>ES</span>
+      <span className={locale === 'es' ? 'cdl-current' : 'text-ink-faint'}>ES</span>
       <span aria-hidden className="text-ink-faint">
         /
       </span>
-      <span className={locale === 'en' ? 'text-ink' : 'text-ink-faint'}>EN</span>
+      <span className={locale === 'en' ? 'cdl-current' : 'text-ink-faint'}>EN</span>
     </button>
   );
 }

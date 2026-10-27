@@ -4,12 +4,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ViewBeacon } from '@/components/publications/view-beacon';
+import { JsonLd } from '@/components/seo/json-ld';
 import { ButtonExternal } from '@/components/ui/button';
 import { Container, Hairline, Section } from '@/components/ui/layout';
 import { areaByKey } from '@/content/areas';
 import { getPublicationBySlug } from '@/lib/db/publications';
 import { getContent } from '@/lib/i18n/server';
 import { mediaUrl } from '@/lib/media';
+import { articleJsonLd, pageMetadata } from '@/lib/seo';
 import { formatDate } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -23,10 +26,21 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
   if (!publication) return { title: 'Publicación' };
 
-  return {
+  const cover = mediaUrl(publication.coverPath);
+  const base = pageMetadata({
     title: publication.title,
     description: publication.abstract.slice(0, 180),
-    openGraph: { title: publication.title, description: publication.abstract.slice(0, 180) },
+    path: `/publications/${publication.slug}`,
+    type: 'article',
+  });
+  return {
+    ...base,
+    openGraph: {
+      ...base.openGraph,
+      type: 'article',
+      publishedTime: publication.publishedAt,
+      ...(cover ? { images: [{ url: cover, alt: publication.title }] } : {}),
+    },
   };
 }
 
@@ -43,10 +57,24 @@ export default async function PublicationDetailPage({ params }: { params: Params
 
   return (
     <Section surface="paper" space="tight">
+      <JsonLd
+        data={articleJsonLd({
+          slug: publication.slug,
+          title: publication.title,
+          abstract: publication.abstract,
+          publishedAt: publication.publishedAt,
+          areaName: area?.name[locale] ?? null,
+          authorName: publication.authorName,
+          image: cover,
+          logLabel: t.publications.hero.title,
+        })}
+      />
+      <ViewBeacon slug={publication.slug} />
       <Container width="reading" className="flex flex-col gap-5">
         <Link
           href="/publications"
-          className="inline-flex min-h-12 items-center gap-2 self-start text-base font-medium text-accent"
+          data-light=""
+          className="cdl-link inline-flex min-h-12 items-center gap-2 self-start text-base font-medium text-accent"
         >
           <IconArrowLeft className="icon-brand size-5" aria-hidden />
           {t.publications.detail.backToList}
@@ -77,7 +105,7 @@ export default async function PublicationDetailPage({ params }: { params: Params
           {cover ? (
             <Image
               src={cover}
-              alt=""
+              alt={t.publications.detail.coverAlt.replace('{{title}}', publication.title)}
               width={1280}
               height={720}
               priority

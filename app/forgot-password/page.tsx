@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Restablecer la contraseña',
+  description: 'Pide un enlace para restablecer la contraseña de tu cuenta de Candelaria Solar Car.',
   robots: { index: false, follow: false },
 };
 
@@ -20,7 +21,7 @@ export default async function ForgotPasswordPage() {
       title={t.auth.forgot.title}
       lead={t.auth.forgot.lead}
       footer={
-        <Link href="/login" className="font-medium text-accent">
+        <Link href="/login" data-light="" className="cdl-link inline-flex min-h-12 items-center font-medium text-accent">
           {t.auth.forgot.backToLogin}
         </Link>
       }

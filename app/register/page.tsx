@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Crear cuenta',
+  description: 'Crea una cuenta en Candelaria Solar Car para apoyar el proyecto y seguir sus avances.',
   robots: { index: false, follow: false },
 };
 
@@ -27,7 +28,7 @@ export default async function RegisterPage() {
       footer={
         <>
           {t.auth.register.hasAccount}{' '}
-          <Link href="/login" className="font-medium text-accent">
+          <Link href="/login" data-light="" className="cdl-link inline-flex min-h-12 items-center font-medium text-accent">
             {t.auth.register.loginLink}
           </Link>
         </>

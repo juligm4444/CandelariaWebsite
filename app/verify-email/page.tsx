@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Confirma tu correo',
+  description: 'Confirma el correo de tu cuenta de Candelaria Solar Car.',
   robots: { index: false, follow: false },
 };
 
@@ -30,7 +31,7 @@ export default async function VerifyEmailPage() {
       title={t.auth.verify.title}
       lead={t.auth.verify.lead}
       footer={
-        <Link href="/login" className="font-medium text-accent">
+        <Link href="/login" data-light="" className="cdl-link inline-flex min-h-12 items-center font-medium text-accent">
           {t.auth.forgot.backToLogin}
         </Link>
       }

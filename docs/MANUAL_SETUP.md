@@ -118,9 +118,15 @@ romperse. Para entrar, apoyar o publicar necesitas los pasos 1 a 3.
    (Ctrl+A / Cmd+A), cópialo.
 4. Pégalo en el SQL Editor de Supabase y click **Run** (o Ctrl+Enter).
    Debe decir "Success. No rows returned".
-5. Repite exactamente lo mismo, en este orden, con los otros dos archivos:
+5. Repite exactamente lo mismo, en este orden, con los demás archivos:
    - `supabase/migrations/20261002120100_app_schema.sql`
    - `supabase/migrations/20261002120200_storage.sql`
+   - `supabase/migrations/20261013120000_member_profile.sql` (bio y redes de
+     la tarjeta de Equipo; si no lo corres, el sitio funciona igual pero las
+     tarjetas salen sin redes y `/profile` no puede guardarlas)
+   - `supabase/migrations/20261014120000_publication_views.sql` (contador de
+     lecturas para "Lo más leído" en la Bitácora; sin él, el mini hero muestra
+     solo la última publicación)
 
    **El orden importa**: el segundo archivo usa tablas que crea el primero, y
    el tercero configura el bucket que usa el segundo. Si pegas el 2 antes que
@@ -761,3 +767,18 @@ sitio desplegado en Vercel, prueba a mano:
 La tabla `audit_log` (en Supabase, **Table Editor → audit_log**) guarda quién
 hizo qué, desde qué dirección IP y cuándo, para cada acción sensible. Es el
 primer sitio donde mirar cuando algo no cuadre.
+
+## Fotos pendientes (equipo y recorrido)
+
+Las fotos del mini hero de Equipo y de cada hito del recorrido en Nosotros se
+configuran en `content/media.ts`:
+
+1. Copia la imagen a `public/media/` (WebP o AVIF, menos de 400 KB). Equipo:
+   2400 × 1350 (16:9). Recorrido: 1600 × 1200 (4:3).
+2. En `content/media.ts`, cambia `src: null` por la ruta, por ejemplo
+   `'/media/equipo-2026.webp'`, y revisa el texto alternativo.
+
+Mientras `src` sea `null`, la página muestra un marco en colores de marca con
+la nota "próximamente". Los eventos del recorrido (`about.timeline` en
+`content/es.ts` y `content/en.ts`) son provisionales: reemplázalos con las
+fechas que confirme el Comité y quita la etiqueta `provisional` del texto.

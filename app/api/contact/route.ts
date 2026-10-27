@@ -20,11 +20,16 @@ export const dynamic = 'force-dynamic';
  */
 const TOPICS = ['general', 'rrhh', 'comite', 'prensa'] as const;
 
+/** Sponsorship forms only. A fixed list, so the mail never carries free-form routing. */
+const MODALITIES = ['economic', 'material', 'services', 'academic', 'other'] as const;
+
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().email().max(200),
   topic: z.enum(TOPICS),
   message: z.string().trim().min(20).max(4000),
+  organization: z.string().trim().max(160).optional(),
+  modality: z.enum(MODALITIES).optional(),
   // Honeypot. A real person never fills a field they cannot see.
   website: z.string().max(0).optional(),
 });
@@ -61,6 +66,8 @@ export async function POST(request: Request) {
     email: parsed.data.email,
     topic: parsed.data.topic,
     message: parsed.data.message,
+    organization: parsed.data.organization || undefined,
+    modality: parsed.data.modality,
   });
 
   try {

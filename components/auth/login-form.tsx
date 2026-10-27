@@ -86,7 +86,11 @@ export function LoginForm({ t, next }: { t: Dictionary; next: string | null }) {
         {pending ? t.auth.login.submitting : t.auth.login.submit}
       </Button>
 
-      <Link href="/forgot-password" className="text-base font-medium text-accent">
+      <Link
+        href="/forgot-password"
+        data-light=""
+        className="cdl-link inline-flex min-h-12 items-center self-start text-base font-medium text-accent"
+      >
         {t.auth.login.forgot}
       </Link>
     </form>

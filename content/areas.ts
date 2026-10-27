@@ -30,7 +30,18 @@ export type Area = {
   accent: string;
   /** Contrast-checked tone for label text. Surface-aware. */
   label: string;
+  /**
+   * The published colour as an "R G B" triplet, for interaction light that
+   * needs an alpha channel (`rgb(var(--cdl-light-rgb) / a)`).
+   */
+  rgb: string;
   isotipo: string;
+  /**
+   * Banner photograph, for the areas that have one (the three that set the
+   * physics of the car). Same 16:9 source size for all of them, so banners
+   * built from them always match.
+   */
+  cover?: { src: string; alt: Record<Locale, string> };
   name: Record<Locale, string>;
   /** One sentence. What this area is responsible for. */
   brief: Record<Locale, string>;
@@ -44,6 +55,7 @@ export const areas: Area[] = [
     dbKeys: ['Committee', 'Comité', 'Executive Committee', 'comite', 'committee'],
     accent: 'var(--color-area-comite)',
     label: 'var(--cdl-label-comite)',
+    rgb: '232 73 15',
     isotipo: '/brand/areas/comite.webp',
     name: { es: 'Comité', en: 'Committee' },
     brief: {
@@ -68,22 +80,30 @@ export const areas: Area[] = [
     dbKeys: ['Cells', 'Celdas', 'cells', 'solar'],
     accent: 'var(--color-area-celdas)',
     label: 'var(--cdl-label-celdas)',
+    rgb: '79 108 240',
     isotipo: '/brand/areas/celdas.webp',
+    cover: {
+      src: '/img/celdas.webp',
+      alt: {
+        es: 'Panel solar monocristalino en primer plano, con la rejilla de celdas iluminada por una luz dorada.',
+        en: 'Close-up of a monocrystalline solar panel, its cell grid lit by golden light.',
+      },
+    },
     name: { es: 'Celdas', en: 'Cells' },
     brief: {
-      es: 'Convierte radiación solar en energía utilizable y predice cuánta habrá disponible.',
-      en: 'Turns solar radiation into usable energy and predicts how much will be available.',
+      es: 'Calcula, selecciona y caracteriza la generación solar que alimenta al carro.',
+      en: 'Calculates, selects and characterises the solar generation that powers the car.',
     },
     duties: {
       es: [
-        'Modela la radiación disponible en la ruta y traduce el modelo a energía por hora.',
-        'Diseña el arreglo solar: distribución, encapsulado y conexión eléctrica.',
-        'Mide la eficiencia real del arreglo y la compara contra el modelo.',
+        'Calcula la potencia que debe entregar el motor y la energía que debe generar el sistema.',
+        'Compara tecnologías y proveedores de celdas y paneles, y estima la radiación solar en las rutas de prueba.',
+        'Simula el sistema de potencia (paneles, baterías y motor) en Matlab/Simulink y Typhoon HIL.',
       ],
       en: [
-        'Models the radiation available along the route and turns it into energy per hour.',
-        'Designs the solar array: layout, encapsulation and electrical connection.',
-        'Measures the array efficiency and compares it against the model.',
+        'Calculates the power the motor must deliver and the energy the system must generate.',
+        'Compares cell and panel technologies and suppliers, and estimates the solar radiation on the test routes.',
+        'Simulates the power system (panels, batteries and motor) in Matlab/Simulink and Typhoon HIL.',
       ],
     },
   },
@@ -92,22 +112,30 @@ export const areas: Area[] = [
     dbKeys: ['Batteries', 'Baterías', 'baterias', 'battery', 'batteries'],
     accent: 'var(--color-area-baterias)',
     label: 'var(--cdl-label-baterias)',
+    rgb: '18 160 60',
     isotipo: '/brand/areas/baterias.webp',
+    cover: {
+      src: '/img/baterias.webp',
+      alt: {
+        es: 'Celdas de litio unidas por sus terminales de níquel, iluminadas en dorado y morado.',
+        en: 'Lithium cells joined by their nickel terminals, lit in gold and purple.',
+      },
+    },
     name: { es: 'Baterías', en: 'Batteries' },
     brief: {
-      es: 'Almacena la energía, la entrega al motor y vigila que todo el camino sea seguro.',
-      en: 'Stores the energy, delivers it to the motor and keeps the whole path safe.',
+      es: 'Construye el banco de baterías y caracteriza el motor que mueve al vehículo.',
+      en: 'Builds the battery bank and characterises the motor that moves the vehicle.',
     },
     duties: {
       es: [
-        'Dimensiona el paquete de celdas equilibrando capacidad, masa y seguridad.',
-        'Selecciona el tren motriz y define la curva de entrega de potencia.',
-        'Instrumenta el sistema de gestión de batería y sus alarmas.',
+        'Ensambla el banco de baterías de iones de litio 13S7P (48 V, 35 Ah) con soldadura por puntos y soportes impresos en 3D.',
+        'Caracteriza el motor BLDC de 1000 W en banco de pruebas: curvas de corriente, potencia, RPM y torque.',
+        'Integra el sistema de gestión de baterías (BMS), el recubrimiento y los equipos de protección.',
       ],
       en: [
-        'Sizes the cell pack balancing capacity, mass and safety.',
-        'Selects the drivetrain and defines the power delivery curve.',
-        'Instruments the battery management system and its alarms.',
+        'Assembles the 13S7P lithium-ion battery bank (48 V, 35 Ah) by spot welding, with 3D-printed holders.',
+        'Characterises the 1000 W BLDC motor on a test bench: current, power, RPM and torque curves.',
+        'Integrates the battery management system (BMS), the casing and the protection equipment.',
       ],
     },
   },
@@ -116,7 +144,15 @@ export const areas: Area[] = [
     dbKeys: ['Chassis', 'Chasis', 'chasis', 'chassis'],
     accent: 'var(--color-area-chasis)',
     label: 'var(--cdl-label-chasis)',
+    rgb: '175 184 189',
     isotipo: '/brand/areas/chasis.webp',
+    cover: {
+      src: '/img/fibra.webp',
+      alt: {
+        es: 'Tejido de fibra de carbono con un reflejo de luz dorada sobre la trama.',
+        en: 'Carbon fibre weave with a pool of golden light across the pattern.',
+      },
+    },
     name: { es: 'Chasis', en: 'Chassis' },
     brief: {
       es: 'Construye la estructura que carga todo lo demás y la forma que atraviesa el aire.',
@@ -140,6 +176,7 @@ export const areas: Area[] = [
     dbKeys: ['Logistics', 'Logística', 'logistica', 'logistics'],
     accent: 'var(--color-area-logistica)',
     label: 'var(--cdl-label-logistica)',
+    rgb: '28 196 220',
     isotipo: '/brand/areas/logistica.webp',
     name: { es: 'Logística', en: 'Logistics' },
     brief: {
@@ -164,6 +201,7 @@ export const areas: Area[] = [
     dbKeys: ['Design', 'Diseño', 'diseno', 'design'],
     accent: 'var(--color-area-diseno)',
     label: 'var(--cdl-label-diseno)',
+    rgb: '247 107 179',
     isotipo: '/brand/areas/diseno.webp',
     name: { es: 'Diseño', en: 'Design' },
     brief: {
@@ -188,6 +226,7 @@ export const areas: Area[] = [
     dbKeys: ['Human Resources', 'Recursos Humanos', 'rrhh', 'talento'],
     accent: 'var(--color-area-rrhh)',
     label: 'var(--cdl-label-rrhh)',
+    rgb: '179 92 203',
     isotipo: '/brand/areas/rrhh.webp',
     name: { es: 'Recursos Humanos', en: 'Human Resources' },
     brief: {

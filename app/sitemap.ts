@@ -1,11 +1,12 @@
 import type { MetadataRoute } from 'next';
 
+import { SITE_URL } from '@/content/site';
 import { listPublications } from '@/lib/db/publications';
 
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = (process.env.APP_URL ?? 'https://candelaria.website').replace(/\/+$/, '');
+  const base = SITE_URL;
   const now = new Date();
 
   const staticRoutes = [

@@ -14,6 +14,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Compras',
+  description: 'Tus membresías y compras en Candelaria Solar Car.',
   robots: { index: false, follow: false },
 };
 

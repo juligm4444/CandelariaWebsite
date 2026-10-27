@@ -161,16 +161,34 @@ export function contactEmail(opts: {
   email: string;
   topic: string;
   message: string;
+  organization?: string;
+  modality?: string;
 }) {
+  const extra = [
+    opts.organization ? `Organización: ${escapeHtml(opts.organization)}` : null,
+    opts.modality ? `Modalidad de interés: ${escapeHtml(opts.modality)}` : null,
+  ]
+    .filter(Boolean)
+    .map((line) => `<p style="margin:0 0 8px;color:${PALETTE.muted};">${line}</p>`)
+    .join('');
   const body = `
     <h1 style="margin:0 0 16px;font-size:32px;line-height:1.1;color:${PALETTE.text};">Nuevo mensaje de contacto</h1>
     <p style="margin:0 0 8px;color:${PALETTE.muted};">Tema: ${escapeHtml(opts.topic)}</p>
-    <p style="margin:0 0 8px;color:${PALETTE.muted};">De: ${escapeHtml(opts.name)} (${escapeHtml(opts.email)})</p>
+    <p style="margin:0 0 8px;color:${PALETTE.muted};">De: ${escapeHtml(opts.name)} (${escapeHtml(opts.email)})</p>${extra}
     <div style="margin:24px 0 0;padding:24px;border:1px solid ${PALETTE.border};border-radius:16px;color:${PALETTE.text};white-space:pre-wrap;">${escapeHtml(opts.message)}</div>`;
 
   return {
     subject: `Contacto: ${opts.topic}`,
     html: shell(body, `Mensaje de ${opts.name}`),
-    text: `De: ${opts.name} <${opts.email}>\nTema: ${opts.topic}\n\n${opts.message}`,
+    text: [
+      `De: ${opts.name} <${opts.email}>`,
+      `Tema: ${opts.topic}`,
+      opts.organization ? `Organización: ${opts.organization}` : null,
+      opts.modality ? `Modalidad de interés: ${opts.modality}` : null,
+      '',
+      opts.message,
+    ]
+      .filter((line) => line !== null)
+      .join('\n'),
   };
 }

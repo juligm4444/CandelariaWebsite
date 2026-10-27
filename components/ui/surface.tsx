@@ -13,6 +13,7 @@ export function Panel({
   size = 'block',
   tone = 'surface',
   accent,
+  lit = true,
 }: {
   children: ReactNode;
   className?: string;
@@ -20,11 +21,19 @@ export function Panel({
   tone?: 'surface' | 'raised' | 'transparent';
   /** Area colour. Paints a 2px bar along the top edge and nothing else. */
   accent?: string;
+  /**
+   * Pointer light: a halo follows the cursor and the border lights up near
+   * it. On by default; a panel is still read, not clicked, so there is no
+   * press effect here.
+   */
+  lit?: boolean;
 }) {
   return (
     <div
+      {...(lit ? { 'data-light': '' } : {})}
       className={cn(
         'relative overflow-hidden border border-hairline',
+        lit && 'cdl-light cdl-light-edge [--cdl-light-alpha:0.08]',
         size === 'block' ? 'rounded-block p-4 md:p-[2rem]' : 'rounded-card p-4',
         tone === 'surface' && 'bg-surface',
         tone === 'raised' && 'bg-surface-raised',

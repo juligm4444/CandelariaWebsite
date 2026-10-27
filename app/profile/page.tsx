@@ -9,6 +9,7 @@ import { areaByKey } from '@/content/areas';
 import { CURRENCY } from '@/content/catalog';
 import { requireUser } from '@/lib/auth/session';
 import { getSupporterStats } from '@/lib/db/commerce';
+import { EMPTY_LINKS, memberLinks } from '@/lib/db/members';
 import { fill } from '@/lib/i18n/dictionary';
 import { getContent } from '@/lib/i18n/server';
 import { initials, mediaUrl } from '@/lib/media';
@@ -18,6 +19,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Perfil',
+  description: 'Tu perfil en Candelaria Solar Car.',
   robots: { index: false, follow: false },
 };
 
@@ -43,6 +45,10 @@ export default async function ProfilePage() {
     tier: 'visitor' as const,
   }));
 
+  const links = user.isInternal
+    ? ((await memberLinks([user.id])).get(user.id) ?? EMPTY_LINKS)
+    : EMPTY_LINKS;
+
   const area = user.areaKey ? areaByKey.get(user.areaKey) : undefined;
   const photo = mediaUrl(user.imagePath);
 
@@ -60,7 +66,7 @@ export default async function ProfilePage() {
         <header className="flex flex-wrap items-center gap-4">
           <div className="relative size-20 shrink-0 overflow-hidden rounded-card border border-hairline bg-surface">
             {photo ? (
-              <Image src={photo} alt="" fill sizes="80px" className="object-cover" />
+              <Image src={photo} alt={user.name} fill sizes="80px" className="object-cover" />
             ) : (
               <span
                 aria-hidden
@@ -90,7 +96,7 @@ export default async function ProfilePage() {
         <div className="grid items-start gap-5 lg:grid-cols-[2fr_1fr]">
           <Panel className="flex flex-col gap-5">
             <h2 className="font-titulo text-2xl font-bold">{t.profile.sections.account}</h2>
-            <ProfileForm user={user} locale={locale} t={t} />
+            <ProfileForm user={user} links={links} locale={locale} t={t} />
           </Panel>
 
           <div className="flex flex-col gap-3">

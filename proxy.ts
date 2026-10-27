@@ -13,7 +13,9 @@ import { NextResponse, type NextRequest } from 'next/server';
  * no nonce mechanism for style attributes. Inline styles alone do not execute.
  */
 function connectSources(): string[] {
-  const sources = new Set<string>(["'self'"]);
+  // `blob:` is needed for the embedded textures of the 3D area logos, which
+  // three.js reads from object URLs created by this same page.
+  const sources = new Set<string>(["'self'", 'blob:']);
 
   const posthog = process.env.NEXT_PUBLIC_POSTHOG_HOST;
   if (posthog) {
@@ -42,7 +44,10 @@ export function proxy(request: NextRequest) {
     `default-src 'self'`,
     // `unsafe-eval` is development only: the React development build uses
     // eval() to reconstruct stack traces. The production policy never has it.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https:${
+    // `wasm-unsafe-eval` allows compiling WebAssembly and nothing else (no
+    // eval, no Function): the Draco decoder of the 3D area logos is WASM, and
+    // without it the logos never load in production.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval' https:${
       process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"
     }`,
     `style-src 'self' 'unsafe-inline'`,
@@ -76,6 +81,8 @@ export const config = {
      * Everything except static assets and the image optimiser, which are
      * served straight from the CDN and carry no inline script.
      */
-    '/((?!_next/static|_next/image|favicon.ico|fonts/|brand/|robots.txt|sitemap.xml).*)',
+    // Static files under public/ need no CSP header and must not cost a
+    // proxy invocation each: the hero alone is ~100 frame requests.
+    '/((?!_next/static|_next/image|favicon.ico|fonts/|brand/|img/|hero/|models/|draco/|robots.txt|sitemap.xml).*)',
   ],
 };

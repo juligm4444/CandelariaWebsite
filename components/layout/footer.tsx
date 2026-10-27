@@ -3,21 +3,19 @@ import Link from 'next/link';
 
 import { Lockup } from '@/components/brand/lockup';
 import { Container } from '@/components/ui/layout';
+import { NavLink } from '@/components/ui/nav-link';
+import { SOCIAL_PROFILES } from '@/content/site';
 import type { Dictionary } from '@/lib/i18n/dictionary';
 
 /**
  * Site footer. Carries the institutional attribution and the real external
  * links. No locale strip, no build stamp, no decorative status dots.
  */
-const SOCIAL = [
-  { href: 'https://www.instagram.com/candelariasolarcar/', label: 'Instagram', Icon: IconBrandInstagram },
-  {
-    href: 'https://www.linkedin.com/company/candelaria-solar-car/',
-    label: 'LinkedIn',
-    Icon: IconBrandLinkedin,
-  },
-  { href: 'https://github.com/candelaria-solar-car', label: 'GitHub', Icon: IconBrandGithub },
-];
+const SOCIAL_ICONS = {
+  instagram: IconBrandInstagram,
+  linkedin: IconBrandLinkedin,
+  github: IconBrandGithub,
+} as const;
 
 export function Footer({ t }: { t: Dictionary }) {
   const year = new Date().getFullYear();
@@ -45,24 +43,27 @@ export function Footer({ t }: { t: Dictionary }) {
       <Container className="flex flex-col gap-9 py-9 md:py-15">
         <div className="grid gap-9 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="flex flex-col gap-3">
-            <Link href="/" className="-ml-2 self-start rounded-pill">
+            <Link href="/" className="cdl-press -ml-2 self-start rounded-pill">
               <Lockup size={40} />
             </Link>
             <p className="max-w-[32ch] text-base text-ink-muted">{t.footer.tagline}</p>
             <ul className="mt-1 flex items-center gap-2">
-              {SOCIAL.map(({ href, label, Icon }) => (
-                <li key={label}>
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="inline-flex size-12 items-center justify-center rounded-pill border border-hairline text-ink-muted transition-colors duration-200 ease-brand hover:border-accent hover:text-accent"
-                  >
-                    <Icon className="icon-brand" aria-hidden />
-                  </a>
-                </li>
-              ))}
+              {SOCIAL_PROFILES.map(({ key, href, label }) => {
+                const Icon = SOCIAL_ICONS[key];
+                return (
+                  <li key={key}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className="cdl-glow inline-flex size-12 items-center justify-center rounded-pill border border-hairline text-ink-muted hover:border-accent hover:text-accent"
+                    >
+                      <Icon className="icon-brand" aria-hidden />
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -97,12 +98,13 @@ function FooterColumn({
       <ul className="flex flex-col gap-1">
         {items.map((item) => (
           <li key={item.href}>
-            <Link
+            <NavLink
               href={item.href}
-              className="inline-flex min-h-10 items-center text-base text-ink-muted transition-colors duration-200 ease-brand hover:text-ink"
+              data-light=""
+              className="cdl-link inline-flex min-h-12 items-center text-base"
             >
               {item.label}
-            </Link>
+            </NavLink>
           </li>
         ))}
       </ul>

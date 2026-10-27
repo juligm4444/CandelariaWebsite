@@ -6,8 +6,9 @@ import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth/session';
 import { isCareerKey } from '@/content/careers';
 import { audit } from '@/lib/db/audit';
-import { updateOwnProfile } from '@/lib/db/members';
+import { updateOwnLinks, updateOwnProfile, type MemberLinks } from '@/lib/db/members';
 import { clientIdentifier, rateLimit } from '@/lib/rate-limit';
+import { normaliseSocialUrl, SOCIAL_KEYS } from '@/lib/social';
 import { removeFile, uploadFile } from '@/lib/storage';
 
 export type ProfileActionState = { status: 'idle' | 'success' | 'error'; message?: string };
@@ -49,6 +50,29 @@ export async function updateProfile(
 
   if (!parsed.success) return { status: 'error', message: 'INVALID' };
 
+  // Public-card fields only exist for members of the group: a supporter
+  // account has no team card, so anything posted for one is ignored.
+  let links: MemberLinks | null = null;
+  if (user.isInternal) {
+    const bio = String(formData.get('bio') ?? '').trim();
+    if (bio.length > 280) return { status: 'error', message: 'BIO_TOO_LONG' };
+
+    links = {
+      bio: bio || null,
+      linkedinUrl: null,
+      githubUrl: null,
+      instagramUrl: null,
+      websiteUrl: null,
+    };
+    for (const key of SOCIAL_KEYS) {
+      const raw = String(formData.get(key) ?? '').trim();
+      if (!raw) continue;
+      const clean = normaliseSocialUrl(key, raw);
+      if (!clean) return { status: 'error', message: 'INVALID_LINK' };
+      links[key] = clean;
+    }
+  }
+
   let imagePath: string | null = null;
   const photo = formData.get('photo');
 
@@ -67,6 +91,8 @@ export async function updateProfile(
       roleTitle: parsed.data.roleTitle || null,
       imagePath,
     });
+
+    if (links) await updateOwnLinks(user.id, links);
 
     if (imagePath && user.imagePath) await removeFile(user.imagePath);
 

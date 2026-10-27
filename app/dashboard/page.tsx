@@ -22,6 +22,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Panel',
+  description: 'Panel interno de Candelaria Solar Car para líderes de área.',
   robots: { index: false, follow: false },
 };
 

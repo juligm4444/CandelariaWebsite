@@ -14,8 +14,9 @@ import { cn } from '@/lib/utils';
 
 const controlClass =
   'w-full rounded-pill border border-hairline-strong bg-transparent px-4 py-3 text-base ' +
-  'text-ink placeholder:text-ink-faint transition-colors duration-200 ease-brand ' +
-  'hover:border-accent focus:border-accent aria-[invalid=true]:border-area-comite';
+  'text-ink placeholder:text-ink-faint transition-[border-color,background-color] duration-200 ease-out-ui ' +
+  // Focus lights the field from inside with the accent, no shadow ring.
+  'hover:border-accent focus:border-accent focus:bg-accent/6 aria-[invalid=true]:border-area-comite';
 
 function FieldShell({
   id,

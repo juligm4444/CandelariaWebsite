@@ -36,6 +36,62 @@ export async function listActiveMembers(): Promise<Member[]> {
   );
 }
 
+/** Optional public-card fields, added by migration 20261013120000. */
+export type MemberLinks = {
+  bio: string | null;
+  linkedinUrl: string | null;
+  githubUrl: string | null;
+  instagramUrl: string | null;
+  websiteUrl: string | null;
+};
+
+export const EMPTY_LINKS: MemberLinks = {
+  bio: null,
+  linkedinUrl: null,
+  githubUrl: null,
+  instagramUrl: null,
+  websiteUrl: null,
+};
+
+/**
+ * Bio and social links for a set of users. Kept out of the main listing on
+ * purpose: if the migration has not run yet, this query fails on its own and
+ * the team page still renders every card, just without links.
+ */
+export async function memberLinks(ids: string[]): Promise<Map<string, MemberLinks>> {
+  if (ids.length === 0) return new Map();
+  try {
+    const rows = await query<MemberLinks & { id: string }>(
+      `select "id", "bio", "linkedinUrl", "githubUrl", "instagramUrl", "websiteUrl"
+         from "user"
+        where "id" = any($1::text[])`,
+      [ids],
+    );
+    return new Map(rows.map(({ id, ...links }) => [id, links]));
+  } catch (error) {
+    console.warn(
+      '[members] links unavailable (has 20261013120000_member_profile.sql run?): %s',
+      error instanceof Error ? error.message : error,
+    );
+    return new Map();
+  }
+}
+
+/** Saves the owner's own card fields. Same ownership rule as updateOwnProfile. */
+export async function updateOwnLinks(userId: string, links: MemberLinks): Promise<void> {
+  await query(
+    `update "user"
+        set "bio"          = $2,
+            "linkedinUrl"  = $3,
+            "githubUrl"    = $4,
+            "instagramUrl" = $5,
+            "websiteUrl"   = $6,
+            "updatedAt"    = now()
+      where "id" = $1`,
+    [userId, links.bio, links.linkedinUrl, links.githubUrl, links.instagramUrl, links.websiteUrl],
+  );
+}
+
 export type AreaMember = Member & { email: string };
 
 /** Area roster for the dashboard. Includes e-mail, so it is lead-gated. */

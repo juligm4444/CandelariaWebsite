@@ -55,6 +55,21 @@ const nextConfig: NextConfig = {
         source: '/fonts/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
+      // Hero frames live in a versioned folder (/hero/v1/...). Changing the
+      // clip means publishing /hero/v2, so a year-long immutable cache is
+      // safe and spares ~100 revalidation requests on every return visit.
+      {
+        source: '/hero/:version/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      // 3D logos and the Draco decoder change rarely; a day of cache with
+      // background revalidation keeps them fast without pinning a stale file.
+      {
+        source: '/(models|draco)/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
     ];
   },
 };

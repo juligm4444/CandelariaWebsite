@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Nueva contraseña',
+  description: 'Elige una nueva contraseña para tu cuenta de Candelaria Solar Car.',
   robots: { index: false, follow: false },
 };
 
@@ -31,7 +32,7 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
       title={t.auth.reset.title}
       lead={t.auth.reset.lead}
       footer={
-        <Link href="/login" className="font-medium text-accent">
+        <Link href="/login" data-light="" className="cdl-link inline-flex min-h-12 items-center font-medium text-accent">
           {t.auth.forgot.backToLogin}
         </Link>
       }

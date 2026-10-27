@@ -3,10 +3,16 @@ import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { PostHogProvider } from '@/components/analytics/posthog-provider';
+import { InteractionLayer } from '@/components/interaction/interaction-layer';
 import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
+import { SiteLoader } from '@/components/motion/site-loader';
+import { JsonLd } from '@/components/seo/json-ld';
+import { areas } from '@/content/areas';
+import { SITE_NAME, SITE_URL } from '@/content/site';
 import { getCurrentUser } from '@/lib/auth/session';
 import { getContent } from '@/lib/i18n/server';
+import { siteJsonLd } from '@/lib/seo';
 
 import './globals.css';
 
@@ -27,27 +33,34 @@ const inter = Inter({
   display: 'swap',
 });
 
+const DESCRIPTION =
+  'Semillero de investigación interdisciplinario de la Universidad de los Andes que diseña, construye y valida un vehículo solar de competencia.';
+
+/**
+ * Site-wide metadata. No canonical here: it would be inherited by pages that
+ * must not claim "/" (sign-in, 404). The home page sets its own canonical;
+ * every other public page replaces title, description, canonical and social
+ * fields through `pageMetadata`.
+ * Icons and the social card come from the file conventions in app/
+ * (favicon.ico, icon.png, apple-icon.png, opengraph-image.tsx).
+ */
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_URL ?? 'https://candelaria.website'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Candelaria Solar Car',
+    default: 'Candelaria Solar Car · Vehículo solar de la Universidad de los Andes',
     template: '%s | Candelaria Solar Car',
   },
-  description:
-    'Semillero de investigación interdisciplinario de la Universidad de los Andes que diseña, construye y valida un vehículo solar de competencia.',
-  applicationName: 'Candelaria Solar Car',
-  authors: [{ name: 'Candelaria Solar Car' }],
+  description: DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME }],
   openGraph: {
     type: 'website',
-    siteName: 'Candelaria Solar Car',
-    title: 'Candelaria Solar Car',
-    description:
-      'Semillero interdisciplinario de la Universidad de los Andes. Diseñamos, construimos y validamos un vehículo solar de competencia.',
+    siteName: SITE_NAME,
+    title: 'Candelaria Solar Car · Vehículo solar de la Universidad de los Andes',
+    description: DESCRIPTION,
+    locale: 'es_CO',
   },
   twitter: { card: 'summary_large_image' },
-  icons: {
-    icon: [{ url: '/brand/isotipo-institucional.webp', type: 'image/webp' }],
-  },
   robots: { index: true, follow: true },
 };
 
@@ -67,11 +80,22 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const user = await getCurrentUser().catch(() => null);
 
   return (
-    <html lang={locale} className={inter.variable}>
+    <html lang={locale} className={inter.variable} data-scroll-behavior="smooth">
       <body>
+        <JsonLd data={siteJsonLd(DESCRIPTION)} />
+        <SiteLoader
+          name="CANDELARIA"
+          subtitle="SOLAR CAR"
+          caption={t.loader.caption}
+          attributes={t.loader.attributes}
+          values={t.about.valuesBand.items}
+          areaColors={areas.map((area) => area.accent)}
+          loadingLabel={t.common.loading}
+        />
+        <InteractionLayer />
         <a
           href="#contenido"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-pill focus:bg-dorado-100 focus:px-4 focus:py-3 focus:text-base focus:font-medium focus:text-morado-300"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:inline-flex focus:min-h-12 focus:items-center focus:rounded-pill focus:bg-dorado-100 focus:px-4 focus:text-base focus:font-medium focus:text-morado-300"
         >
           {t.common.skipToContent}
         </a>
