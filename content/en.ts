@@ -364,8 +364,6 @@ export const en: Dictionary = {
       lead: 'Areas are independent in scope and interdependent in their decisions.',
       controls: {
         group: 'How the semillero works',
-        pause: 'Pause the sequence',
-        play: 'Resume the sequence',
       },
       items: [
         {

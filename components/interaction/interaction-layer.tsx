@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { readLiteHint } from '@/lib/device-profile';
+
 /**
  * One delegated listener pair for the whole site, instead of a handler on
  * every button. It renders nothing.
@@ -13,6 +15,12 @@ import { useEffect } from 'react';
  *   `translate` property, so it composes with the press `scale`.
  * - `[data-ripple]`: on press, a disc of light grows from the exact press
  *   point and fades. Works for touch too, where it is the only feedback.
+ * - `[data-halo]` (dark sections): the section's backdrop halo follows the
+ *   pointer, moved with `transform` only, and is switched off on leave. It
+ *   is skipped entirely in lite mode.
+ *
+ * It also starts the site-wide lite mode from hardware hints (see
+ * lib/device-profile.ts) before anything has had a chance to stutter.
  *
  * Pointer tracking only runs for a mouse on a device that can hover; touch
  * gets the ripple and nothing that could leave a stuck highlight. Reduced
@@ -24,13 +32,25 @@ export function InteractionLayer() {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+    const root = document.documentElement;
+    if (readLiteHint()) root.dataset.lite = '';
+
     let frame = 0;
     let last: PointerEvent | null = null;
     let magnet: HTMLElement | null = null;
+    let haloHost: HTMLElement | null = null;
+    let halo: HTMLElement | null = null;
+
+    const dim = () => {
+      if (halo) delete halo.dataset.on;
+      haloHost = null;
+      halo = null;
+    };
 
     const release = () => {
       if (magnet) magnet.style.translate = '';
       magnet = null;
+      dim();
     };
 
     const apply = () => {
@@ -44,6 +64,18 @@ export function InteractionLayer() {
         const box = lit.getBoundingClientRect();
         lit.style.setProperty('--mx', `${event.clientX - box.left}px`);
         lit.style.setProperty('--my', `${event.clientY - box.top}px`);
+      }
+
+      const host = 'lite' in root.dataset ? null : (target?.closest<HTMLElement>('[data-halo]') ?? null);
+      if (host !== haloHost) {
+        dim();
+        haloHost = host;
+        halo = host?.querySelector<HTMLElement>(':scope > .cdl-backdrop > .cdl-bd-halo') ?? null;
+      }
+      if (host && halo) {
+        const box = host.getBoundingClientRect();
+        halo.style.transform = `translate3d(${(event.clientX - box.left).toFixed(1)}px, ${(event.clientY - box.top).toFixed(1)}px, 0)`;
+        if (!('on' in halo.dataset)) halo.dataset.on = '';
       }
 
       const next = reduce.matches ? null : (target?.closest<HTMLElement>('[data-magnetic]') ?? null);
@@ -82,7 +114,6 @@ export function InteractionLayer() {
       host.appendChild(ripple);
     };
 
-    const root = document.documentElement;
     document.addEventListener('pointermove', onMove, { passive: true });
     document.addEventListener('pointerdown', onDown, { passive: true });
     root.addEventListener('pointerleave', release);

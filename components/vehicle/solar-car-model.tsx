@@ -653,6 +653,19 @@ export default function SolarCarModel({
           />
         </Canvas>
 
+        {/* Telemetry framing over the canvas, DOM only: the studio scene
+            itself gets nothing added (see .cdl-hud in globals.css). */}
+        <div aria-hidden className="cdl-hud pointer-events-none absolute inset-0 z-[5]">
+          <span className="cdl-hud-corner" data-at="tl" />
+          <span className="cdl-hud-corner" data-at="tr" />
+          <span className="cdl-hud-corner" data-at="bl" />
+          <span className="cdl-hud-corner" data-at="br" />
+          <span className="cdl-hud-ruler" data-at="top" />
+          <span className="cdl-hud-ruler" data-at="right" />
+          <span className="cdl-hud-light" />
+          <span className="cdl-hud-scan" />
+        </div>
+
         {/* Markers: positioned every frame by MarkerProjector. Pointer
             shortcuts only; the list under the viewer is the accessible way in. */}
         <div aria-hidden className="pointer-events-none absolute inset-0 z-10 overflow-hidden">

@@ -42,6 +42,8 @@ import type { CardArea, CardLabels, CardMember } from './types';
  * - a click flips it: on the left half it turns backward, on the right half
  *   forward, so the rotation keeps accumulating in the direction clicked.
  *
+ * On hover a line of light in the area colour also runs round the edge.
+ *
  * Front: photo, full name, role, and the lead badge only for leaders and
  * co-leaders. Back: only the member's links, as icons that glow on hover and
  * open in a new tab without flipping the card.
@@ -65,6 +67,8 @@ const SOCIAL_ICON: Record<SocialKey, typeof IconWorld> = {
   instagramUrl: IconBrandInstagram,
   websiteUrl: IconWorld,
 };
+/** Slot order of the 2 x 2 square on the back face. */
+const SOCIAL_KEYS = Object.keys(SOCIAL_ICON) as SocialKey[];
 
 function Glare({ background, opacity }: { background: MotionValue<string>; opacity: MotionValue<number> }) {
   return (
@@ -74,6 +78,11 @@ function Glare({ background, opacity }: { background: MotionValue<string>; opaci
       style={{ background, opacity }}
     />
   );
+}
+
+/** A line of light that runs round the card's edge while it is hovered (.cdl-trace). */
+function Trace({ rgb }: { rgb: string }) {
+  return <span aria-hidden className="cdl-trace" style={{ '--trace-rgb': rgb } as CSSProperties} />;
 }
 
 function FlipButton({
@@ -223,6 +232,7 @@ export function MemberFlipCard({
 
   const label = (template: string) => template.replace('{{name}}', member.name);
   const lead = member.position;
+  const links = new Map(member.links.map(({ key, href }) => [key, href]));
 
   return (
     <div
@@ -236,7 +246,7 @@ export function MemberFlipCard({
         onClick={onClick}
         style={{ rotateX: tiltX, rotateY: tiltY, scale, transformStyle: 'preserve-3d' }}
         className={cn(
-          'relative aspect-[324/512] w-full cursor-pointer select-none rounded-card',
+          'cdl-card relative aspect-[324/512] w-full cursor-pointer select-none rounded-card',
           highlight && 'cdl-card-highlight',
         )}
       >
@@ -296,12 +306,16 @@ export function MemberFlipCard({
             </div>
 
             <span aria-hidden className="absolute inset-x-0 bottom-0 h-1.5" style={{ backgroundColor: area.accent }} />
+            <Trace rgb={area.rgb} />
             <Glare background={glare} opacity={glareOpacity} />
           </Face>
 
-          {/* Back: the member's links as icons, nothing else. A member with
-              no links gets the four marks dimmed, so the face never reads as
-              broken. Names for assistive tech stay in the labels. */}
+          {/* Back: the member's links as icons, nothing else. The four marks
+              always sit in the same 2 x 2 square, each in its own slot: the
+              ones the member has are live links, the rest are dimmed, so the
+              layout never changes with how many links someone has and a
+              member with none never reads as broken. Names for assistive tech
+              stay in the labels. */}
           <Face hidden={!showingBack} back reduce={reduce} className="border-hairline-strong bg-morado-200">
             <FlipButton
               label={label(labels.showFront)}
@@ -316,46 +330,44 @@ export function MemberFlipCard({
             />
             <h3 className="sr-only">{`${labels.linksTitle}: ${member.name}`}</h3>
             <div className="relative flex h-full items-center justify-center p-4">
-              {member.links.length > 0 ? (
-                <ul className="flex max-w-[8.75rem] flex-wrap justify-center gap-3">
-                  {member.links.map(({ key, href }) => {
-                    const Icon = SOCIAL_ICON[key];
-                    const name = `${labels.social[key]}: ${member.name} (${labels.newTab})`;
+              <ul className="grid grid-cols-2 gap-3">
+                {SOCIAL_KEYS.map((key) => {
+                  const Icon = SOCIAL_ICON[key];
+                  const href = links.get(key);
+                  if (!href) {
                     return (
-                      <li key={key}>
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          tabIndex={focusable ? undefined : -1}
-                          aria-label={name}
-                          title={labels.social[key]}
-                          onClick={(event) => event.stopPropagation()}
-                          className="cdl-glow inline-flex size-16 items-center justify-center rounded-pill border border-neutro-100/24 bg-morado-300/40 text-neutro-100 hover:border-dorado-100 hover:text-dorado-100"
-                        >
-                          <Icon className="icon-brand size-8" aria-hidden />
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <>
-                  <ul aria-hidden className="grid grid-cols-2 gap-3 opacity-25">
-                    {Object.values(SOCIAL_ICON).map((Icon, index) => (
                       <li
-                        key={index}
-                        className="inline-flex size-16 items-center justify-center rounded-pill border border-dashed border-neutro-100/40 text-neutro-100"
+                        key={key}
+                        aria-hidden
+                        className="inline-flex size-16 items-center justify-center rounded-pill border border-dashed border-neutro-100/40 text-neutro-100 opacity-25"
                       >
                         <Icon className="icon-brand size-8" />
                       </li>
-                    ))}
-                  </ul>
-                  <p className="sr-only">{labels.noLinks}</p>
-                </>
-              )}
+                    );
+                  }
+                  const name = `${labels.social[key]}: ${member.name} (${labels.newTab})`;
+                  return (
+                    <li key={key}>
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        tabIndex={focusable ? undefined : -1}
+                        aria-label={name}
+                        title={labels.social[key]}
+                        onClick={(event) => event.stopPropagation()}
+                        className="cdl-glow inline-flex size-16 items-center justify-center rounded-pill border border-neutro-100/24 bg-morado-300/40 text-neutro-100 hover:border-dorado-100 hover:text-dorado-100"
+                      >
+                        <Icon className="icon-brand size-8" aria-hidden />
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+              {member.links.length === 0 ? <p className="sr-only">{labels.noLinks}</p> : null}
             </div>
             <span aria-hidden className="absolute inset-x-0 bottom-0 h-1.5" style={{ backgroundColor: area.accent }} />
+            <Trace rgb={area.rgb} />
             <Glare background={glare} opacity={glareOpacity} />
           </Face>
         </motion.div>

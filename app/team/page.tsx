@@ -154,7 +154,7 @@ export default async function TeamPage({ searchParams }: { searchParams: SearchP
           />
           <WorkCycle
             steps={t.team.howWeWork.items}
-            colors={areas.map((area) => area.accent)}
+            areas={areas.map((area) => ({ color: area.accent, logo: area.isotipo }))}
             labels={t.team.howWeWork.controls}
           />
         </Container>

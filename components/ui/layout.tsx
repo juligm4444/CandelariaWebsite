@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { Backdrop } from '@/components/motion/backdrop';
+import { KineticText } from '@/components/motion/kinetic-text';
 import { cn } from '@/lib/utils';
 
 /**
@@ -39,6 +41,11 @@ export function Container({
  * Vertical rhythm, in multiples of 8. `surface` selects the surface family:
  * `paper` flips the semantic variables through `.on-paper`, which is the
  * alternating light/dark band the manual asks for (§7) inside a single theme.
+ *
+ * Every section carries a living background for its surface (see
+ * components/motion/backdrop.tsx) unless `backdrop={false}`. The section is
+ * `isolate` so that layer can sit behind the content and still above the
+ * section's own colour; dark sections also host the pointer halo.
  */
 export function Section({
   children,
@@ -48,6 +55,7 @@ export function Section({
   surface = 'canvas',
   space = 'default',
   labelledBy,
+  backdrop = true,
 }: {
   children: ReactNode;
   className?: string;
@@ -56,13 +64,17 @@ export function Section({
   surface?: 'canvas' | 'raised' | 'paper';
   space?: 'default' | 'tight' | 'loose';
   labelledBy?: string;
+  /** Living background behind the content. On by default. */
+  backdrop?: boolean;
 }) {
+  const dark = surface !== 'paper';
   return (
     <Tag
       id={id}
       aria-labelledby={labelledBy}
+      data-halo={backdrop && dark ? '' : undefined}
       className={cn(
-        'relative',
+        'relative isolate',
         surface === 'canvas' && 'bg-canvas text-ink',
         surface === 'raised' && 'bg-surface text-ink',
         surface === 'paper' && 'on-paper',
@@ -72,6 +84,7 @@ export function Section({
         className,
       )}
     >
+      {backdrop ? <Backdrop variant={dark ? 'dark' : 'paper'} /> : null}
       {children}
     </Tag>
   );
@@ -120,10 +133,11 @@ export function SectionHeader({
         id={id}
         className={cn(
           'text-balance-tight',
-          level === 2 ? 'text-[2rem] md:text-[3rem]' : 'text-2xl md:text-[2rem]',
+          level === 2 ? 'cdl-kinetic text-[2rem] md:text-[3rem]' : 'text-2xl md:text-[2rem]',
         )}
       >
-        {title}
+        {/* Section titles rise in letter by letter; smaller headings stay plain. */}
+        {level === 2 ? <KineticText text={title} /> : title}
       </Heading>
       {lead ? (
         <p

@@ -846,22 +846,28 @@ html[data-intro='run'] [data-intro] {
   mask-image: radial-gradient(70% 60% at 50% 50%, #000, transparent);
 }
 
+/* The band is a layer 2.6x the screen wide, moved with `transform` so the
+   sweep runs on the compositor instead of repainting the screen every frame
+   while the hero frames decode. The two ends match the old
+   background-position 120% -> -20% travel exactly (-1.92 and +0.32 screen
+   widths, divided by the layer's own 2.6 widths). The parent's mask clips it. */
 .cdl-loader-cells::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: 0 auto 0 0;
+  width: 260%;
   background: linear-gradient(105deg, transparent 38%, rgb(255 185 56 / 0.12) 50%, transparent 62%);
-  background-size: 260% 100%;
-  background-position: 120% 0;
+  transform: translateX(-73.846%);
   animation: cdl-loader-sweep 3.4s var(--ease-in-out-ui) 500ms infinite;
+  will-change: transform;
 }
 
 @keyframes cdl-loader-sweep {
   from {
-    background-position: 120% 0;
+    transform: translateX(-73.846%);
   }
   to {
-    background-position: -20% 0;
+    transform: translateX(12.308%);
   }
 }
 
@@ -1532,4 +1538,520 @@ html[data-over-hero] .cdl-header {
 
 .cdl-ring-label[data-hidden='true'] {
   opacity: 0;
+}
+
+/* ============================================================================
+   Backdrops: the living background behind every section
+   (components/motion/backdrop.tsx).
+
+   Performance rules, which every piece below follows:
+   - only static paint (rasterised once and reused) or `transform`/`opacity`
+     animation, which the compositor runs without repainting the page;
+   - `contain: strict`, so nothing inside can trigger layout or paint outside;
+   - the aurora runs only while its section is on screen (`data-inview`);
+   - scroll-linked pieces use scroll-driven animations (no script) and are
+     static in browsers without them;
+   - `html[data-lite]` (lib/device-profile.ts) and reduced motion hold
+     everything still and drop the pointer halo.
+   ========================================================================== */
+
+.cdl-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  /* `paint` also clips; not `overflow: hidden`, which would make this a
+     scroll container and stall the scroll-driven pieces inside it. */
+  contain: strict;
+  view-timeline-name: --cdl-bd;
+}
+
+.cdl-backdrop > * {
+  position: absolute;
+  inset: 0;
+}
+
+/* Aurora: two very soft pools of light. The first is the manual's halo
+   colour (Morado 100), the second a faint area colour that changes from one
+   section to the next. */
+.cdl-backdrop {
+  --aurora-b: 79 108 240; /* Celdas */
+}
+
+section:nth-of-type(3n + 2) > .cdl-backdrop {
+  --aurora-b: 179 92 203; /* RRHH */
+}
+
+section:nth-of-type(3n) > .cdl-backdrop {
+  --aurora-b: 28 196 220; /* Logística */
+}
+
+.cdl-bd-aurora::before,
+.cdl-bd-aurora::after {
+  content: '';
+  position: absolute;
+  width: min(70rem, 130vw);
+  aspect-ratio: 7 / 5;
+  border-radius: 50%;
+}
+
+.cdl-bd-aurora::before {
+  left: -18%;
+  top: -30%;
+  background: radial-gradient(closest-side, rgb(62 16 87 / 0.9), rgb(62 16 87 / 0.35) 55%, transparent);
+}
+
+.cdl-bd-aurora::after {
+  right: -22%;
+  bottom: -34%;
+  background: radial-gradient(closest-side, rgb(var(--aurora-b) / 0.1), transparent);
+}
+
+[data-variant='dark'][data-inview] .cdl-bd-aurora::before {
+  animation: cdl-aurora-a 26s var(--ease-in-out-ui) infinite alternate;
+}
+
+[data-variant='dark'][data-inview] .cdl-bd-aurora::after {
+  animation: cdl-aurora-b 34s var(--ease-in-out-ui) infinite alternate;
+}
+
+@keyframes cdl-aurora-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(14%, 10%, 0) scale(1.12);
+  }
+}
+
+@keyframes cdl-aurora-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+  to {
+    transform: translate3d(-16%, -12%, 0) scale(0.94);
+  }
+}
+
+/* Cells: the loader's solar-cell grid, faint, and a band of gold light that
+   crosses it as the section scrolls through the viewport. */
+.cdl-bd-cells {
+  background-image:
+    linear-gradient(rgb(239 238 234 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(239 238 234 / 0.035) 1px, transparent 1px);
+  background-size: 3.5rem 3.5rem;
+  background-position: center top;
+  mask-image: radial-gradient(85% 75% at 50% 45%, #000 20%, transparent);
+}
+
+.cdl-bd-cells::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 260%;
+  background: linear-gradient(105deg, transparent 42%, rgb(255 185 56 / 0.09) 50%, transparent 58%);
+  transform: translateX(-73.846%);
+}
+
+/* Grain: a fixed noise tile, painted once. White on dark, purple on paper. */
+.cdl-bd-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.1 0 0 0 -0.45'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 10rem 10rem;
+  opacity: 0.09;
+}
+
+[data-variant='paper'] > .cdl-bd-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.04 0 0 0 0 0.16 1.1 0 0 0 -0.45'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.07;
+}
+
+/* Halo: a pool of light under a mouse pointer, moved with `transform` by
+   the interaction layer. Composited only while it is lit. */
+.cdl-backdrop > .cdl-bd-halo {
+  inset: auto;
+  left: 0;
+  top: 0;
+  width: 40rem;
+  height: 40rem;
+  margin: -20rem 0 0 -20rem;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 185 56 / 0.07), rgb(62 16 87 / 0.45) 45%, transparent);
+  opacity: 0;
+  transition: opacity 420ms var(--ease-out-ui);
+}
+
+.cdl-bd-halo[data-on] {
+  opacity: 1;
+  will-change: transform;
+}
+
+/* Blueprint (paper): an engineering grid, major every 10rem, minor every
+   2rem, fading towards the edges. */
+.cdl-bd-blueprint {
+  background-image:
+    linear-gradient(rgb(30 10 41 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(30 10 41 / 0.07) 1px, transparent 1px),
+    linear-gradient(rgb(30 10 41 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(30 10 41 / 0.035) 1px, transparent 1px);
+  background-size:
+    10rem 10rem,
+    10rem 10rem,
+    2rem 2rem,
+    2rem 2rem;
+  background-position: center top;
+  mask-image: radial-gradient(90% 80% at 50% 50%, #000 25%, transparent);
+}
+
+/* Registration marks in the four corners, as on a printed drawing. */
+.cdl-bd-marks {
+  --mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%231e0a29' stroke-opacity='0.32'%3E%3Ccircle cx='12' cy='12' r='5.5'/%3E%3Cpath d='M12 0v24M0 12h24'/%3E%3C/svg%3E");
+  background-image: var(--mark), var(--mark), var(--mark), var(--mark);
+  background-repeat: no-repeat;
+  background-size: 1.5rem 1.5rem;
+  /* The padding places the marks just outside the content gutter; plain
+     corner keywords inside it work in every engine. */
+  padding: 1.5rem max(0.75rem, calc(6.25vw - 2.25rem));
+  background-origin: content-box;
+  background-position:
+    left top,
+    right top,
+    left bottom,
+    right bottom;
+}
+
+/* Seam: a line of gold light along the top edge, drawn in from the centre
+   as the section enters. Static (and fainter) where scroll-driven animations
+   are not available. */
+.cdl-backdrop > .cdl-bd-seam {
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(255 185 56 / 0.7) 50%, transparent);
+  opacity: 0.5;
+}
+
+[data-variant='paper'] > .cdl-bd-seam {
+  background: linear-gradient(90deg, transparent, rgb(134 96 24 / 0.6) 50%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    html:not([data-lite]) .cdl-bd-cells::after {
+      animation: cdl-bd-sweep linear both;
+      animation-timeline: --cdl-bd;
+      animation-range: cover 0% cover 100%;
+    }
+
+    html:not([data-lite]) .cdl-backdrop > .cdl-bd-seam {
+      opacity: 1;
+      animation: cdl-bd-seam linear both;
+      animation-timeline: --cdl-bd;
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@keyframes cdl-bd-sweep {
+  from {
+    transform: translateX(-73.846%);
+  }
+  to {
+    transform: translateX(12.308%);
+  }
+}
+
+@keyframes cdl-bd-seam {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Stand down: lite devices and reduced motion keep the paint, drop the
+   movement, and never draw the pointer halo. */
+html[data-lite] .cdl-bd-aurora::before,
+html[data-lite] .cdl-bd-aurora::after {
+  animation: none !important;
+}
+
+html[data-lite] .cdl-bd-halo {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .cdl-bd-halo {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdl-bd-aurora::before,
+  .cdl-bd-aurora::after {
+    animation: none !important;
+  }
+}
+
+/* ============================================================================
+   Kinetic headings (components/motion/kinetic-text.tsx): section titles rise
+   letter by letter as they scroll in, like the name on the loader. Driven by
+   a scroll-driven animation on the compositor, so no script runs; the text is
+   fully visible where that is not supported, under reduced motion, and in
+   lite mode. Words never break inside, so line wrapping is unchanged.
+   ========================================================================== */
+
+.cdl-kinetic {
+  view-timeline-name: --cdl-kin;
+}
+
+.cdl-kinetic-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.cdl-kinetic-char {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    html:not([data-lite]) .cdl-kinetic-char {
+      animation: cdl-kinetic linear both;
+      animation-timeline: --cdl-kin;
+      animation-range: cover calc(var(--k, 0) * 0.6%) cover calc(12% + var(--k, 0) * 0.6%);
+    }
+  }
+}
+
+@keyframes cdl-kinetic {
+  from {
+    opacity: 0;
+    transform: translateY(0.5em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   Home hero photons: a few streaks of sunlight falling towards the car.
+   `transform`/`opacity` only; drawn only while the hero is on screen
+   (`data-over-hero`) and never in lite mode or under reduced motion.
+   ========================================================================== */
+
+.cdl-photons {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  contain: strict;
+}
+
+.cdl-photon {
+  position: absolute;
+  top: -12%;
+  left: var(--x);
+  width: 2px;
+  height: var(--len, 4rem);
+  border-radius: 2px;
+  background: linear-gradient(to bottom, transparent, rgb(255 214 140 / 0.85));
+  opacity: 0;
+}
+
+html[data-lite] .cdl-photons,
+html:not([data-over-hero]) .cdl-photons {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cdl-photon {
+    animation: cdl-photon var(--d, 7s) cubic-bezier(0.45, 0, 0.55, 1) var(--delay, 0s) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdl-photons {
+    display: none;
+  }
+}
+
+@keyframes cdl-photon {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  18%,
+  70% {
+    opacity: var(--o, 0.6);
+  }
+  100% {
+    transform: translate3d(var(--dx, 0), 58vh, 0);
+    opacity: 0;
+  }
+}
+
+/* ============================================================================
+   Vehicle stage HUD: telemetry framing over the 3D viewer. Pure DOM over the
+   canvas (the studio scene itself stays untouched): corner brackets, edge
+   rulers, a status light and a slow scan band. Only the scan and the light
+   move, both on the compositor.
+   ========================================================================== */
+
+.cdl-hud > * {
+  position: absolute;
+}
+
+.cdl-hud-corner {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-color: rgb(255 185 56 / 0.55);
+  border-style: solid;
+  border-width: 0;
+}
+
+.cdl-hud-corner[data-at='tl'] {
+  left: 0.75rem;
+  top: 0.75rem;
+  border-top-width: 1.5px;
+  border-left-width: 1.5px;
+}
+
+.cdl-hud-corner[data-at='tr'] {
+  right: 0.75rem;
+  top: 0.75rem;
+  border-top-width: 1.5px;
+  border-right-width: 1.5px;
+}
+
+.cdl-hud-corner[data-at='bl'] {
+  left: 0.75rem;
+  bottom: 0.75rem;
+  border-bottom-width: 1.5px;
+  border-left-width: 1.5px;
+}
+
+.cdl-hud-corner[data-at='br'] {
+  right: 0.75rem;
+  bottom: 0.75rem;
+  border-bottom-width: 1.5px;
+  border-right-width: 1.5px;
+}
+
+.cdl-hud-ruler[data-at='top'] {
+  left: 3.5rem;
+  right: 3.5rem;
+  top: 0.75rem;
+  height: 0.75rem;
+  background:
+    linear-gradient(90deg, rgb(239 238 234 / 0.34) 1px, transparent 1px) 0 0 / 5rem 100% repeat-x,
+    linear-gradient(90deg, rgb(239 238 234 / 0.16) 1px, transparent 1px) 0 0 / 1rem 50% repeat-x;
+  mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+}
+
+.cdl-hud-ruler[data-at='right'] {
+  top: 3.5rem;
+  bottom: 3.5rem;
+  right: 0.75rem;
+  width: 0.75rem;
+  background:
+    linear-gradient(rgb(239 238 234 / 0.34) 1px, transparent 1px) 100% 0 / 100% 5rem repeat-y,
+    linear-gradient(rgb(239 238 234 / 0.16) 1px, transparent 1px) 100% 0 / 50% 1rem repeat-y;
+  mask-image: linear-gradient(transparent, #000 15%, #000 85%, transparent);
+}
+
+.cdl-hud-light {
+  left: 3rem;
+  top: 1.6rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-dorado-100);
+}
+
+.cdl-hud-scan {
+  inset: 0 auto 0 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgb(255 185 56 / 0.05) 50%, transparent);
+  transform: translateX(-100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-lite]) .cdl-hud-scan {
+    animation: cdl-hud-scan 9s linear infinite;
+  }
+
+  .cdl-hud-light {
+    animation: cdl-hud-light 2.4s var(--ease-in-out-ui) infinite;
+  }
+}
+
+@keyframes cdl-hud-scan {
+  to {
+    transform: translateX(434%);
+  }
+}
+
+@keyframes cdl-hud-light {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* ============================================================================
+   Member cards: a line of light that runs round the edge on hover. The light
+   is a conic gradient spun with `rotate` (compositor) inside a ring-shaped
+   mask; it only spins while the card is hovered, so idle cards cost nothing.
+   ========================================================================== */
+
+.cdl-trace {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 320ms var(--ease-out-ui);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+.cdl-trace::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 62%,
+    rgb(var(--trace-rgb, 255 185 56) / 0.9) 82%,
+    #fff2d6 88%,
+    transparent 96%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cdl-card:hover .cdl-trace {
+    opacity: 1;
+  }
+
+  .cdl-card:hover .cdl-trace::before {
+    animation: cdl-spin 3.6s linear infinite;
+  }
+}
+
+html[data-lite] .cdl-trace {
+  display: none;
 }

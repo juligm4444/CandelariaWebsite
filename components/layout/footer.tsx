@@ -2,6 +2,7 @@ import { IconBrandGithub, IconBrandInstagram, IconBrandLinkedin } from '@tabler/
 import Link from 'next/link';
 
 import { Lockup } from '@/components/brand/lockup';
+import { Backdrop } from '@/components/motion/backdrop';
 import { Container } from '@/components/ui/layout';
 import { NavLink } from '@/components/ui/nav-link';
 import { SOCIAL_PROFILES } from '@/content/site';
@@ -39,7 +40,8 @@ export function Footer({ t }: { t: Dictionary }) {
   ];
 
   return (
-    <footer className="border-t border-hairline bg-canvas text-ink">
+    <footer className="relative isolate border-t border-hairline bg-canvas text-ink">
+      <Backdrop variant="dark" />
       <Container className="flex flex-col gap-9 py-9 md:py-15">
         <div className="grid gap-9 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="flex flex-col gap-3">

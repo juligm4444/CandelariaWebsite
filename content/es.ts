@@ -377,8 +377,6 @@ export const es = {
       lead: 'Las áreas son independientes en su alcance y dependientes en sus decisiones.',
       controls: {
         group: 'Prácticas del semillero',
-        pause: 'Pausar la secuencia',
-        play: 'Reanudar la secuencia',
       },
       items: [
         {

@@ -11,13 +11,15 @@ import {
   useTransform,
   type MotionValue,
 } from 'motion/react';
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { ButtonLink } from '@/components/ui/button';
+import { markLite, readLiteHint } from '@/lib/device-profile';
 import { FrameStore } from '@/lib/frame-sequence';
 import type { Locale } from '@/lib/i18n/config';
 import { trackLoad, untrackLoad } from '@/lib/load-progress';
 import { usePrefersReducedMotion } from '@/lib/use-reduced-motion';
+import { cn } from '@/lib/utils';
 
 /**
  * Home hero: the concept render of the car, scrubbed by scroll.
@@ -33,14 +35,30 @@ import { usePrefersReducedMotion } from '@/lib/use-reduced-motion';
  * headline, then the race the car is built for, then three figures from the
  * spec sheet counting up with scroll. The figures are provisional and say so.
  *
- * Static fallback (reduced motion, data saver, no AVIF): the section collapses
- * to one screen with the poster image and the headline.
+ * The work adapts to the device, in three steps, each one only when needed:
+ * - Frame set: the smallest that fills the screen; the 4K set only with
+ *   positive evidence of headroom (Safari reports no memory, so an older
+ *   Retina Mac stays on 1920). A slow first decode steps 4K down to 1920.
+ * - Lite mode: no blending between frames, no blur on the copy, a 1x canvas
+ *   and fewer decodes at once. Entered from hardware hints, a slow first
+ *   decode, or measured frame times while scrubbing; remembered for the
+ *   session, and site-wide (lib/device-profile.ts), so the backgrounds and
+ *   the falling light stand down with it.
+ * - Static fallback (reduced motion, data saver, a 2G connection, no AVIF, or
+ *   a device that cannot decode a frame in time): the section collapses to
+ *   one screen with the poster image and the headline.
+ * None of this touches the site loader's own timing.
  */
 
 const FRAME_COUNT = 145;
-// What the site loader waits for: first, last, middle and quarter frames,
-// enough to scrub the whole clip coarsely. The rest stream in afterwards.
-const COARSE_FRAMES = 5;
+// What the site loader waits for: the whole sequence (fetched coarse-first,
+// so any prefix is an even sample of the clip). The loader stays up at least
+// 5.2 s anyway, which on a normal connection is longer than the 1-3 MB of
+// frames take, so this costs no time there; on a slow one the loader's own
+// cap (7 s) stops the wait and the remaining frames keep streaming. Waiting
+// for only a handful left the clip full of gaps if the reader scrolled at
+// once, and the picture jumped between the few frames it had.
+const COARSE_FRAMES = FRAME_COUNT;
 const FRAMES = '/hero/v2';
 // The car fills ~40% of the frame width, so portrait screens zoom in on it.
 const PORTRAIT_ZOOM = 1.9;
@@ -54,11 +72,49 @@ type Tier = 'sm' | 'lg' | 'xl';
 const TIER_WIDTH: Record<Tier, number> = { sm: 960, lg: 1920, xl: 3840 };
 const TIER_WINDOW: Record<Tier, number> = { sm: 7, lg: 5, xl: 3 };
 
+/**
+ * Decode budgets, in ms. The probe is the first decode, so it carries the
+ * decoder's start-up cost and the thresholds leave room for it.
+ */
+const PROBE_STEP_DOWN_MS = 70; // 4K too slow: use the 1920 set.
+const PROBE_LITE_MS = 160; // Keep scrubbing, but draw less.
+const PROBE_STATIC_MS = 450; // Scrubbing would stutter whatever we do.
+const DECODE_LITE_MS = 60; // Running average while scrubbing.
+/** Average time between draws, while scrubbing, above which lite mode starts (~36 fps). */
+const FRAME_LITE_MS = 28;
+const FRAME_SAMPLES = 45;
+/** Faster than this (frames per draw), a blend between frames cannot be seen. */
+const BLEND_MAX_SPEED = 0.75;
+
+/**
+ * Streaks of sunlight falling towards the car: position across the stage,
+ * sideways drift, length, opacity, duration and phase. Fixed, so server and
+ * client agree, and spread so no two fall together.
+ */
+const PHOTONS = [
+  { x: 18, dx: '3vw', len: 4, o: 0.5, d: 7.5, delay: -1.2 },
+  { x: 27, dx: '2vw', len: 6, o: 0.7, d: 6.2, delay: -4.1 },
+  { x: 34, dx: '4vw', len: 3, o: 0.45, d: 8.4, delay: -2.6 },
+  { x: 41, dx: '1vw', len: 5, o: 0.65, d: 6.8, delay: -5.3 },
+  { x: 47, dx: '-1vw', len: 7, o: 0.75, d: 5.9, delay: -0.4 },
+  { x: 53, dx: '0vw', len: 4, o: 0.55, d: 7.1, delay: -3.4 },
+  { x: 59, dx: '-2vw', len: 6, o: 0.7, d: 6.5, delay: -6.0 },
+  { x: 66, dx: '-3vw', len: 3, o: 0.45, d: 8.0, delay: -1.9 },
+  { x: 73, dx: '-2vw', len: 5, o: 0.6, d: 7.3, delay: -4.7 },
+  { x: 81, dx: '-4vw', len: 4, o: 0.5, d: 6.9, delay: -2.2 },
+];
+
+type DeviceHints = { deviceMemory?: number; connection?: Connection };
+type Connection = { saveData?: boolean; effectiveType?: string };
+
 function pickTier(): Tier {
   if (window.matchMedia('(max-width: 767px)').matches) return 'sm';
-  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  const { deviceMemory } = navigator as Navigator & DeviceHints;
+  const cores = navigator.hardwareConcurrency;
   const pixels = window.innerWidth * Math.min(window.devicePixelRatio || 1, 2);
-  return pixels > 2200 && (memory === undefined || memory >= 4) ? 'xl' : 'lg';
+  // Positive evidence only: an unknown memory figure is not "enough memory".
+  const roomy = deviceMemory !== undefined && deviceMemory >= 8 && cores !== undefined && cores >= 8;
+  return pixels > 2200 && roomy ? 'xl' : 'lg';
 }
 
 export type HeroSpec = { label: string; value: number; unit: string; fractionDigits: number };
@@ -76,78 +132,126 @@ export type HeroCopy = {
   caption: string;
 };
 
-type Connection = { saveData?: boolean };
 const noopSubscribe = () => () => {};
-const readSaveData = () =>
-  Boolean((navigator as Navigator & { connection?: Connection }).connection?.saveData);
-const serverSaveData = () => false;
+/** Data saver on, or a connection too slow to stream the sequence. */
+const readConstrained = () => {
+  const connection = (navigator as Navigator & DeviceHints).connection;
+  return Boolean(
+    connection?.saveData || connection?.effectiveType === '2g' || connection?.effectiveType === 'slow-2g',
+  );
+};
+const serverConstrained = () => false;
 
-/** Offscreen surfaces reused across frames (never allocated per draw). */
-type Scratch = { ambient: HTMLCanvasElement; feather: HTMLCanvasElement };
+// The device profile is read once per page load and kept, so a later render
+// (a resize, the switch to lite mode) never swaps the frame set mid-scrub.
+let cachedTier: Tier | null = null;
+const readTier = (): Tier | null => (cachedTier ??= pickTier());
+const serverTier = (): Tier | null => null;
+let cachedLiteHint: boolean | null = null;
+const readCachedLiteHint = () => (cachedLiteHint ??= readLiteHint());
+const serverLiteHint = () => false;
 
-/** Paints `bitmap` into the canvas: cover on landscape, framed on portrait. */
-function paint(
+/**
+ * Where the clip sits on a portrait screen, and the alpha mask that feathers
+ * it at top and bottom. Rebuilt only when the canvas or source size changes.
+ */
+type PortraitLayout = {
+  key: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  mask: CanvasGradient;
+};
+
+function portraitLayout(
   ctx: CanvasRenderingContext2D,
   bitmap: ImageBitmap,
   width: number,
   height: number,
-  alpha: number,
-  scratch: Scratch,
-) {
-  ctx.globalAlpha = alpha;
-  const portrait = width / height < 0.9;
-  if (!portrait) {
-    const scale = Math.max(width / bitmap.width, height / bitmap.height);
-    const w = bitmap.width * scale;
-    const h = bitmap.height * scale;
-    ctx.drawImage(bitmap, (width - w) / 2, (height - h) / 2, w, h);
-    ctx.globalAlpha = 1;
-    return;
-  }
-
-  // Ambient fill: a centre crop of the frame at the screen's own aspect,
-  // shrunk to a few pixels and stretched back up. Matching the aspect keeps
-  // the blur round instead of smearing it into vertical streaks.
-  const { ambient, feather } = scratch;
-  const actx = ambient.getContext('2d');
-  if (actx) {
-    ambient.height = 24;
-    ambient.width = Math.max(4, Math.round(24 * (width / height)));
-    const cropWidth = bitmap.height * (width / height);
-    actx.drawImage(bitmap, (bitmap.width - cropWidth) / 2, 0, cropWidth, bitmap.height, 0, 0, ambient.width, ambient.height);
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(ambient, 0, 0, width, height);
-    ctx.fillStyle = 'rgba(30, 10, 41, 0.55)';
-    ctx.fillRect(0, 0, width, height);
-  }
-
-  // The framed clip, feathered at top and bottom with a real alpha mask so
-  // it dissolves into the ambient fill instead of ending on a hard line.
+  cached: PortraitLayout | null,
+): PortraitLayout {
+  const key = `${width}x${height}:${bitmap.width}x${bitmap.height}`;
+  if (cached?.key === key) return cached;
   const scale = (width / bitmap.width) * PORTRAIT_ZOOM;
   const w = Math.round(bitmap.width * scale);
   const h = Math.round(bitmap.height * scale);
-  const x = (width - w) / 2;
-  const y = height * 0.32 - h / 2;
-  const fctx = feather.getContext('2d');
-  if (!fctx) return;
-  if (feather.width !== w || feather.height !== h) {
-    feather.width = w;
-    feather.height = h;
-  }
-  fctx.globalCompositeOperation = 'source-over';
-  fctx.clearRect(0, 0, w, h);
-  fctx.drawImage(bitmap, 0, 0, w, h);
-  fctx.globalCompositeOperation = 'destination-in';
-  const mask = fctx.createLinearGradient(0, 0, 0, h);
+  const x = Math.round((width - w) / 2);
+  const y = Math.round(height * 0.32 - h / 2);
+  const mask = ctx.createLinearGradient(0, y, 0, y + h);
   mask.addColorStop(0, 'rgba(0, 0, 0, 0)');
   mask.addColorStop(0.24, 'rgba(0, 0, 0, 1)');
   mask.addColorStop(0.76, 'rgba(0, 0, 0, 1)');
   mask.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  fctx.fillStyle = mask;
-  fctx.fillRect(0, 0, w, h);
-  fctx.globalCompositeOperation = 'source-over';
-  ctx.drawImage(feather, x, y);
-  ctx.globalAlpha = 1;
+  return { key, x, y, w, h, mask };
+}
+
+/** Paints one or two frames: cover on landscape, framed and feathered on portrait. */
+function paint(
+  ctx: CanvasRenderingContext2D,
+  base: ImageBitmap,
+  next: ImageBitmap | null,
+  fraction: number,
+  width: number,
+  height: number,
+  layout: PortraitLayout | null,
+) {
+  if (!layout) {
+    const scale = Math.max(width / base.width, height / base.height);
+    const w = base.width * scale;
+    const h = base.height * scale;
+    const x = (width - w) / 2;
+    const y = (height - h) / 2;
+    ctx.drawImage(base, x, y, w, h);
+    if (next) {
+      ctx.globalAlpha = fraction;
+      ctx.drawImage(next, x, y, w, h);
+      ctx.globalAlpha = 1;
+    }
+    return;
+  }
+
+  // Portrait: only the clip lives on this canvas (the ambient fill is its own
+  // layer underneath), so the feather is one masking pass over the clip,
+  // with no intermediate surface and no per-frame gradient.
+  const { x, y, w, h, mask } = layout;
+  ctx.clearRect(x, y, w, h);
+  ctx.drawImage(base, x, y, w, h);
+  if (next) {
+    ctx.globalAlpha = fraction;
+    ctx.drawImage(next, x, y, w, h);
+    ctx.globalAlpha = 1;
+  }
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.fillStyle = mask;
+  ctx.fillRect(x, y, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/**
+ * Ambient fill behind the portrait clip: a centre crop of the frame at the
+ * screen's own aspect, shrunk to a few pixels and stretched back up, under
+ * the brand's purple veil. Matching the aspect keeps the blur round instead
+ * of smearing it into vertical streaks. It is drawn into a quarter-resolution
+ * canvas (the image is a blur, so nothing is lost) and only when the frame
+ * index changes, not on every draw.
+ */
+function paintAmbient(ambient: HTMLCanvasElement, tiny: HTMLCanvasElement, bitmap: ImageBitmap) {
+  const actx = ambient.getContext('2d');
+  const tctx = tiny.getContext('2d');
+  if (!actx || !tctx) return;
+  const aspect = ambient.width / ambient.height;
+  const tinyWidth = Math.max(4, Math.round(24 * aspect));
+  if (tiny.width !== tinyWidth || tiny.height !== 24) {
+    tiny.width = tinyWidth;
+    tiny.height = 24;
+  }
+  const cropWidth = bitmap.height * aspect;
+  tctx.drawImage(bitmap, (bitmap.width - cropWidth) / 2, 0, cropWidth, bitmap.height, 0, 0, tiny.width, tiny.height);
+  actx.imageSmoothingQuality = 'high';
+  actx.drawImage(tiny, 0, 0, ambient.width, ambient.height);
+  actx.fillStyle = 'rgba(30, 10, 41, 0.55)';
+  actx.fillRect(0, 0, ambient.width, ambient.height);
 }
 
 function SpecFigure({
@@ -201,16 +305,31 @@ export function HeroScrub({
   locale: Locale;
 }) {
   const reduce = usePrefersReducedMotion();
-  const saveData = useSyncExternalStore(noopSubscribe, readSaveData, serverSaveData);
+  const constrained = useSyncExternalStore(noopSubscribe, readConstrained, serverConstrained);
   const [failed, setFailed] = useState(false);
-  const isStatic = Boolean(reduce) || saveData || failed;
+  const isStatic = Boolean(reduce) || constrained || failed;
+  // Chosen on the client (it reads the screen and the device; null while
+  // hydrating), and stepped down if the first decode shows 4K is too heavy.
+  const deviceTier = useSyncExternalStore(noopSubscribe, readTier, serverTier);
+  const [steppedDown, setSteppedDown] = useState(false);
+  const tier: Tier | null = deviceTier === 'xl' && steppedDown ? 'lg' : deviceTier;
+  const liteHint = useSyncExternalStore(noopSubscribe, readCachedLiteHint, serverLiteHint);
+  const [measuredLite, setMeasuredLite] = useState(false);
+  const lite = liteHint || measuredLite;
 
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ambientRef = useRef<HTMLCanvasElement>(null);
+  const tinyRef = useRef<HTMLCanvasElement | null>(null);
   const storeRef = useRef<FrameStore | null>(null);
-  const scratchRef = useRef<Scratch | null>(null);
+  const layoutRef = useRef<PortraitLayout | null>(null);
+  const portraitRef = useRef(false);
+  const ambientIndexRef = useRef(-1);
+  const liteRef = useRef(false);
   const positionRef = useRef(0);
+  const lastPositionRef = useRef(0);
   const rafRef = useRef(0);
+  const timingRef = useRef({ last: 0, average: 0, samples: 0 });
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] });
   const progress = useSpring(scrollYProgress, { stiffness: 180, damping: 34, mass: 0.5, restDelta: 0.0005 });
@@ -240,28 +359,68 @@ export function HeroScrub({
   const specsOpacity = useTransform(progress, [0.62, 0.7], [0, 1]);
   const specsY = useTransform(progress, [0.62, 0.72], [40, 0]);
 
+  const goLite = () => {
+    if (liteRef.current) return;
+    liteRef.current = true;
+    if (storeRef.current) storeRef.current.maxParallelDecodes = 2;
+    // Site-wide: the backgrounds and effects on every page stand down too.
+    markLite();
+    setMeasuredLite(true);
+  };
+
+  /** Frame times while scrubbing; a device that cannot keep up goes lite. */
+  const measure = (now: number) => {
+    const timing = timingRef.current;
+    const gap = now - timing.last;
+    timing.last = now;
+    // Only consecutive draws count: a pause in scrolling is not a slow frame.
+    if (liteRef.current || gap <= 0 || gap > 100) return;
+    timing.average = timing.samples ? timing.average + (gap - timing.average) * 0.1 : gap;
+    timing.samples++;
+    const decodeMs = storeRef.current?.decodeMs ?? 0;
+    if (timing.samples >= FRAME_SAMPLES && (timing.average > FRAME_LITE_MS || decodeMs > DECODE_LITE_MS)) {
+      goLite();
+    }
+  };
+
   const schedule = () => {
     if (rafRef.current) return;
-    rafRef.current = requestAnimationFrame(() => {
+    rafRef.current = requestAnimationFrame((now) => {
       rafRef.current = 0;
       const canvas = canvasRef.current;
       const store = storeRef.current;
       const ctx = canvas?.getContext('2d');
       if (!canvas || !store || !ctx) return;
+      measure(now);
       const last = store.count - 1;
       const position = Math.max(0, Math.min(last, positionRef.current));
+      const speed = Math.abs(position - lastPositionRef.current);
+      lastPositionRef.current = position;
       store.focus(position);
-      const i0 = Math.floor(position);
-      const fraction = position - i0;
+
+      // Blend the two neighbouring frames only when it can be seen and the
+      // device has room for it; otherwise show the nearest frame.
+      const blend = !liteRef.current && speed < BLEND_MAX_SPEED;
+      const i0 = blend ? Math.floor(position) : Math.round(position);
+      const fraction = blend ? position - i0 : 0;
       const base = store.frame(i0);
       if (!base) return;
-      const scratch = (scratchRef.current ??= {
-        ambient: document.createElement('canvas'),
-        feather: document.createElement('canvas'),
-      });
-      paint(ctx, base, canvas.width, canvas.height, 1, scratch);
-      const next = fraction > 0.02 ? store.exact(Math.min(last, i0 + 1)) : null;
-      if (next && next !== base) paint(ctx, next, canvas.width, canvas.height, fraction, scratch);
+      // A stand-in base (the exact frame is still decoding) is not blended:
+      // mixing it with i0 + 1 would show two frames that are not neighbours.
+      const next =
+        fraction > 0.02 && store.exact(i0) === base ? store.exact(Math.min(last, i0 + 1)) : null;
+
+      const portrait = portraitRef.current;
+      const layout = portrait ? portraitLayout(ctx, base, canvas.width, canvas.height, layoutRef.current) : null;
+      layoutRef.current = layout;
+      paint(ctx, base, next && next !== base ? next : null, fraction, canvas.width, canvas.height, layout);
+
+      const ambient = ambientRef.current;
+      if (portrait && ambient && ambientIndexRef.current !== i0) {
+        ambientIndexRef.current = i0;
+        paintAmbient(ambient, (tinyRef.current ??= document.createElement('canvas')), base);
+        if (!ambient.dataset.ready) ambient.dataset.ready = '';
+      }
       if (!canvas.dataset.ready) canvas.dataset.ready = '';
     });
   };
@@ -270,20 +429,47 @@ export function HeroScrub({
     positionRef.current = value * (FRAME_COUNT - 1);
     schedule();
   });
+  // The same request, for the effects below (frame arrivals, resizes).
+  const redraw = useEffectEvent(() => schedule());
+
+  // The draw loop reads lite mode from a ref; keep it in step (one-way).
+  useEffect(() => {
+    if (lite) liteRef.current = true;
+  }, [lite]);
 
   // Frames: load, register with the site loader, draw as they arrive.
   useEffect(() => {
-    if (isStatic) return;
-    const set = pickTier();
+    if (isStatic || !tier) return;
     const urls = Array.from(
       { length: FRAME_COUNT },
-      (_, i) => `${FRAMES}/${set}/${String(i).padStart(3, '0')}.avif`,
+      (_, i) => `${FRAMES}/${tier}/${String(i).padStart(3, '0')}.avif`,
     );
-    const store = new FrameStore(urls, TIER_WINDOW[set]);
+    const store = new FrameStore(urls, TIER_WINDOW[tier]);
+    if (liteRef.current) store.maxParallelDecodes = 2;
     storeRef.current = store;
     const report = trackLoad('hero-frames', 3);
+    // Any frame in the window may be closer than the stand-in on screen, so
+    // a finished decode anywhere near the position repaints.
     store.onFrameReady = (index) => {
-      if (Math.abs(index - positionRef.current) <= 1.5) schedule();
+      if (Math.abs(index - positionRef.current) <= TIER_WINDOW[tier] + 1) redraw();
+    };
+    store.onProbe = (ms) => {
+      if (tier === 'xl' && ms > PROBE_STEP_DOWN_MS) {
+        // Hand over to the 1920 set; this store stops here.
+        storeRef.current = null;
+        store.dispose();
+        setSteppedDown(true);
+        return;
+      }
+      // Collapsing the section only while the reader is still at the top, so
+      // nothing moves under them; further down, draw less instead.
+      if (ms > PROBE_STATIC_MS && window.scrollY < 1) {
+        storeRef.current = null;
+        store.dispose();
+        setFailed(true);
+        return;
+      }
+      if (ms > PROBE_LITE_MS) goLite();
     };
     store.load(COARSE_FRAMES, report).then((ok) => {
       if (!ok && storeRef.current === store) {
@@ -298,28 +484,39 @@ export function HeroScrub({
       cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
     };
-  }, [isStatic]);
+  }, [isStatic, tier]);
 
-  // Canvas backing size: device pixels, capped at what the source can fill.
+  // Canvas backing size: device pixels, capped at what the source can fill,
+  // and at 1x in lite mode.
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || isStatic) return;
+    const ambient = ambientRef.current;
+    if (!canvas || !ambient || isStatic || !tier) return;
     const resize = () => {
       const { width, height } = canvas.getBoundingClientRect();
       if (!width || !height) return;
-      const sourceWidth = TIER_WIDTH[pickTier()];
+      const sourceWidth = TIER_WIDTH[tier];
       const portrait = width / height < 0.9;
       const drawnWidth = portrait ? width * PORTRAIT_ZOOM : Math.max(width, (height * 16) / 9);
-      const scale = Math.max(1, Math.min(window.devicePixelRatio || 1, 2, sourceWidth / drawnWidth));
+      const ceiling = lite ? 1 : 2;
+      const scale = Math.max(1, Math.min(window.devicePixelRatio || 1, ceiling, sourceWidth / drawnWidth));
       canvas.width = Math.round(width * scale);
       canvas.height = Math.round(height * scale);
-      schedule();
+      portraitRef.current = portrait;
+      layoutRef.current = null;
+      ambient.hidden = !portrait;
+      if (portrait) {
+        ambient.width = Math.max(4, Math.round(width / 4));
+        ambient.height = Math.max(4, Math.round(height / 4));
+        ambientIndexRef.current = -1;
+      }
+      redraw();
     };
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
     return () => observer.disconnect();
-  }, [isStatic]);
+  }, [isStatic, tier, lite]);
 
   return (
     <section
@@ -343,11 +540,41 @@ export function HeroScrub({
           />
         </picture>
 
+        {/* Ambient fill for portrait screens, under the clip. Hidden on
+            landscape, where the clip covers the whole stage. */}
+        <canvas
+          ref={ambientRef}
+          aria-hidden
+          className="absolute inset-0 size-full opacity-0 transition-opacity duration-500 data-[ready]:opacity-100"
+        />
+
         <canvas
           ref={canvasRef}
           aria-hidden
           className="absolute inset-0 size-full opacity-0 transition-opacity duration-500 data-[ready]:opacity-100"
         />
+
+        {/* Sunlight falling towards the car (CSS only; see .cdl-photons). */}
+        {!isStatic && !lite ? (
+          <div aria-hidden className="cdl-photons">
+            {PHOTONS.map((photon, index) => (
+              <i
+                key={index}
+                className="cdl-photon"
+                style={
+                  {
+                    '--x': `${photon.x}%`,
+                    '--dx': photon.dx,
+                    '--len': `${photon.len}rem`,
+                    '--o': photon.o,
+                    '--d': `${photon.d}s`,
+                    '--delay': `${photon.delay}s`,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+          </div>
+        ) : null}
 
         {/* Legibility veils: the brand's 60% purple scrim, as gradients. */}
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-morado-300/85 to-transparent" />
@@ -355,14 +582,18 @@ export function HeroScrub({
 
         {/* Stage 1: headline. */}
         <motion.div
-          style={isStatic ? undefined : { opacity: introOpacity, y: introY, filter: introFilter }}
+          style={isStatic ? undefined : lite ? { opacity: introOpacity, y: introY } : { opacity: introOpacity, y: introY, filter: introFilter }}
           className="gutter absolute inset-x-0 bottom-0 mx-auto w-full max-w-[120rem] pb-[6rem] md:pb-[7.5rem]"
         >
           <div className="flex max-w-[44rem] flex-col items-start gap-4">
             <p
               data-intro=""
               style={{ '--i': 0 } as React.CSSProperties}
-              className="hidden rounded-pill border border-neutro-100/32 bg-morado-300/40 px-3 py-1 text-base text-neutro-100/85 backdrop-blur-sm sm:block"
+              className={cn(
+                'hidden rounded-pill border border-neutro-100/32 px-3 py-1 text-base text-neutro-100/85 sm:block',
+                // Without the blur, a denser fill keeps the same legibility.
+                lite ? 'bg-morado-300/60' : 'bg-morado-300/40 backdrop-blur-sm',
+              )}
             >
               {copy.badge}
             </p>
@@ -390,7 +621,10 @@ export function HeroScrub({
                 href="/about"
                 variant="secondary"
                 size="lg"
-                className="border-neutro-100/40 bg-morado-300/30 text-neutro-100 backdrop-blur-sm"
+                className={cn(
+                  'border-neutro-100/40 text-neutro-100',
+                  lite ? 'bg-morado-300/60' : 'bg-morado-300/30 backdrop-blur-sm',
+                )}
               >
                 {copy.secondary}
               </ButtonLink>
